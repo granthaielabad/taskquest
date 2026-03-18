@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../home/screens/home_screen.dart';
-import '../../games/screens/games_screen.dart';
-import '../../badges/screens/badges_screen.dart';
-import '../../explore/screens/explore_screen.dart';
+import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:taskquest/features/home/screens/home_screen.dart';
+import 'package:taskquest/features/games/screens/games_screen.dart';
+import 'package:taskquest/features/badges/screens/badges_screen.dart';
+import 'package:taskquest/features/explore/screens/explore_screen.dart';
+// import 'package:taskquest/features/profile/screens/profile_screen.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -15,31 +16,51 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const GamesScreen(),
-    const GamesScreen(), // Scan tab — reuses games for now
-    const BadgesScreen(),
-    const ExploreScreen(),
+  // Track which tabs have been visited — only build them once visited
+  final Set<int> _activatedTabs = {0}; // Home is always built first
+
+  static const List<Widget> _screens = [
+    HomeScreen(),
+    GamesScreen(),
+    GamesScreen(), // Scan placeholder
+    BadgesScreen(),
+    ExploreScreen(),
   ];
+
+  void _onTabTap(int index) {
+    setState(() {
+      _currentIndex = index;
+      _activatedTabs.add(index); // Mark as activated — now it gets built
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+      // Use a Stack instead of IndexedStack — only render activated tabs
+      body: Stack(
+        children: List.generate(_screens.length, (i) {
+          // Only build if this tab has been visited
+          if (!_activatedTabs.contains(i)) return const SizedBox.shrink();
+          return Offstage(
+            offstage: _currentIndex != i,
+            child: TickerMode(
+              enabled: _currentIndex == i,
+              child: _screens[i],
+            ),
+          );
+        }),
       ),
       bottomNavigationBar: _TQBottomNav(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: _onTabTap,
       ),
     );
   }
 }
 
-// ── Bottom Navigation Bar ─────────────────────────────────────────
+// ── Bottom Nav ────────────────────────────────────────────────────────
 class _TQBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -55,9 +76,7 @@ class _TQBottomNav extends StatelessWidget {
       height: 80,
       decoration: const BoxDecoration(
         color: AppTheme.white,
-        border: Border(
-          top: BorderSide(color: AppTheme.border),
-        ),
+        border: Border(top: BorderSide(color: AppTheme.border)),
       ),
       child: SafeArea(
         top: false,
@@ -115,7 +134,6 @@ class _TQBottomNav extends StatelessWidget {
   }
 }
 
-// ── Single nav tab item ───────────────────────────────────────────
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
