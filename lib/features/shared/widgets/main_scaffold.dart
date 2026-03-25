@@ -22,7 +22,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   static const List<Widget> _screens = [
     HomeScreen(),
     GamesScreen(),
-    GamesScreen(), // Scan placeholder
+    GamesScreen(),
     BadgesScreen(),
     ExploreScreen(),
   ];
@@ -60,7 +60,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 }
 
-// ── Bottom Nav ────────────────────────────────────────────────────────
+// Bottom Nav
 class _TQBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;

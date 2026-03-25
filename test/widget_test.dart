@@ -21,5 +21,8 @@ void main() {
 
     // Verify that the app starts (e.g., checking for TaskQuest text in SplashScreen)
     expect(find.text('TaskQuest'), findsOneWidget);
+
+    // Advance time to complete the splash screen timer
+    await tester.pumpAndSettle(const Duration(seconds: 3));
   });
 }

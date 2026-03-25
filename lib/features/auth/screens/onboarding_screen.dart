@@ -16,8 +16,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _nextPage() {
     if (_currentPage < 2) {
       _controller.nextPage(
-        duration: const Duration(milliseconds: 350), // ✅ slightly snappier
-        curve: Curves.easeOutCubic,                  // ✅ smoother curve
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,             
       );
     } else {
       _goToLogin();
@@ -48,11 +48,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // ── Page content ──────────────────────────────────────
+            // Page content
             PageView(
               controller: _controller,
               onPageChanged: (i) => setState(() => _currentPage = i),
-              // ✅ ClampingScrollPhysics = snappier, no bounce lag
               physics: const ClampingScrollPhysics(),
               pageSnapping: true,
               children: const [
@@ -62,7 +61,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
             ),
 
-            // ── Skip button ───────────────────────────────────────
+            // Skip button
             if (_currentPage < 2)
               Positioned(
                 top: 12,
@@ -81,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-            // ── Bottom controls ───────────────────────────────────
+            // Bottom controls
             Positioned(
               bottom: 0,
               left: 0,
@@ -98,7 +97,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-// ── Bottom controls ────────────────────────────────────────────────────
+// Bottom controls
 class _BottomControls extends StatelessWidget {
   final int currentPage;
   final VoidCallback onNext;
@@ -122,7 +121,7 @@ class _BottomControls extends StatelessWidget {
             children: List.generate(3, (i) {
               final isActive = i == currentPage;
               return AnimatedContainer(
-                duration: const Duration(milliseconds: 250), // ✅ tighter
+                duration: const Duration(milliseconds: 250),
                 margin: const EdgeInsets.only(right: 6),
                 width: isActive ? 24 : 6,
                 height: 6,
@@ -186,11 +185,7 @@ class _BottomControls extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// SLIDE 1
-// ✅ StatefulWidget + AutomaticKeepAliveClientMixin
-//    → slide stays in memory after swiping away, no rebuild on return
-// ══════════════════════════════════════════════════════════════════════
+// Slide 1
 class _Slide1 extends StatefulWidget {
   const _Slide1();
 
@@ -205,7 +200,7 @@ class _Slide1State extends State<_Slide1>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // required by mixin
+    super.build(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 180),
       child: Column(
@@ -263,7 +258,7 @@ class _Slide1State extends State<_Slide1>
           ),
           const SizedBox(height: 10),
 
-          // Row 3 — full width
+          // Row 3
           const _AlgorithmCard(),
           const SizedBox(height: 28),
 
@@ -304,9 +299,7 @@ class _Slide1State extends State<_Slide1>
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// SLIDE 2
-// ══════════════════════════════════════════════════════════════════════
+// Slide 2
 class _Slide2 extends StatefulWidget {
   const _Slide2();
 
@@ -623,9 +616,7 @@ class _Slide2State extends State<_Slide2>
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// SLIDE 3
-// ══════════════════════════════════════════════════════════════════════
+// Slide 3
 class _Slide3 extends StatefulWidget {
   const _Slide3();
 
@@ -776,7 +767,6 @@ class _Slide3State extends State<_Slide3>
                         letterSpacing: 1.4,
                         color: AppTheme.muted)),
                 const SizedBox(height: 14),
-                // ✅ No const on list — _AchievementBadge uses runtime bool
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -837,7 +827,6 @@ class _Slide3State extends State<_Slide3>
   }
 }
 
-// ── Game mode card ─────────────────────────────────────────────────────
 class _GameCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -926,7 +915,6 @@ class _GameCard extends StatelessWidget {
   }
 }
 
-// ── Algorithm card ─────────────────────────────────────────────────────
 class _AlgorithmCard extends StatelessWidget {
   const _AlgorithmCard();
 
@@ -997,7 +985,6 @@ class _AlgorithmCard extends StatelessWidget {
   }
 }
 
-// ── Code chip ──────────────────────────────────────────────────────────
 class _CodeChip extends StatelessWidget {
   final String label;
   const _CodeChip({required this.label});
@@ -1020,7 +1007,6 @@ class _CodeChip extends StatelessWidget {
   }
 }
 
-// ── Skill bar ──────────────────────────────────────────────────────────
 class _SkillBar extends StatelessWidget {
   final String label;
   final double value;
@@ -1061,7 +1047,6 @@ class _SkillBar extends StatelessWidget {
   }
 }
 
-// ── Achievement badge ──────────────────────────────────────────────────
 class _AchievementBadge extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1106,7 +1091,7 @@ class _AchievementBadge extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 9,
-              // ✅ Color literals instead of AppTheme — avoids const issues
+              
               color: unlocked
                   ? const Color(0xFF111111)
                   : const Color(0xFFCCCAC4),

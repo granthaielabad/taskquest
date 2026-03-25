@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        _controller.stop(); // ✅ Stop animation before navigating
+        _controller.stop();
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (_, animation, _) => const OnboardingScreen(),
@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: AppTheme.background,
       body: Stack(
         children: [
-          // ── Layer 1: Grid background ───────────────────────────
+          // Layer 1: Grid background 
           const Positioned.fill(
             child: RepaintBoundary( // ✅ Isolates grid from repaints
               child: CustomPaint(
@@ -75,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Layer 2: Corner accent — top left ──────────────────
+          // Layer 2: Corner accent — top left 
           const Positioned(
             top: 80,
             left: 36,
@@ -88,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Layer 3: Corner accent — bottom right ──────────────
+          // Layer 3: Corner accent — bottom right
           const Positioned(
             bottom: 130,
             right: 36,
@@ -101,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Layer 4: Centre logo + tagline ─────────────────────
+          // Layer 4: Centre logo + tagline
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -144,9 +144,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Layer 5: Animated progress loader ──────────────────
-          //    RepaintBoundary isolates animation repaints to this
-          //    widget only — rest of screen is untouched each frame
+          // Layer 5: Animated progress loader 
           Positioned(
             bottom: 90,
             left: 40,
@@ -191,7 +189,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Layer 6: Version string ────────────────────────────
+          // Layer 6: Version string
           const Positioned(
             bottom: 60,
             left: 0,
@@ -214,7 +212,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ── Grid painter ───────────────────────────────────────────────────────
 class _GridPainter extends CustomPainter {
   const _GridPainter();
 
@@ -243,7 +240,6 @@ class _GridPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ── Corner painter ─────────────────────────────────────────────────────
 class _CornerPainter extends CustomPainter {
   final bool topLeft;
   const _CornerPainter({required this.topLeft});

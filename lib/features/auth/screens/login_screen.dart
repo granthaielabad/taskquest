@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../shared/widgets/main_scaffold.dart';
-import 'register_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:taskquest/features/auth/screens/register_screen.dart';
+import 'package:taskquest/features/shared/widgets/main_scaffold.dart';
+import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
+
+import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,21 +15,45 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'example@gmail.com');
-  final _passController = TextEditingController(text: 'password123');
+  final _emailController = TextEditingController();
+  final _passController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passFocus = FocusNode();
   bool _obscurePass = true;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Rebuild on focus change so active border updates
+    _emailFocus.addListener(() => setState(() {}));
+    _passFocus.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passController.dispose();
+    _emailFocus.dispose();
+    _passFocus.dispose();
     super.dispose();
   }
 
-  void _login() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const MainScaffold()),
-    );
+  Future<void> _login() async {
+    setState(() => _isLoading = true);
+    // Simulate network delay — replace with real auth later
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (mounted) {
+      setState(() => _isLoading = false);
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, animation, _) => const MainScaffold(),
+          transitionsBuilder: (_, animation, _, child) =>
+              FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    }
   }
 
   @override
@@ -34,24 +62,19 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
 
-              // ── Logo ─────────────────────────────────────────
+              // Logo
               Row(
                 children: [
-                  Container(
+                  SvgPicture.asset(
+                    'assets/images/logo.svg',
                     width: 34,
                     height: 34,
-                    decoration: BoxDecoration(
-                      color: AppTheme.black,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.bolt,
-                        color: Colors.white, size: 18),
                   ),
                   const SizedBox(width: 10),
                   const Text(
@@ -68,267 +91,131 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 36),
 
-              // ── Heading ──────────────────────────────────────
-              const Text(
+              // Heading
+              Text(
                 'Welcome\nback.',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 28,
-                  letterSpacing: -0.84,
-                  color: AppTheme.black,
-                  height: 1.1,
+                style: AppTheme.headingXL.copyWith(
+                  fontSize: 34,
+                  height: 1.05,
+                  letterSpacing: -1.0,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Log in to continue your learning quest.',
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 12,
-                  color: AppTheme.muted,
-                ),
+                style: AppTheme.bodyMono,
               ),
               const SizedBox(height: 32),
 
-              // ── Email field ───────────────────────────────────
-              _FieldLabel('Email'),
-              const SizedBox(height: 5),
-              _InputField(
+              const FieldLabel('Email'),
+              const SizedBox(height: 6),
+              TQInputField(
                 controller: _emailController,
-                hintText: 'your@email.com',
+                focusNode: _emailFocus,
+                hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
-                hasFocus: true,
                 suffixIcon: const Icon(
-                  Icons.mail_outline,
-                  color: AppTheme.muted,
+                  Icons.mail_outline_rounded,
                   size: 16,
+                  color: AppTheme.muted,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // ── Password field ────────────────────────────────
-              _FieldLabel('Password'),
-              const SizedBox(height: 5),
-              _InputField(
+              const FieldLabel('Password'),
+              const SizedBox(height: 6),
+              TQInputField(
                 controller: _passController,
-                hintText: '••••••••',
+                focusNode: _passFocus,
+                hintText: 'password123',
                 obscureText: _obscurePass,
                 suffixIcon: GestureDetector(
-                  onTap: () =>
-                      setState(() => _obscurePass = !_obscurePass),
+                  onTap: () => setState(() => _obscurePass = !_obscurePass),
                   child: Icon(
                     _obscurePass
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppTheme.muted,
                     size: 16,
+                    color: AppTheme.muted,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              // ── Forgot password ───────────────────────────────
-              const Align(
+              Align(
                 alignment: Alignment.centerRight,
-                child: Text(
-                  'Forgot password?',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 10,
-                    color: AppTheme.muted,
-                    decoration: TextDecoration.underline,
-                    letterSpacing: 0.8,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  child: Text(
+                    'Forgot password?',
+                    style: AppTheme.bodyMono.copyWith(
+                      fontSize: 11,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppTheme.muted,
+                    ),
                   ),
                 ),
+              ),
+              const SizedBox(height: 24),
+
+              TQButton(
+                label: 'Log In',
+                isLoading: _isLoading,
+                onTap: _login,
               ),
               const SizedBox(height: 20),
 
-              // ── Log In button ─────────────────────────────────
-              ElevatedButton(
-                onPressed: _login,
+              const OrDivider(label: 'OR CONTINUE WITH'),
+              const SizedBox(height: 20),
+
+              GoogleButton(onTap: _login),
+              const SizedBox(height: 40),
+
+              Center(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text(
-                      'Log In',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Icon(Icons.arrow_forward,
-                        color: Colors.white, size: 16),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // ── Divider ───────────────────────────────────────
-              const Row(
-                children: [
-                  Expanded(child: Divider(color: AppTheme.border)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      'OR CONTINUE WITH',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 10,
-                        letterSpacing: 1.2,
-                        color: AppTheme.dimmed,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: AppTheme.border)),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // ── Google button ─────────────────────────────────
-              OutlinedButton(
-                onPressed: _login,
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: AppTheme.white,
-                  side: const BorderSide(color: AppTheme.border),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  minimumSize: const Size(double.infinity, 52),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.g_mobiledata_rounded,
-                        color: AppTheme.black, size: 22),
-                    SizedBox(width: 8),
                     Text(
-                      'Continue with Google',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 12,
-                        color: AppTheme.black,
-                        letterSpacing: 0.48,
+                      "Don't have an account? ",
+                      style: AppTheme.bodyMono,
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, animation, _) =>
+                              const RegisterScreen(),
+                          transitionsBuilder:
+                              (_, animation, _, child) =>
+                                  FadeTransition(
+                                      opacity: animation, child: child),
+                          transitionDuration:
+                              const Duration(milliseconds: 300),
+                        ),
+                      ),
+                      child: const Text(
+                        'Sign Up',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: AppTheme.black,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppTheme.black,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-
-              // ── Sign up link ──────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account? ",
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 11,
-                      color: AppTheme.muted,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const RegisterScreen()),
-                    ),
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        color: AppTheme.black,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Reusable field label ──────────────────────────────────────────
-class _FieldLabel extends StatelessWidget {
-  final String text;
-  const _FieldLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: const TextStyle(
-        fontFamily: 'DM Mono',
-        fontSize: 10,
-        letterSpacing: 1.4,
-        color: AppTheme.muted,
-      ),
-    );
-  }
-}
-
-// ── Reusable input field ──────────────────────────────────────────
-class _InputField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final Widget? suffixIcon;
-  final bool hasFocus;
-
-  const _InputField({
-    required this.controller,
-    required this.hintText,
-    this.obscureText = false,
-    this.keyboardType,
-    this.suffixIcon,
-    this.hasFocus = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        border: Border.all(
-          color: hasFocus ? AppTheme.black : AppTheme.border,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 13,
-          color: AppTheme.black,
-        ),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: const TextStyle(color: AppTheme.dimmed),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-              horizontal: 17, vertical: 16),
-          suffixIcon: suffixIcon != null
-              ? Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: suffixIcon,
-          )
-              : null,
-          suffixIconConstraints:
-          const BoxConstraints(minWidth: 0, minHeight: 0),
         ),
       ),
     );
