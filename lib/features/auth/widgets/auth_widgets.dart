@@ -24,6 +24,7 @@ class TQInputField extends StatelessWidget {
   final TextInputType keyboardType;
   final TextCapitalization textCapitalization;
   final Widget? suffixIcon;
+  final int maxLines;
 
   const TQInputField({
     super.key,
@@ -34,13 +35,13 @@ class TQInputField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.textCapitalization = TextCapitalization.none,
     this.suffixIcon,
+    this.maxLines = 1,
   });
 
   @override
   Widget build(BuildContext context) {
     final isFocused = focusNode.hasFocus;
     return Container(
-      height: 52,
       decoration: BoxDecoration(
         color: AppTheme.white,
         border: Border.all(
@@ -55,6 +56,7 @@ class TQInputField extends StatelessWidget {
         obscureText: obscureText,
         keyboardType: keyboardType,
         textCapitalization: textCapitalization,
+        maxLines: maxLines,
         style: AppTheme.bodyMono.copyWith(color: AppTheme.black, fontSize: 13),
         decoration: InputDecoration(
           hintText: hintText,

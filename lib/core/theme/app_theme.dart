@@ -53,6 +53,7 @@ class AppTheme {
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: background,
+    brightness: Brightness.light,
     colorScheme: ColorScheme.light(
       primary: black,
       surface: background,
@@ -69,6 +70,44 @@ class AppTheme {
         backgroundColor: black,
         foregroundColor: white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
+        minimumSize: const Size(double.infinity, 56),
+        textStyle: const TextStyle(
+          fontFamily: 'Syne',
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+        ),
+      ),
+    ),
+  );
+
+  static ThemeData get darkTheme => ThemeData(
+    useMaterial3: true,
+    scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+    brightness: Brightness.dark,
+    colorScheme: const ColorScheme.dark(
+      primary: Colors.white,
+      surface: Color(0xFF0A0A0A),
+      onPrimary: Color(0xFF0A0A0A),
+      outline: Color(0xFF222222),
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF0A0A0A),
+      elevation: 0,
+      titleTextStyle: TextStyle(
+        fontFamily: 'Syne',
+        fontWeight: FontWeight.w700,
+        fontSize: 15,
+        letterSpacing: -0.3,
+        color: Colors.white,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0A0A0A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
         minimumSize: const Size(double.infinity, 56),
         textStyle: const TextStyle(
           fontFamily: 'Syne',

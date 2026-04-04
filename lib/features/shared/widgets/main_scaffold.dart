@@ -4,6 +4,7 @@ import 'package:taskquest/features/home/screens/home_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/explore/screens/explore_screen.dart';
+import 'package:taskquest/features/games/screens/flashcard_scan_screen.dart';
 // import 'package:taskquest/features/profile/screens/profile_screen.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -22,7 +23,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   static const List<Widget> _screens = [
     HomeScreen(),
     GamesScreen(),
-    GamesScreen(),
+    FlashcardScanScreen(),
     BadgesScreen(),
     ExploreScreen(),
   ];
@@ -98,20 +99,55 @@ class _TQBottomNav extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () => onTap(2),
-                child: Center(
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppTheme.black,
-                      borderRadius: BorderRadius.circular(14),
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (currentIndex == 2)
+                          Container(
+                            width: 62,
+                            height: 62,
+                            decoration: BoxDecoration(
+                              color: AppTheme.black.withValues(alpha: 0.05),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppTheme.black,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: currentIndex == 2 ? [
+                              BoxShadow(
+                                color: AppTheme.black.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              )
+                            ] : null,
+                          ),
+                          child: const Icon(
+                            Icons.document_scanner_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 24,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Scan',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        letterSpacing: 0.72,
+                        color: currentIndex == 2 ? AppTheme.black : AppTheme.dimmed,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -163,7 +199,7 @@ class _NavItem extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              label.toUpperCase(),
+              label,
               style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 9,

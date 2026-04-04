@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/screens/register_screen.dart';
 import 'package:taskquest/features/shared/widgets/main_scaffold.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
+import 'package:taskquest/features/auth/providers/auth_provider.dart';
 
 import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _emailFocus = FocusNode();
@@ -39,20 +41,58 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _navigateToHome() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, animation, _) => const MainScaffold(),
+        transitionsBuilder: (_, animation, _, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
   Future<void> _login() async {
-    setState(() => _isLoading = true);
-    // Simulate network delay — replace with real auth later
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() => _isLoading = false);
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (_, animation, _) => const MainScaffold(),
-          transitionsBuilder: (_, animation, _, child) =>
-              FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
+    if (_emailController.text.isEmpty || _passController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter email and password')),
       );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authServiceProvider).signInWithEmail(
+            _emailController.text.trim(),
+            _passController.text.trim(),
+          );
+      if (mounted) _navigateToHome();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login Failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = await ref.read(authServiceProvider).signInWithGoogle();
+      if (user != null && mounted) {
+        _navigateToHome();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Login Failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -173,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const OrDivider(label: 'OR CONTINUE WITH'),
               const SizedBox(height: 20),
 
-              GoogleButton(onTap: _login),
+              GoogleButton(onTap: _loginWithGoogle),
               const SizedBox(height: 40),
 
               Center(
