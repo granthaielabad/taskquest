@@ -21,6 +21,8 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   final List<FocusNode> _termFocusNodes = [FocusNode()];
   final List<FocusNode> _defFocusNodes = [FocusNode()];
   
+  final Set<int> _errorIndices = {};
+  bool _titleError = false;
   bool _isLoading = false;
 
   @override
@@ -50,6 +52,17 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
     super.dispose();
   }
 
+  bool get _hasChanges {
+    if (_titleController.text.isNotEmpty) return true;
+    for (var c in _termControllers) {
+      if (c.text.isNotEmpty) return true;
+    }
+    for (var c in _defControllers) {
+      if (c.text.isNotEmpty) return true;
+    }
+    return false;
+  }
+
   void _addCard() {
     final termFocus = FocusNode();
     final defFocus = FocusNode();
@@ -64,9 +77,100 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
     });
   }
 
+  void _clearAll() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Clear All?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
+        content: const Text('This will delete all content you have typed.', style: AppTheme.bodyMono),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('CANCEL', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted))),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('CLEAR', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() {
+        _titleController.clear();
+        _termControllers.clear();
+        _defControllers.clear();
+        _termFocusNodes.clear();
+        _defFocusNodes.clear();
+        _errorIndices.clear();
+        _titleError = false;
+        
+        _termControllers.add(TextEditingController());
+        _defControllers.add(TextEditingController());
+        final tf = FocusNode();
+        final df = FocusNode();
+        tf.addListener(() => setState(() {}));
+        df.addListener(() => setState(() {}));
+        _termFocusNodes.add(tf);
+        _defFocusNodes.add(df);
+      });
+    }
+  }
+
+  Future<bool> _confirmDiscard() async {
+    if (!_hasChanges) return true;
+    
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Discard Changes?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
+        content: const Text('You have unsaved cards. Are you sure you want to leave?', style: AppTheme.bodyMono),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('KEEP EDITING', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted))),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('DISCARD', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   void _saveDeck() async {
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a deck title')));
+    setState(() {
+      _errorIndices.clear();
+      _titleError = _titleController.text.trim().isEmpty;
+    });
+
+    if (_titleError) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a deck title'), backgroundColor: Colors.red));
+      _titleFocus.requestFocus();
+      return;
+    }
+
+    List<FlashcardModel> cards = [];
+    bool hasIncomplete = false;
+
+    for (int i = 0; i < _termControllers.length; i++) {
+      final term = _termControllers[i].text.trim();
+      final def = _defControllers[i].text.trim();
+      
+      if (term.isNotEmpty && def.isNotEmpty) {
+        cards.add(FlashcardModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString() + i.toString(),
+          term: term,
+          definition: def,
+        ));
+      } else if (term.isNotEmpty || def.isNotEmpty) {
+        setState(() => _errorIndices.add(i));
+        hasIncomplete = true;
+      }
+    }
+
+    if (hasIncomplete) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please complete all cards or remove empty ones'), backgroundColor: Colors.orange));
+      return;
+    }
+
+    if (cards.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please add at least one complete card'), backgroundColor: Colors.red));
       return;
     }
 
@@ -74,21 +178,6 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
     try {
       final user = ref.read(currentUserProvider);
       if (user != null) {
-        List<FlashcardModel> cards = [];
-        for (int i = 0; i < _termControllers.length; i++) {
-          if (_termControllers[i].text.isNotEmpty && _defControllers[i].text.isNotEmpty) {
-            cards.add(FlashcardModel(
-              id: DateTime.now().millisecondsSinceEpoch.toString() + i.toString(),
-              term: _termControllers[i].text.trim(),
-              definition: _defControllers[i].text.trim(),
-            ));
-          }
-        }
-
-        if (cards.isEmpty) {
-          throw Exception('Add at least one card with both term and definition');
-        }
-
         final deck = FlashcardDeckModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           userId: user.uid,
@@ -101,7 +190,7 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         await ref.read(flashcardServiceProvider).createDeck(deck);
         if (mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deck saved successfully!')));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deck saved to cloud!'), backgroundColor: Colors.green));
         }
       }
     } catch (e) {
@@ -113,88 +202,110 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('Create Manually', style: TextStyle(fontFamily: 'Syne', fontSize: 16)),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveDeck,
-            child: Text('SAVE', style: TextStyle(fontFamily: 'DM Mono', color: _isLoading ? AppTheme.muted : AppTheme.black, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const FieldLabel('Deck Title'),
-            const SizedBox(height: 8),
-            TQInputField(
-              controller: _titleController, 
-              focusNode: _titleFocus,
-              hintText: 'e.g. Midterm Review',
-            ),
-            const SizedBox(height: 32),
-            
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _termControllers.length,
-              itemBuilder: (context, index) => Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.white,
-                  border: Border.all(color: AppTheme.border),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('CARD ${index + 1}', style: AppTheme.labelMono),
-                        if (_termControllers.length > 1)
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
-                            onPressed: () => setState(() {
-                              _termControllers.removeAt(index);
-                              _defControllers.removeAt(index);
-                              _termFocusNodes.removeAt(index);
-                              _defFocusNodes.removeAt(index);
-                            }),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TQInputField(
-                      controller: _termControllers[index], 
-                      focusNode: _termFocusNodes[index],
-                      hintText: 'Term / Question',
-                    ),
-                    const SizedBox(height: 12),
-                    TQInputField(
-                      controller: _defControllers[index], 
-                      focusNode: _defFocusNodes[index],
-                      hintText: 'Definition / Answer', 
-                      maxLines: 2,
-                    ),
-                  ],
-                ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _confirmDiscard();
+        if (shouldPop && mounted) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          title: const Text('Create Manually', style: TextStyle(fontFamily: 'Syne', fontSize: 16)),
+          actions: [
+            if (!_isLoading) ...[
+              IconButton(onPressed: _clearAll, icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.muted)),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: _saveDeck,
+                child: const Text('SAVE', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black, fontWeight: FontWeight.bold)),
               ),
-            ),
-            
-            Center(
-              child: TextButton.icon(
-                onPressed: _addCard,
-                icon: const Icon(Icons.add_rounded, color: AppTheme.black),
-                label: const Text('ADD ANOTHER CARD', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black, fontSize: 11, fontWeight: FontWeight.bold)),
+            ] else
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
               ),
-            ),
-            const SizedBox(height: 40),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const FieldLabel('Deck Title'),
+              const SizedBox(height: 8),
+              TQInputField(
+                controller: _titleController, 
+                focusNode: _titleFocus,
+                hintText: 'e.g. Midterm Review',
+                hasError: _titleError,
+              ),
+              const SizedBox(height: 32),
+              
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _termControllers.length,
+                itemBuilder: (context, index) => Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.white,
+                    border: Border.all(color: _errorIndices.contains(index) ? Colors.red : AppTheme.border),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('CARD ${index + 1}', style: AppTheme.labelMono.copyWith(color: _errorIndices.contains(index) ? Colors.red : AppTheme.muted)),
+                          if (_termControllers.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+                              onPressed: () => setState(() {
+                                _termControllers.removeAt(index);
+                                _defControllers.removeAt(index);
+                                _termFocusNodes.removeAt(index);
+                                _defFocusNodes.removeAt(index);
+                                _errorIndices.clear();
+                              }),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TQInputField(
+                        controller: _termControllers[index], 
+                        focusNode: _termFocusNodes[index],
+                        hintText: 'Term / Question',
+                        hasError: _errorIndices.contains(index) && _termControllers[index].text.isEmpty,
+                      ),
+                      const SizedBox(height: 12),
+                      TQInputField(
+                        controller: _defControllers[index], 
+                        focusNode: _defFocusNodes[index],
+                        hintText: 'Definition / Answer', 
+                        maxLines: 2,
+                        hasError: _errorIndices.contains(index) && _defControllers[index].text.isEmpty,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              Center(
+                child: TextButton.icon(
+                  onPressed: _addCard,
+                  icon: const Icon(Icons.add_rounded, color: AppTheme.black),
+                  label: const Text('ADD ANOTHER CARD', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black, fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

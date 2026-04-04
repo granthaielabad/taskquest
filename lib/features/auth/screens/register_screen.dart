@@ -1,10 +1,9 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
-import 'package:taskquest/features/shared/widgets/main_scaffold.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
+import 'package:taskquest/features/auth/providers/user_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -71,17 +70,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  void _navigateToHome() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, animation, _) => const MainScaffold(),
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
-  }
-
   Future<void> _register() async {
     if (_emailController.text.isEmpty || _passController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,14 +79,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     setState(() => _isLoading = true);
+    ref.read(authTransitionProvider.notifier).setTransitioning(true);
     try {
-      await ref.read(authServiceProvider).signUpWithEmail(
+      final cred = await ref.read(authServiceProvider).signUpWithEmail(
             _emailController.text.trim(),
             _passController.text.trim(),
           );
-      if (mounted) _navigateToHome();
+      
+      if (cred.user != null) {
+        await ref.read(userServiceProvider).checkAndCreateProfile(
+          cred.user!.uid,
+          cred.user!.email!,
+          _nameController.text.trim(),
+        );
+        
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      }
     } catch (e) {
       if (mounted) {
+        ref.read(authTransitionProvider.notifier).setTransitioning(false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Registration Failed: ${e.toString()}')),
         );
@@ -110,13 +111,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _registerWithGoogle() async {
     setState(() => _isLoading = true);
+    ref.read(authTransitionProvider.notifier).setTransitioning(true);
     try {
-      final user = await ref.read(authServiceProvider).signInWithGoogle();
-      if (user != null && mounted) {
-        _navigateToHome();
+      final cred = await ref.read(authServiceProvider).signInWithGoogle();
+      if (cred?.user != null) {
+        await ref.read(userServiceProvider).checkAndCreateProfile(
+          cred!.user!.uid,
+          cred.user!.email!,
+          cred.user!.displayName ?? 'Scholar',
+        );
+        
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      } else {
+        ref.read(authTransitionProvider.notifier).setTransitioning(false);
       }
     } catch (e) {
       if (mounted) {
+        ref.read(authTransitionProvider.notifier).setTransitioning(false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Google Sign-up Failed: ${e.toString()}')),
         );
@@ -124,30 +137,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  void _showTermsModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _LegalModal(
-        title: 'Terms of Service',
-        content: '1. Introduction\nWelcome to TaskQuest. By using our app, you agree to these terms.\n\n2. User Accounts\nYou are responsible for maintaining the security of your account.\n\n3. Acceptable Use\nYou must not use the Service for any illegal purpose.',
-      ),
-    );
-  }
-
-  void _showPrivacyModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _LegalModal(
-        title: 'Privacy Policy',
-        content: '1. Data Collection\nWe collect information you provide directly to us.\n\n2. Use of Data\nWe use the information to improve our services.',
-      ),
-    );
   }
 
   @override
@@ -233,31 +222,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const OrDivider(label: 'OR SIGN UP WITH'),
               const SizedBox(height: 20),
               GoogleButton(onTap: _registerWithGoogle, label: 'Sign up with Google'),
-              const SizedBox(height: 24),
-              Center(
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: AppTheme.bodyMono.copyWith(fontSize: 11, height: 1.6),
-                    children: [
-                      const TextSpan(text: 'By creating an account, you agree to our\n'),
-                      TextSpan(
-                        text: 'Terms of Service',
-                        style: const TextStyle(color: AppTheme.black, decoration: TextDecoration.underline),
-                        recognizer: TapGestureRecognizer()..onTap = _showTermsModal,
-                      ),
-                      const TextSpan(text: ' and '),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: const TextStyle(color: AppTheme.black, decoration: TextDecoration.underline),
-                        recognizer: TapGestureRecognizer()..onTap = _showPrivacyModal,
-                      ),
-                      const TextSpan(text: '.'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -274,39 +239,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _LegalModal extends StatelessWidget {
-  final String title;
-  final String content;
-  const _LegalModal({required this.title, required this.content});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(color: AppTheme.background, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      child: Column(
-        children: [
-          const SizedBox(height: 12),
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.dimmed, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 24),
-          Text(title, style: AppTheme.headingL),
-          const SizedBox(height: 24),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Text(content, style: AppTheme.bodyMono.copyWith(height: 1.6)),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(28.0),
-            child: TQButton(label: 'Got it', isLoading: false, onTap: () => Navigator.pop(context)),
-          ),
-        ],
       ),
     );
   }

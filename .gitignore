@@ -48,9 +48,10 @@ ios/firebase_app_id_file.json
 plans/
 .agents/
 .gemini/
-# Ignore all markdown files except README
+# Ignore all markdown files except README and PROJECT_STATUS
 *.md
 !README.md
+!PROJECT_STATUS.md
 
 # Symbolication related
 app.*.symbols

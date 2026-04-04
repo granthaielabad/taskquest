@@ -2,66 +2,150 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/explore/screens/explore_content_screen.dart';
+import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
 
-class ExploreScreen extends ConsumerWidget {
+class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends ConsumerState<ExploreScreen> {
+  final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _query = _searchController.text.toLowerCase());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.only(bottom: 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
               
               // ── Header ──────────────────────────────────────────────
-              Text(
-                'Learning\nExplorer',
-                style: AppTheme.headingXL.copyWith(
-                  fontSize: 32,
-                  height: 0.9,
-                  letterSpacing: -1.2,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Discover new concepts and expand your knowledge',
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 10,
-                  letterSpacing: 0.5,
-                  color: AppTheme.muted,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Learning\nExplorer',
+                      style: AppTheme.headingXL.copyWith(
+                        fontSize: 32,
+                        height: 0.9,
+                        letterSpacing: -1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Discover new concepts and expand your knowledge',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                        color: AppTheme.muted,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 32),
 
               // Search Bar
-              _buildSearchBar(),
-              
-              const SizedBox(height: 32),
-              
-              // Featured Card
-              _buildFeaturedCard(context),
-              
-              const SizedBox(height: 32),
-              
-              const Text(
-                'TRENDING TOPICS',
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 10,
-                  letterSpacing: 1.8,
-                  color: AppTheme.muted,
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _buildSearchBar(),
               ),
-              const SizedBox(height: 16),
-              _buildTopicGrid(),
               
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
+
+              if (_query.isEmpty) ...[
+                // ── Leaderboard CTA ─────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _buildLeaderboardCard(context),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // ── Featured Content ────────────────────────────────────
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'FEATURED FOR YOU',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      letterSpacing: 1.8,
+                      color: AppTheme.muted,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildFeaturedScroll(context),
+                
+                const SizedBox(height: 32),
+                
+                // ── Trending Topics ─────────────────────────────────────
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'TRENDING TOPICS',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      letterSpacing: 1.8,
+                      color: AppTheme.muted,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _buildTopicGrid(),
+                ),
+                
+                const SizedBox(height: 32),
+
+                // ── Quick Challenges ────────────────────────────────────
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'COMMUNITY CHALLENGES',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      letterSpacing: 1.8,
+                      color: AppTheme.muted,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildCommunityQuests(),
+              ] else ...[
+                _buildSearchResults(),
+              ],
             ],
           ),
         ),
@@ -71,31 +155,153 @@ class ExploreScreen extends ConsumerWidget {
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      height: 52,
       decoration: BoxDecoration(
         color: AppTheme.white,
         border: Border.all(color: AppTheme.border),
         borderRadius: BorderRadius.circular(14),
       ),
+      child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocus,
+        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 13),
+        decoration: InputDecoration(
+          hintText: 'Search concepts, docs...',
+          hintStyle: const TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted, fontSize: 13),
+          prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.muted, size: 20),
+          suffixIcon: _query.isNotEmpty 
+              ? IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: () => _searchController.clear())
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    final results = [
+      {'title': 'Data Structures 101', 'tag': 'CONCEPT'},
+      {'title': 'Big O Notation Guide', 'tag': 'ALGORITHMS'},
+      {'title': 'Binary Search Tree PDF', 'tag': 'DOCUMENT'},
+    ].where((r) => r['title']!.toLowerCase().contains(_query)).toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('SEARCH RESULTS (${results.length})', style: AppTheme.labelMono),
+          const SizedBox(height: 16),
+          if (results.isEmpty)
+            const Text('No matches found. Try a different term.', style: AppTheme.bodyMono)
+          else
+            ...results.map((r) => _buildResultTile(r['title']!, r['tag']!)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultTile(String title, String tag) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Row(
-        children: const [
-          Icon(Icons.search_rounded, color: AppTheme.muted, size: 20),
-          SizedBox(width: 12),
-          Text(
-            'Search concepts, docs...',
-            style: TextStyle(
-              fontFamily: 'DM Mono',
-              fontSize: 12,
-              color: AppTheme.muted,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tag, style: const TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: AppTheme.muted)),
+                const SizedBox(height: 4),
+                Text(title, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14)),
+              ],
             ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: AppTheme.border),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.black,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.leaderboard_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Global Ranking',
+                    style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'See where you stand among scholars',
+                    style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: Color(0xFF777777)),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeaturedScroll(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          _buildFeaturedCard(
+            context,
+            title: 'Alan Turing: CS Father',
+            tag: 'CS HISTORY',
+            image: 'https://picsum.photos/seed/turing/600/400',
+          ),
+          const SizedBox(width: 16),
+          _buildFeaturedCard(
+            context,
+            title: 'Modern AI & LLMs',
+            tag: 'NEW TECH',
+            image: 'https://picsum.photos/seed/ai/600/400',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeaturedCard(BuildContext context) {
+  Widget _buildFeaturedCard(BuildContext context, {required String title, required String tag, required String image}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -104,15 +310,16 @@ class ExploreScreen extends ConsumerWidget {
         );
       },
       child: Container(
-        height: 180,
+        width: 280,
+        height: 200,
         decoration: BoxDecoration(
           color: AppTheme.black,
           borderRadius: BorderRadius.circular(24),
           image: DecorationImage(
-            image: const NetworkImage('https://picsum.photos/seed/tech/600/300'),
+            image: NetworkImage(image),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.6),
+              Colors.black.withValues(alpha: 0.5),
               BlendMode.darken,
             ),
           ),
@@ -129,9 +336,9 @@ class ExploreScreen extends ConsumerWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
-                  'NEW · 8 min read',
-                  style: TextStyle(
+                child: Text(
+                  tag,
+                  style: const TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 8,
                     fontWeight: FontWeight.w500,
@@ -141,13 +348,13 @@ class ExploreScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'AI Scholar: Mastering LLMs',
-                style: TextStyle(
+              Text(
+                title,
+                style: const TextStyle(
                   fontFamily: 'Syne',
                   fontWeight: FontWeight.w800,
-                  fontSize: 22,
-                  letterSpacing: -0.44,
+                  fontSize: 20,
+                  letterSpacing: -0.4,
                   color: Colors.white,
                 ),
               ),
@@ -173,7 +380,7 @@ class ExploreScreen extends ConsumerWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.2,
+        childAspectRatio: 1.3,
       ),
       itemCount: topics.length,
       itemBuilder: (context, index) {
@@ -203,6 +410,51 @@ class ExploreScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCommunityQuests() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          _buildQuestCard('Global Streak Challenge', '12.4k students participating'),
+          const SizedBox(height: 12),
+          _buildQuestCard('Sorting Algorithm Sprint', 'Complete in under 5 mins'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestCard(String title, String sub) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  sub,
+                  style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: AppTheme.border),
+        ],
+      ),
     );
   }
 }

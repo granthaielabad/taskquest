@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/games/providers/flashcard_provider.dart';
+import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/badges/providers/badge_provider.dart';
 
 class StudyFlashcardScreen extends ConsumerStatefulWidget {
   final FlashcardDeckModel deck;
@@ -32,7 +34,16 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
 
   void _finishStudy() async {
     final mastery = ((_correctCount / widget.deck.cards.length) * 100).round();
+    
+    // 1. Save progress to deck
     await ref.read(flashcardServiceProvider).updateMastery(widget.deck.id, mastery);
+    
+    // 2. Reward XP to user profile
+    const xpReward = 50;
+    await ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
+
+    // 3. Check for "Syntax Sage" Badge progress
+    await ref.read(badgeServiceProvider).checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
     
     if (mounted) {
       showDialog(
@@ -55,7 +66,7 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text('BACK TO DECKS', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black)),
+              child: const Text('BACK TO DECKS', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black, fontWeight: FontWeight.bold)),
             ),
           ],
         ),

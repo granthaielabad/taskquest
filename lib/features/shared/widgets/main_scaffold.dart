@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/home/screens/home_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/explore/screens/explore_screen.dart';
 import 'package:taskquest/features/games/screens/flashcard_scan_screen.dart';
-// import 'package:taskquest/features/profile/screens/profile_screen.dart';
+import 'package:taskquest/features/auth/providers/auth_provider.dart';
+import 'package:taskquest/features/auth/providers/user_provider.dart';
 
-class MainScaffold extends StatefulWidget {
+class MainScaffold extends ConsumerStatefulWidget {
   const MainScaffold({super.key});
 
   @override
-  State<MainScaffold> createState() => _MainScaffoldState();
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _currentIndex = 0;
-
-  // Track which tabs have been visited — only build them once visited
-  final Set<int> _activatedTabs = {0}; // Home is always built first
+  final Set<int> _activatedTabs = {0};
 
   static const List<Widget> _screens = [
     HomeScreen(),
@@ -28,10 +28,26 @@ class _MainScaffoldState extends State<MainScaffold> {
     ExploreScreen(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // Trigger streak update on startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkStreak();
+    });
+  }
+
+  void _checkStreak() async {
+    final user = ref.read(authStateProvider).value;
+    if (user != null) {
+      await ref.read(userServiceProvider).updateStreak(user.uid);
+    }
+  }
+
   void _onTabTap(int index) {
     setState(() {
       _currentIndex = index;
-      _activatedTabs.add(index); // Mark as activated — now it gets built
+      _activatedTabs.add(index);
     });
   }
 
@@ -39,10 +55,8 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      // Use a Stack instead of IndexedStack — only render activated tabs
       body: Stack(
         children: List.generate(_screens.length, (i) {
-          // Only build if this tab has been visited
           if (!_activatedTabs.contains(i)) return const SizedBox.shrink();
           return Offstage(
             offstage: _currentIndex != i,
@@ -61,7 +75,6 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 }
 
-// Bottom Nav
 class _TQBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -95,7 +108,6 @@ class _TQBottomNav extends StatelessWidget {
               active: currentIndex == 1,
               onTap: () => onTap(1),
             ),
-            // Center scan/play button
             Expanded(
               child: GestureDetector(
                 onTap: () => onTap(2),

@@ -15,7 +15,6 @@ class FieldLabel extends StatelessWidget {
   }
 }
 
-// Shared input field
 class TQInputField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -25,6 +24,7 @@ class TQInputField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final Widget? suffixIcon;
   final int maxLines;
+  final bool hasError;
 
   const TQInputField({
     super.key,
@@ -36,6 +36,7 @@ class TQInputField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.suffixIcon,
     this.maxLines = 1,
+    this.hasError = false,
   });
 
   @override
@@ -45,8 +46,10 @@ class TQInputField extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.white,
         border: Border.all(
-          color: isFocused ? AppTheme.black : AppTheme.border,
-          width: isFocused ? 1.5 : 1.0,
+          color: hasError 
+              ? Colors.red 
+              : (isFocused ? AppTheme.black : AppTheme.border),
+          width: (isFocused || hasError) ? 1.5 : 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
       ),

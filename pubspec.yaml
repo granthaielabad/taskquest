@@ -28,6 +28,7 @@ dependencies:
   firebase_vertexai: ^2.2.0
   syncfusion_flutter_pdf: ^33.1.46
   firebase_ai: ^3.10.0
+  confetti: ^0.8.0
 
 dev_dependencies:
   flutter_test:

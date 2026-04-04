@@ -7,6 +7,8 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/shared/widgets/main_scaffold.dart';
+import 'features/auth/screens/auth_success_screen.dart';
+import 'features/auth/screens/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +17,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialize Google Sign-In for the new identity API
   await GoogleSignIn.instance.initialize();
   
   runApp(
@@ -31,6 +32,7 @@ class TaskQuestApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final isTransitioning = ref.watch(authTransitionProvider);
 
     return MaterialApp(
       title: 'TaskQuest',
@@ -40,7 +42,11 @@ class TaskQuestApp extends ConsumerWidget {
       themeMode: ThemeMode.system,
       home: authState.when(
         data: (user) {
-          if (user != null) return const MainScaffold();
+          if (user != null) {
+            if (isTransitioning) return const AuthSuccessScreen();
+            return const MainScaffold();
+          }
+          // If no user, we start with the Splash which then shows Onboarding
           return const SplashScreen();
         },
         loading: () => const SplashScreen(),

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/screens/register_screen.dart';
-import 'package:taskquest/features/shared/widgets/main_scaffold.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
+import 'package:taskquest/features/auth/providers/user_provider.dart';
 
 import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
 
@@ -27,7 +27,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Rebuild on focus change so active border updates
     _emailFocus.addListener(() => setState(() {}));
     _passFocus.addListener(() => setState(() {}));
   }
@@ -41,17 +40,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _navigateToHome() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, animation, _) => const MainScaffold(),
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
-  }
-
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,14 +49,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
+    ref.read(authTransitionProvider.notifier).setTransitioning(true);
+    
     try {
       await ref.read(authServiceProvider).signInWithEmail(
             _emailController.text.trim(),
             _passController.text.trim(),
           );
-      if (mounted) _navigateToHome();
+      
+      // CRITICAL: Clear the navigation stack so main.dart's home switcher can show
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     } catch (e) {
       if (mounted) {
+        ref.read(authTransitionProvider.notifier).setTransitioning(false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login Failed: ${e.toString()}')),
         );
@@ -80,13 +75,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _loginWithGoogle() async {
     setState(() => _isLoading = true);
+    ref.read(authTransitionProvider.notifier).setTransitioning(true);
     try {
-      final user = await ref.read(authServiceProvider).signInWithGoogle();
-      if (user != null && mounted) {
-        _navigateToHome();
+      final cred = await ref.read(authServiceProvider).signInWithGoogle();
+      if (cred?.user != null) {
+        await ref.read(userServiceProvider).checkAndCreateProfile(
+          cred!.user!.uid,
+          cred.user!.email!,
+          cred.user!.displayName ?? 'Scholar',
+        );
+        
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      } else {
+        ref.read(authTransitionProvider.notifier).setTransitioning(false);
       }
     } catch (e) {
       if (mounted) {
+        ref.read(authTransitionProvider.notifier).setTransitioning(false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Google Login Failed: ${e.toString()}')),
         );

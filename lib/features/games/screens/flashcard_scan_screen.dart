@@ -8,6 +8,7 @@ import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/games/screens/study_flashcard_screen.dart';
 import 'package:taskquest/features/games/screens/manual_flashcard_screen.dart';
+import 'package:taskquest/features/badges/providers/badge_provider.dart';
 
 class FlashcardScanScreen extends ConsumerStatefulWidget {
   const FlashcardScanScreen({super.key});
@@ -18,10 +19,29 @@ class FlashcardScanScreen extends ConsumerStatefulWidget {
 
 class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   final AIScanService _aiService = AIScanService();
+  final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
+  String _query = '';
+  
   bool _isScanning = false;
   double _progress = 0.0;
   String? _selectedFileName;
   String? _selectedFileSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _query = _searchController.text.toLowerCase());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
 
   void _pickAndScanFile() async {
     final result = await FilePicker.platform.pickFiles(
@@ -43,15 +63,12 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     });
 
     try {
-      // Step 1: Upload/Read simulation
       await Future.delayed(const Duration(milliseconds: 800));
       setState(() => _progress = 0.3);
 
-      // Step 2: AI Processing
       final flashcards = await _aiService.generateFlashcardsFromFile(file);
       setState(() => _progress = 0.7);
 
-      // Step 3: Saving to Firestore
       final user = ref.read(currentUserProvider);
       if (user != null) {
         final deck = FlashcardDeckModel(
@@ -63,6 +80,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           createdAt: DateTime.now(),
         );
         await ref.read(flashcardServiceProvider).createDeck(deck);
+        await ref.read(badgeServiceProvider).checkFlashAI(user.uid);
       }
 
       setState(() => _progress = 1.0);
@@ -144,19 +162,58 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           const SizedBox(height: 24),
           _buildManualButton(),
           const SizedBox(height: 40),
+          
+          // ── Search Bar ──────────────────────────────────────────
+          _buildSearchBar(),
+          const SizedBox(height: 24),
+
           _buildMyDecksHeader(),
           const SizedBox(height: 16),
           
           userDecksAsync.when(
-            data: (decks) => Column(
-              children: decks.map((d) => _buildDeckItem(context, d)).toList(),
-            ),
+            data: (decks) {
+              final filtered = decks.where((d) => d.title.toLowerCase().contains(_query)).toList();
+              if (filtered.isEmpty && _query.isNotEmpty) {
+                return const Center(child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Text('No matching decks found.', style: AppTheme.bodyMono),
+                ));
+              }
+              return Column(
+                children: filtered.map((d) => _buildDeckItem(context, d)).toList(),
+              );
+            },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, s) => Text('Error: $e'),
           ),
           
           const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocus,
+        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 13),
+        decoration: InputDecoration(
+          hintText: 'Search your decks...',
+          hintStyle: const TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted, fontSize: 13),
+          prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.muted, size: 20),
+          suffixIcon: _query.isNotEmpty 
+              ? IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: () => _searchController.clear())
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
       ),
     );
   }

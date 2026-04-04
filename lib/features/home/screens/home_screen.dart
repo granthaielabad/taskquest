@@ -4,6 +4,7 @@ import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
+import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -12,6 +13,23 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final questsAsync = ref.watch(dailyQuestsProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
+
+    // ── Listen for Level Up ─────────────────────────────────────
+    ref.listen<AsyncValue<UserModel?>>(userProfileProvider, (previous, next) {
+      final oldLevel = previous?.value?.level;
+      final newLevel = next.value?.level;
+
+      if (oldLevel != null && newLevel != null && newLevel > oldLevel) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => LevelUpDialog(
+            newLevel: newLevel,
+            rank: XpUtils.getRankTitle(newLevel),
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -25,8 +43,11 @@ class HomeScreen extends ConsumerWidget {
               
               userProfileAsync.when(
                 data: (user) => _buildUserContent(context, ref, user, questsAsync),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => Center(child: Text('Error loading profile: $e')),
+                loading: () => const Center(child: Padding(
+                  padding: EdgeInsets.only(top: 100),
+                  child: CircularProgressIndicator(),
+                )),
+                error: (e, s) => Center(child: Text('Error: $e')),
               ),
             ],
           ),
