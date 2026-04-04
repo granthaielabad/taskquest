@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onProfileTap;
+  const HomeScreen({super.key, this.onProfileTap});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +23,9 @@ class HomeScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text('GOOD MORNING',
                             style: TextStyle(fontFamily: 'DM Mono', fontSize: 10,
                                 letterSpacing: 1.4, color: AppTheme.muted)),
@@ -61,15 +62,18 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Container(
-                        width: 38, height: 38,
-                        decoration: BoxDecoration(
-                          color: AppTheme.black,
-                          borderRadius: BorderRadius.circular(10),
+                      GestureDetector(
+                        onTap: onProfileTap,
+                        child: Container(
+                          width: 38, height: 38,
+                          decoration: BoxDecoration(
+                            color: AppTheme.black,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Center(child: Text('JD',
+                              style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800,
+                                  fontSize: 13, color: Colors.white))),
                         ),
-                        child: const Center(child: Text('JD',
-                            style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800,
-                                fontSize: 13, color: Colors.white))),
                       ),
                     ]),
                   ],
@@ -97,10 +101,10 @@ class HomeScreen extends StatelessWidget {
                               style: TextStyle(fontFamily: 'DM Mono', fontSize: 9,
                                   letterSpacing: 1.44, color: Color(0x66FFFFFF))),
                           const SizedBox(height: 4),
-                          Row(
+                          const Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
-                            children: const [
+                            children: [
                               Text('7', style: TextStyle(fontFamily: 'Syne',
                                   fontWeight: FontWeight.w800, fontSize: 26,
                                   color: Colors.white, letterSpacing: -0.78)),
@@ -134,9 +138,9 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Column(
+                      const Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        children: const [
+                        children: [
                           Text('Lvl 4', style: TextStyle(fontFamily: 'Syne',
                               fontWeight: FontWeight.w800, fontSize: 16,
                               color: Colors.white, letterSpacing: -0.32)),
@@ -194,7 +198,7 @@ class HomeScreen extends StatelessWidget {
                       const _QuestItem(done: false, title: 'Code Block Challenge',
                           sub: 'Fill missing syntax · JS', xp: 150),
                       const SizedBox(height: 14),
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [
+                      const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                         Text('DAILY PROGRESS', style: TextStyle(fontFamily: 'DM Mono',
                             fontSize: 9, letterSpacing: 0.9, color: AppTheme.muted)),
                         Text('200 / 350 XP', style: TextStyle(fontFamily: 'DM Mono',
@@ -224,12 +228,12 @@ class HomeScreen extends StatelessWidget {
                         letterSpacing: 1.8, color: AppTheme.muted)),
               ),
               const SizedBox(height: 10),
-              SingleChildScrollView(
+              const SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     _GamePill(
                       title: 'Flashcards',
                       desc: 'Manual or AI-generated',
@@ -287,10 +291,10 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
-                  children: const [
+                  children: [
                     _ActivityItem(
                       icon: Icons.lightbulb_outline,
                       title: 'Solve an Algorithm',

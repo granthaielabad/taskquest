@@ -4,7 +4,7 @@ import 'package:taskquest/features/home/screens/home_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/explore/screens/explore_screen.dart';
-// import 'package:taskquest/features/profile/screens/profile_screen.dart';
+import 'package:taskquest/features/profile/profile_screen.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -19,35 +19,35 @@ class _MainScaffoldState extends State<MainScaffold> {
   // Track which tabs have been visited — only build them once visited
   final Set<int> _activatedTabs = {0}; // Home is always built first
 
-  static const List<Widget> _screens = [
-    HomeScreen(),
-    GamesScreen(),
-    GamesScreen(),
-    BadgesScreen(),
-    ExploreScreen(),
-  ];
-
   void _onTabTap(int index) {
     setState(() {
       _currentIndex = index;
-      _activatedTabs.add(index); // Mark as activated — now it gets built
+      _activatedTabs.add(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // List of screens needs to be inside build or a getter to pass the callback
+    final List<Widget> screens = [
+      HomeScreen(onProfileTap: () => _onTabTap(5)), // Pass callback to Home
+      const GamesScreen(),
+      const GamesScreen(),
+      const BadgesScreen(),
+      const ExploreScreen(),
+      const ProfileScreen(), // Profile is at index 5
+    ];
+
     return Scaffold(
       backgroundColor: AppTheme.background,
-      // Use a Stack instead of IndexedStack — only render activated tabs
       body: Stack(
-        children: List.generate(_screens.length, (i) {
-          // Only build if this tab has been visited
+        children: List.generate(screens.length, (i) {
           if (!_activatedTabs.contains(i)) return const SizedBox.shrink();
           return Offstage(
             offstage: _currentIndex != i,
             child: TickerMode(
               enabled: _currentIndex == i,
-              child: _screens[i],
+              child: screens[i],
             ),
           );
         }),
@@ -85,7 +85,7 @@ class _TQBottomNav extends StatelessWidget {
             _NavItem(
               icon: Icons.home_outlined,
               label: 'Home',
-              active: currentIndex == 0,
+              active: currentIndex == 0 || currentIndex == 5, // Home is active if on Home or Profile
               onTap: () => onTap(0),
             ),
             _NavItem(
