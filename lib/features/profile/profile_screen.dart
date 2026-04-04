@@ -4,6 +4,7 @@ import 'package:taskquest/features/profile/editprofile_screen.dart';
 import 'package:taskquest/features/settings/notifications_screen.dart';
 import 'package:taskquest/features/settings/appearance_screen.dart';
 import 'package:taskquest/features/settings/privacyndata_screen.dart';
+import 'package:taskquest/features/settings/switchaccount_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -70,6 +71,17 @@ class ProfileScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const PrivacyAndDataScreen()),
+                  );
+                },
+              ),
+              _SettingsTile(
+                icon: Icons.switch_account_outlined,
+                label: 'Switch Account',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SwitchAccountScreen()),
                   );
                 },
               ),
@@ -143,7 +155,7 @@ class ProfileScreen extends StatelessWidget {
                             border: Border.all(color: const Color(0xFF333333)),
                           ),
                           child: const Center(
-                            child: Text('U', style: TextStyle(fontFamily: 'Syne',
+                            child: Text('JD', style: TextStyle(fontFamily: 'Syne',
                                 fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white)),
                           ),
                         ),
@@ -152,7 +164,7 @@ class ProfileScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('User', style: TextStyle(fontFamily: 'Syne',
+                              const Text('Juan dela Cruz', style: TextStyle(fontFamily: 'Syne',
                                   fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white)),
                               const Text('[email protected]', style: TextStyle(fontFamily: 'DM Mono',
                                   fontSize: 12, color: Colors.blue)),

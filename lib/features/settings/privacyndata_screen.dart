@@ -39,14 +39,17 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Text(
-                    'Privacy & Data',
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 24,
-                      letterSpacing: -0.5,
-                      color: AppTheme.black,
+                  const Expanded( // Added Expanded to prevent overflow
+                    child: Text(
+                      'Privacy & Data',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 24,
+                        letterSpacing: -0.5,
+                        color: AppTheme.black,
+                      ),
                     ),
                   ),
                 ],
@@ -146,17 +149,17 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                     const SizedBox(height: 12),
                     _SettingsGroup(
                       children: [
-                        _ManagementTile(
+                        const _ManagementTile(
                           icon: Icons.circle,
                           title: 'Download My Data',
                           subtitle: 'Export all your activity and progress',
                         ),
-                        _ManagementTile(
+                        const _ManagementTile(
                           icon: Icons.circle,
                           title: 'Clear Learning History',
                           subtitle: 'Remove past session records',
                         ),
-                        _ManagementTile(
+                        const _ManagementTile(
                           icon: Icons.circle,
                           title: 'Privacy Policy',
                           subtitle: 'Read our full policy',
@@ -174,9 +177,9 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                         border: Border.all(color: const Color(0xFFFFE0E0)),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
                           SizedBox(width: 8),
                           Text(

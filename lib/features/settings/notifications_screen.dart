@@ -44,14 +44,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Text(
-                    'Notifications',
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 24,
-                      letterSpacing: -0.5,
-                      color: AppTheme.black,
+                  const Expanded(
+                    child: Text(
+                      'Notifications',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 24,
+                        letterSpacing: -0.5,
+                        color: AppTheme.black,
+                      ),
                     ),
                   ),
                 ],
@@ -69,7 +72,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     
                     // Master Switch Card
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
                         color: AppTheme.black,
                         borderRadius: BorderRadius.circular(20),
@@ -89,13 +92,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('All Notifications',
-                                    style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
-                                Text('Master switch for all alerts',
-                                    style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: Colors.white.withOpacity(0.4))),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: const Text('All Notifications',
+                                      style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
+                                ),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('Master switch for all alerts',
+                                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: Colors.white.withOpacity(0.4))),
+                                ),
                               ],
                             ),
                           ),
+                          const SizedBox(width: 12),
                           Switch(
                             value: allNotifications,
                             onChanged: (v) => setState(() => allNotifications = v),
@@ -320,14 +332,23 @@ class _NotificationTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(title,
+                          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
+                    ),
                     const SizedBox(height: 2),
-                    Text(subtitle,
-                        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(subtitle,
+                          style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
+                    ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Switch(
                 value: value,
                 onChanged: onChanged,

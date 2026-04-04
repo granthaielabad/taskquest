@@ -82,7 +82,7 @@ class EditProfileScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Center(
-                                child: Text('U', 
+                                child: Text('JD', 
                                   style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 32, color: Colors.white)),
                               ),
                             ),
@@ -106,9 +106,9 @@ class EditProfileScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('User', 
+                              const Text('Juan dela Cruz', 
                                 style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 20, color: AppTheme.black)),
-                              const Text('@user', 
+                              const Text('@juan', 
                                 style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: AppTheme.muted)),
                               const SizedBox(height: 12),
                               Row(
@@ -138,11 +138,11 @@ class EditProfileScreen extends StatelessWidget {
                       ),
                       child: Column(
                         children: const [
-                          _EditField(label: 'DISPLAY NAME', value: 'User'),
+                          _EditField(label: 'DISPLAY NAME', value: 'Juan dela Cruz'),
                           Divider(color: AppTheme.border, height: 1),
-                          _EditField(label: 'USERNAME', value: '@username'),
+                          _EditField(label: 'USERNAME', value: '@juan'),
                           Divider(color: AppTheme.border, height: 1),
-                          _EditField(label: 'EMAIL ADDRESS', value: 'example@gmail.com'),
+                          _EditField(label: 'EMAIL ADDRESS', value: 'juan@taskquest.app'),
                           Divider(color: AppTheme.border, height: 1),
                           _EditField(label: 'BIO', value: 'Add a short bio...', isPlaceholder: true),
                         ],
