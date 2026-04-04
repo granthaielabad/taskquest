@@ -7,7 +7,8 @@ import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onProfileTap;
+  const HomeScreen({super.key, this.onProfileTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,13 +41,16 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              
+
               userProfileAsync.when(
-                data: (user) => _buildUserContent(context, ref, user, questsAsync),
-                loading: () => const Center(child: Padding(
-                  padding: EdgeInsets.only(top: 100),
-                  child: CircularProgressIndicator(),
-                )),
+                data: (user) =>
+                    _buildUserContent(context, ref, user, questsAsync),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 100),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
                 error: (e, s) => Center(child: Text('Error: $e')),
               ),
             ],
@@ -56,7 +60,12 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserContent(BuildContext context, WidgetRef ref, UserModel? user, AsyncValue<List<QuestModel>> questsAsync) {
+  Widget _buildUserContent(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel? user,
+    AsyncValue<List<QuestModel>> questsAsync,
+  ) {
     final displayName = user?.displayName ?? 'Scholar';
     final totalXp = user?.xp ?? 0;
     final levelData = XpUtils.getLevelProgress(totalXp);
@@ -73,36 +82,68 @@ class HomeScreen extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('GOOD MORNING',
-                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 10,
-                          letterSpacing: 1.4, color: AppTheme.muted)),
+                  const Text(
+                    'GOOD MORNING',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      letterSpacing: 1.4,
+                      color: AppTheme.muted,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('${displayName.split(' ').first} 👋',
-                      style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800,
-                          fontSize: 20, letterSpacing: -0.4, color: AppTheme.black)),
+                  Text(
+                    '${displayName.split(' ').first} 👋',
+                    style: const TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                      letterSpacing: -0.4,
+                      color: AppTheme.black,
+                    ),
+                  ),
                 ],
               ),
-              Row(children: [
-                _buildIconButton(Icons.notifications_none_rounded, hasBadge: true),
-                const SizedBox(width: 10),
-                _buildAvatar(displayName),
-              ]),
+              Row(
+                children: [
+                  _buildIconButton(
+                    Icons.notifications_none_rounded,
+                    hasBadge: true,
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: onProfileTap,
+                    child: _buildAvatar(displayName),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
         const SizedBox(height: 16),
 
         // Streak Banner
-        _buildStreakBanner(user?.streak ?? 0, levelData['level'] as int, totalXp, levelData['progress'] as double),
-        
+        _buildStreakBanner(
+          user?.streak ?? 0,
+          levelData['level'] as int,
+          totalXp,
+          levelData['progress'] as double,
+        ),
+
         const SizedBox(height: 20),
 
         // Daily Quest
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Text('DAILY QUEST',
-              style: TextStyle(fontFamily: 'DM Mono', fontSize: 10,
-                  letterSpacing: 1.8, color: AppTheme.muted)),
+          child: Text(
+            'DAILY QUEST',
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 10,
+              letterSpacing: 1.8,
+              color: AppTheme.muted,
+            ),
+          ),
         ),
         const SizedBox(height: 10),
         Padding(
@@ -116,26 +157,42 @@ class HomeScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text("Today's Challenges",
-                      style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800,
-                          fontSize: 15, letterSpacing: -0.3, color: AppTheme.black)),
-                  _buildStatusBadge(questsAsync),
-                ]),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Today's Challenges",
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        letterSpacing: -0.3,
+                        color: AppTheme.black,
+                      ),
+                    ),
+                    _buildStatusBadge(questsAsync),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 questsAsync.when(
                   data: (quests) => Column(
-                    children: quests.map((q) => _QuestItem(
-                      done: q.isCompleted,
-                      title: q.title,
-                      sub: q.description,
-                      xp: q.xpReward,
-                      onTap: () {
-                        if (!q.isCompleted && user != null) {
-                          ref.read(questServiceProvider).completeQuest(user.uid, q);
-                        }
-                      },
-                    )).toList(),
+                    children: quests
+                        .map(
+                          (q) => _QuestItem(
+                            done: q.isCompleted,
+                            title: q.title,
+                            sub: q.description,
+                            xp: q.xpReward,
+                            onTap: () {
+                              if (!q.isCompleted && user != null) {
+                                ref
+                                    .read(questServiceProvider)
+                                    .completeQuest(user.uid, q);
+                              }
+                            },
+                          ),
+                        )
+                        .toList(),
                   ),
                   loading: () => const Padding(
                     padding: EdgeInsets.all(20.0),
@@ -154,13 +211,19 @@ class HomeScreen extends ConsumerWidget {
         // Game Modes
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Text('GAME MODES',
-              style: TextStyle(fontFamily: 'DM Mono', fontSize: 10,
-                  letterSpacing: 1.8, color: AppTheme.muted)),
+          child: Text(
+            'GAME MODES',
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 10,
+              letterSpacing: 1.8,
+              color: AppTheme.muted,
+            ),
+          ),
         ),
         const SizedBox(height: 10),
         _buildGameModes(),
-        
+
         const SizedBox(height: 20),
 
         // Recent Activity
@@ -173,7 +236,8 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildIconButton(IconData icon, {bool hasBadge = false}) {
     return Container(
-      width: 38, height: 38,
+      width: 38,
+      height: 38,
       decoration: BoxDecoration(
         color: AppTheme.white,
         border: Border.all(color: AppTheme.border),
@@ -184,9 +248,11 @@ class HomeScreen extends ConsumerWidget {
           Center(child: Icon(icon, color: AppTheme.black, size: 16)),
           if (hasBadge)
             Positioned(
-              top: 8, right: 8,
+              top: 8,
+              right: 8,
               child: Container(
-                width: 6, height: 6,
+                width: 6,
+                height: 6,
                 decoration: BoxDecoration(
                   color: AppTheme.black,
                   shape: BoxShape.circle,
@@ -200,18 +266,27 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildAvatar(String name) {
-    final initials = name.isNotEmpty 
+    final initials = name.isNotEmpty
         ? name.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
         : 'S';
     return Container(
-      width: 38, height: 38,
+      width: 38,
+      height: 38,
       decoration: BoxDecoration(
         color: AppTheme.black,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Center(child: Text(initials,
-          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800,
-              fontSize: 13, color: Colors.white))),
+      child: Center(
+        child: Text(
+          initials,
+          style: const TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 
@@ -231,50 +306,100 @@ class HomeScreen extends ConsumerWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('CURRENT STREAK',
-                    style: TextStyle(fontFamily: 'DM Mono', fontSize: 9,
-                        letterSpacing: 1.44, color: Color(0x66FFFFFF))),
+                const Text(
+                  'CURRENT STREAK',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    letterSpacing: 1.44,
+                    color: Color(0x66FFFFFF),
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text('$streak', style: const TextStyle(fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800, fontSize: 26,
-                        color: Colors.white, letterSpacing: -0.78)),
+                    Text(
+                      '$streak',
+                      style: const TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 26,
+                        color: Colors.white,
+                        letterSpacing: -0.78,
+                      ),
+                    ),
                     const SizedBox(width: 4),
-                    const Text('days', style: TextStyle(fontFamily: 'Syne',
-                        fontWeight: FontWeight.w600, fontSize: 13,
-                        color: Color(0x66FFFFFF))),
+                    const Text(
+                      'days',
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Color(0x66FFFFFF),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
-                  children: ['M','T','W','T','F','S','S'].asMap().entries.map((e) {
-                    final isToday = e.key == DateTime.now().weekday - 1;
-                    return Container(
-                      width: 26, height: 26, margin: const EdgeInsets.only(right: 5),
-                      decoration: BoxDecoration(
-                        color: isToday ? Colors.white : const Color(0x2EFFFFFF),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: Center(child: Text(e.value,
-                          style: TextStyle(fontFamily: 'DM Mono', fontSize: 9,
-                              color: isToday ? AppTheme.black : const Color(0xCCFFFFFF)))),
-                    );
-                  }).toList(),
+                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                      .asMap()
+                      .entries
+                      .map((e) {
+                        final isToday = e.key == DateTime.now().weekday - 1;
+                        return Container(
+                          width: 26,
+                          height: 26,
+                          margin: const EdgeInsets.only(right: 5),
+                          decoration: BoxDecoration(
+                            color: isToday
+                                ? Colors.white
+                                : const Color(0x2EFFFFFF),
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                          child: Center(
+                            child: Text(
+                              e.value,
+                              style: TextStyle(
+                                fontFamily: 'DM Mono',
+                                fontSize: 9,
+                                color: isToday
+                                    ? AppTheme.black
+                                    : const Color(0xCCFFFFFF),
+                              ),
+                            ),
+                          ),
+                        );
+                      })
+                      .toList(),
                 ),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('Lvl $level', style: const TextStyle(fontFamily: 'Syne',
-                    fontWeight: FontWeight.w800, fontSize: 16,
-                    color: Colors.white, letterSpacing: -0.32)),
+                Text(
+                  'Lvl $level',
+                  style: const TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: Colors.white,
+                    letterSpacing: -0.32,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text('$xp XP', style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9,
-                    letterSpacing: 0.9, color: Color(0x59FFFFFF))),
+                Text(
+                  '$xp XP',
+                  style: const TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    letterSpacing: 0.9,
+                    color: Color(0x59FFFFFF),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: 80,
@@ -307,9 +432,15 @@ class HomeScreen extends ConsumerWidget {
             border: Border.all(color: AppTheme.border),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Text('$done / ${quests.length} done',
-              style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9,
-                  letterSpacing: 0.9, color: AppTheme.muted)),
+          child: Text(
+            '$done / ${quests.length} done',
+            style: const TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 9,
+              letterSpacing: 0.9,
+              color: AppTheme.muted,
+            ),
+          ),
         );
       },
       orElse: () => const SizedBox.shrink(),
@@ -320,17 +451,36 @@ class HomeScreen extends ConsumerWidget {
     return questsAsync.maybeWhen(
       data: (quests) {
         final totalXp = quests.fold(0, (sum, q) => sum + q.xpReward);
-        final currentXp = quests.where((q) => q.isCompleted).fold(0, (sum, q) => sum + q.xpReward);
+        final currentXp = quests
+            .where((q) => q.isCompleted)
+            .fold(0, (sum, q) => sum + q.xpReward);
         final progress = totalXp > 0 ? currentXp / totalXp : 0.0;
 
         return Column(
           children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              const Text('DAILY PROGRESS', style: TextStyle(fontFamily: 'DM Mono',
-                  fontSize: 9, letterSpacing: 0.9, color: AppTheme.muted)),
-              Text('$currentXp / $totalXp XP', style: const TextStyle(fontFamily: 'DM Mono',
-                  fontSize: 9, fontWeight: FontWeight.w500, color: AppTheme.black)),
-            ]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'DAILY PROGRESS',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    letterSpacing: 0.9,
+                    color: AppTheme.muted,
+                  ),
+                ),
+                Text(
+                  '$currentXp / $totalXp XP',
+                  style: const TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.black,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 5),
             ClipRRect(
               borderRadius: BorderRadius.circular(2),
@@ -387,15 +537,27 @@ class HomeScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('RECENT ACTIVITY',
-              style: TextStyle(fontFamily: 'DM Mono', fontSize: 10,
-                  letterSpacing: 1.8, color: AppTheme.muted)),
+          const Text(
+            'RECENT ACTIVITY',
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 10,
+              letterSpacing: 1.8,
+              color: AppTheme.muted,
+            ),
+          ),
           GestureDetector(
             onTap: () {},
-            child: const Text('SEE ALL',
-                style: TextStyle(fontFamily: 'DM Mono', fontSize: 9,
-                    letterSpacing: 1.0, color: AppTheme.dimmed,
-                    decoration: TextDecoration.underline)),
+            child: const Text(
+              'SEE ALL',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                fontSize: 9,
+                letterSpacing: 1.0,
+                color: AppTheme.dimmed,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
         ],
       ),
@@ -435,8 +597,13 @@ class _QuestItem extends StatelessWidget {
   final String sub;
   final int xp;
   final VoidCallback onTap;
-  const _QuestItem({required this.done, required this.title,
-    required this.sub, required this.xp, required this.onTap});
+  const _QuestItem({
+    required this.done,
+    required this.title,
+    required this.sub,
+    required this.xp,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -444,30 +611,60 @@ class _QuestItem extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(children: [
-          Container(
-            width: 22, height: 22,
-            decoration: BoxDecoration(
-              color: done ? AppTheme.black : Colors.transparent,
-              border: Border.all(color: done ? AppTheme.black : AppTheme.dimmed),
-              borderRadius: BorderRadius.circular(6),
+        child: Row(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: done ? AppTheme.black : Colors.transparent,
+                border: Border.all(
+                  color: done ? AppTheme.black : AppTheme.dimmed,
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: done
+                  ? const Icon(Icons.check, color: Colors.white, size: 14)
+                  : null,
             ),
-            child: done ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(
-              fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 13,
-              color: done ? AppTheme.dimmed : AppTheme.black,
-              decoration: done ? TextDecoration.lineThrough : null,
-            )),
-            Text(sub, style: const TextStyle(fontFamily: 'DM Mono',
-                fontSize: 10, color: AppTheme.muted)),
-          ])),
-          Text('+$xp XP', style: TextStyle(fontFamily: 'DM Mono', fontSize: 10,
-              letterSpacing: 0.6, color: done ? AppTheme.muted : AppTheme.black,
-              fontWeight: done ? FontWeight.w400 : FontWeight.w500)),
-        ]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: done ? AppTheme.dimmed : AppTheme.black,
+                      decoration: done ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  Text(
+                    sub,
+                    style: const TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      color: AppTheme.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '+$xp XP',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                fontSize: 10,
+                letterSpacing: 0.6,
+                color: done ? AppTheme.muted : AppTheme.black,
+                fontWeight: done ? FontWeight.w400 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -495,42 +692,72 @@ class _GamePill extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isFeatured ? AppTheme.black : AppTheme.white,
-        border: Border.all(color: isFeatured ? AppTheme.black : AppTheme.border),
+        border: Border.all(
+          color: isFeatured ? AppTheme.black : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 32, height: 32,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: isFeatured ? Colors.white.withValues(alpha: 0.1) : AppTheme.background,
+              color: isFeatured
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : AppTheme.background,
               border: isFeatured ? null : Border.all(color: AppTheme.border),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, size: 16, color: isFeatured ? Colors.white : AppTheme.black),
+            child: Icon(
+              icon,
+              size: 16,
+              color: isFeatured ? Colors.white : AppTheme.black,
+            ),
           ),
           const SizedBox(height: 12),
-          Text(title, style: TextStyle(
-            fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 12,
-            color: isFeatured ? Colors.white : AppTheme.black,
-          )),
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: isFeatured ? Colors.white : AppTheme.black,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(desc, style: TextStyle(
-            fontFamily: 'DM Mono', fontSize: 9, height: 1.4,
-            color: isFeatured ? Colors.white.withValues(alpha: 0.4) : AppTheme.muted,
-          )),
+          Text(
+            desc,
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 9,
+              height: 1.4,
+              color: isFeatured
+                  ? Colors.white.withValues(alpha: 0.4)
+                  : AppTheme.muted,
+            ),
+          ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
             decoration: BoxDecoration(
-              color: isFeatured ? Colors.white.withValues(alpha: 0.1) : AppTheme.background,
+              color: isFeatured
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : AppTheme.background,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(tag.toUpperCase(), style: TextStyle(
-              fontFamily: 'DM Mono', fontSize: 8, letterSpacing: 0.08,
-              color: isFeatured ? Colors.white.withValues(alpha: 0.6) : AppTheme.muted,
-            )),
+            child: Text(
+              tag.toUpperCase(),
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                fontSize: 8,
+                letterSpacing: 0.08,
+                color: isFeatured
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : AppTheme.muted,
+              ),
+            ),
           ),
         ],
       ),
@@ -567,41 +794,68 @@ class _ActivityItem extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 36, height: 36,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: isDarkIcon ? AppTheme.black : AppTheme.background,
-              border: Border.all(color: isDarkIcon ? AppTheme.black : AppTheme.border),
+              border: Border.all(
+                color: isDarkIcon ? AppTheme.black : AppTheme.border,
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 16, color: isDarkIcon ? Colors.white : AppTheme.black),
+            child: Icon(
+              icon,
+              size: 16,
+              color: isDarkIcon ? Colors.white : AppTheme.black,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(
-                  fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 12,
-                  color: AppTheme.black,
-                )),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    color: AppTheme.black,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(sub, style: const TextStyle(
-                  fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted,
-                )),
+                Text(
+                  sub,
+                  style: const TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    color: AppTheme.muted,
+                  ),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(xp, style: const TextStyle(
-                fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 13,
-                color: AppTheme.black,
-              )),
+              Text(
+                xp,
+                style: const TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                  color: AppTheme.black,
+                ),
+              ),
               const SizedBox(height: 3),
-              Text(time, style: const TextStyle(
-                fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.dimmed,
-              )),
+              Text(
+                time,
+                style: const TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 9,
+                  color: AppTheme.dimmed,
+                ),
+              ),
             ],
           ),
         ],

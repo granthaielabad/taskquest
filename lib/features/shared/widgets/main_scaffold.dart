@@ -8,6 +8,7 @@ import 'package:taskquest/features/explore/screens/explore_screen.dart';
 import 'package:taskquest/features/games/screens/flashcard_scan_screen.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/profile/profile_screen.dart';
 
 class MainScaffold extends ConsumerStatefulWidget {
   const MainScaffold({super.key});
@@ -19,14 +20,6 @@ class MainScaffold extends ConsumerStatefulWidget {
 class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _currentIndex = 0;
   final Set<int> _activatedTabs = {0};
-
-  static const List<Widget> _screens = [
-    HomeScreen(),
-    GamesScreen(),
-    FlashcardScanScreen(),
-    BadgesScreen(),
-    ExploreScreen(),
-  ];
 
   @override
   void initState() {
@@ -53,17 +46,23 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      HomeScreen(onProfileTap: () => _onTabTap(5)),
+      const GamesScreen(),
+      const FlashcardScanScreen(),
+      const BadgesScreen(),
+      const ExploreScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: Stack(
-        children: List.generate(_screens.length, (i) {
+        children: List.generate(screens.length, (i) {
           if (!_activatedTabs.contains(i)) return const SizedBox.shrink();
           return Offstage(
             offstage: _currentIndex != i,
-            child: TickerMode(
-              enabled: _currentIndex == i,
-              child: _screens[i],
-            ),
+            child: TickerMode(enabled: _currentIndex == i, child: screens[i]),
           );
         }),
       ),
@@ -79,10 +78,7 @@ class _TQBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _TQBottomNav({
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const _TQBottomNav({required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +95,7 @@ class _TQBottomNav extends StatelessWidget {
             _NavItem(
               icon: Icons.home_outlined,
               label: 'Home',
-              active: currentIndex == 0,
+              active: currentIndex == 0 || currentIndex == 5,
               onTap: () => onTap(0),
             ),
             _NavItem(
@@ -133,13 +129,17 @@ class _TQBottomNav extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: AppTheme.black,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: currentIndex == 2 ? [
-                              BoxShadow(
-                                color: AppTheme.black.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              )
-                            ] : null,
+                            boxShadow: currentIndex == 2
+                                ? [
+                                    BoxShadow(
+                                      color: AppTheme.black.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: const Icon(
                             Icons.document_scanner_rounded,
@@ -156,7 +156,9 @@ class _TQBottomNav extends StatelessWidget {
                         fontFamily: 'DM Mono',
                         fontSize: 9,
                         letterSpacing: 0.72,
-                        color: currentIndex == 2 ? AppTheme.black : AppTheme.dimmed,
+                        color: currentIndex == 2
+                            ? AppTheme.black
+                            : AppTheme.dimmed,
                       ),
                     ),
                   ],
