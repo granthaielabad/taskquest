@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 
 // Shared field label 
@@ -102,7 +103,10 @@ class TQButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: isLoading ? null : onTap,
+        onPressed: isLoading ? null : () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.black,
           disabledBackgroundColor: AppTheme.black.withValues(alpha: 0.6),
@@ -179,7 +183,10 @@ class GoogleButton extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: OutlinedButton(
-        onPressed: onTap,
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
         style: OutlinedButton.styleFrom(
           backgroundColor: AppTheme.white,
           side: const BorderSide(color: AppTheme.border),

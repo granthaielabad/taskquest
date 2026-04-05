@@ -7,9 +7,8 @@ import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 import 'package:taskquest/core/services/database_seed_service.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/profile/editprofile_screen.dart';
-import 'package:taskquest/features/settings/notifications_screen.dart';
 import 'package:taskquest/features/settings/appearance_screen.dart';
-import 'package:taskquest/features/settings/privacyndata_screen.dart';
+import 'package:taskquest/features/settings/notifications_screen.dart';
 import 'package:taskquest/features/settings/switchaccount_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -63,87 +62,28 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showSettingsMenu(BuildContext context) {
-    showModalBottomSheet(
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
       context: context,
-      backgroundColor: AppTheme.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppTheme.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Settings',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                  color: AppTheme.black,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _SettingsTile(
-                icon: Icons.notifications_none_rounded,
-                label: 'Notifications',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                  );
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.palette_outlined,
-                label: 'Appearance',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AppearanceScreen()),
-                  );
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.security_rounded,
-                label: 'Privacy & Data',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PrivacyAndDataScreen()),
-                  );
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.switch_account_outlined,
-                label: 'Switch Account',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SwitchAccountScreen()),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Logout', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
+        content: const Text('Are you sure you want to exit your quest?', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted)),
           ),
-        );
-      },
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(authServiceProvider).signOut();
+            },
+            child: const Text('LOGOUT', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -164,8 +104,22 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildProfileContent(BuildContext context, WidgetRef ref, UserModel? user) {
-    final displayName = user?.displayName ?? 'Scholar';
-    final totalXp = user?.xp ?? 0;
+    if (user == null) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading your profile...', 
+              style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: AppTheme.muted)),
+          ],
+        ),
+      );
+    }
+
+    final displayName = user.displayName.isNotEmpty ? user.displayName : 'Scholar';
+    final totalXp = user.xp;
     final levelData = XpUtils.getLevelProgress(totalXp);
     final initials = displayName.isNotEmpty 
         ? displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
@@ -188,25 +142,14 @@ class ProfileScreen extends ConsumerWidget {
               const Text('Profile',
                   style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800,
                       fontSize: 28, letterSpacing: -0.8, color: AppTheme.black)),
-              Row(
-                children: [
-                  const _HeaderButton(icon: Icons.wb_sunny_outlined),
-                  const SizedBox(width: 8),
-                  _HeaderButton(
-                    icon: Icons.edit_outlined,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const EditProfileScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  _HeaderButton(
-                    icon: Icons.menu_rounded,
-                    onTap: () => _showSettingsMenu(context),
-                  ),
-                ],
+              _HeaderButton(
+                icon: Icons.edit_outlined,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                  );
+                },
               ),
             ],
           ),
@@ -231,8 +174,14 @@ class ProfileScreen extends ConsumerWidget {
                         border: Border.all(color: const Color(0xFF333333)),
                       ),
                       child: Center(
-                        child: Text(initials, style: const TextStyle(fontFamily: 'Syne',
-                            fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white)),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(initials, style: const TextStyle(fontFamily: 'Syne',
+                                fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white)),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -242,8 +191,17 @@ class ProfileScreen extends ConsumerWidget {
                         children: [
                           Text(displayName, style: const TextStyle(fontFamily: 'Syne',
                               fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white)),
-                          Text(user?.email ?? '', style: const TextStyle(fontFamily: 'DM Mono',
+                          Text(user.email, style: const TextStyle(fontFamily: 'DM Mono',
                               fontSize: 12, color: Colors.blue)),
+                          if (user.school.isNotEmpty == true || user.course.isNotEmpty == true) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              '${user.course}${user.school.isNotEmpty == true ? ' · ' : ''}${user.school}',
+                              style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: Color(0x99FFFFFF)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                           const SizedBox(height: 8),
                           // Badge
                           Container(
@@ -260,7 +218,7 @@ class ProfileScreen extends ConsumerWidget {
                                 const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
-                                    'LEVEL ${user?.level ?? 1} · ${XpUtils.getRankTitle(user?.level ?? 1).toUpperCase()}', 
+                                    'LEVEL ${user.level} · ${XpUtils.getRankTitle(user.level).toUpperCase()}', 
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -282,9 +240,9 @@ class ProfileScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(child: _StatItem(label: 'TOTAL XP', value: '$totalXp')),
-                    Expanded(child: _StatItem(label: 'DAY STREAK', value: '${user?.streak ?? 0}')),
-                    Expanded(child: _StatItem(label: 'BADGES', value: '${user?.unlockedBadges.length ?? 0}')),
+                    Expanded(child: _StatItem(label: 'TOTAL XP', value: '${user.xp}')),
+                    Expanded(child: _StatItem(label: 'DAY STREAK', value: '${user.streak}')),
+                    Expanded(child: _StatItem(label: 'BADGES', value: '${user.unlockedBadges.length}')),
                     Expanded(child: const _StatItem(label: 'RANK', value: '---')),
                   ],
                 ),
@@ -324,7 +282,7 @@ class ProfileScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          Text('$totalXp', style: const TextStyle(fontFamily: 'Syne',
+                          Text('${user.xp}', style: const TextStyle(fontFamily: 'Syne',
                               fontWeight: FontWeight.w800, fontSize: 24, color: AppTheme.black)),
                           const SizedBox(width: 4),
                           Flexible(
@@ -360,37 +318,100 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
 
-          // Developer Tools Section
-          _buildSectionHeader('Developer Tools'),
-          _buildMenuItem(
-            Icons.storage_rounded, 
-            'Seed Database', 
-            onTap: () async {
-              await DatabaseSeedService().seedAll();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Database seeded successfully!'))
-                );
-              }
-            }
+          // Settings Section
+          _buildSectionHeader('Account'),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.white,
+              border: Border.all(color: AppTheme.border),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                _buildMenuItem(
+                  Icons.person_outline_rounded, 
+                  'Edit Profile', 
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfileScreen())),
+                ),
+                const Divider(color: AppTheme.border, height: 1),
+                _buildMenuItem(
+                  Icons.palette_outlined, 
+                  'Appearance', 
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AppearanceScreen())),
+                ),
+                const Divider(color: AppTheme.border, height: 1),
+                _buildMenuItem(
+                  Icons.notifications_none_rounded, 
+                  'Notifications', 
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())),
+                ),
+                const Divider(color: AppTheme.border, height: 1),
+                _buildMenuItem(
+                  Icons.switch_account_outlined, 
+                  'Switch Account', 
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchAccountScreen())),
+                ),
+              ],
+            ),
           ),
-          _buildMenuItem(Icons.description_outlined, 'Privacy Policy', onTap: () {
-            _showInfoModal(context, 'Privacy Policy', 'TaskQuest values your privacy. We collect minimal data to provide a gamified learning experience...');
-          }),
-          _buildMenuItem(Icons.gavel_outlined, 'Terms of Service', onTap: () {
-            _showInfoModal(context, 'Terms of Service', 'By using TaskQuest, you agree to follow our acceptable use policy and academic integrity guidelines...');
-          }),
 
           const SizedBox(height: 24),
+          _buildSectionHeader('Support & Legal'),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.white,
+              border: Border.all(color: AppTheme.border),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                _buildMenuItem(
+                  Icons.description_outlined, 
+                  'Privacy Policy', 
+                  onTap: () => _showInfoModal(context, 'Privacy Policy', 'TaskQuest values your privacy. We collect minimal data to provide a gamified learning experience...'),
+                ),
+                const Divider(color: AppTheme.border, height: 1),
+                _buildMenuItem(
+                  Icons.gavel_outlined, 
+                  'Terms of Service', 
+                  onTap: () => _showInfoModal(context, 'Terms of Service', 'By using TaskQuest, you agree to follow our acceptable use policy and academic integrity guidelines...'),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          _buildSectionHeader('Development'),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.white,
+              border: Border.all(color: AppTheme.border),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: _buildMenuItem(
+              Icons.storage_rounded, 
+              'Seed Database', 
+              onTap: () async {
+                await DatabaseSeedService().seedAll();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Database seeded successfully!'))
+                  );
+                }
+              }
+            ),
+          ),
+
+          const SizedBox(height: 32),
           // Logout
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: TQButton(
               label: 'Logout',
               isLoading: false,
-              onTap: () => ref.read(authServiceProvider).signOut(),
+              onTap: () => _showLogoutConfirmation(context, ref),
             ),
           ),
           const SizedBox(height: 100),
@@ -401,7 +422,7 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 20, 8, 12),
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
       child: Text(
         title.toUpperCase(),
         style: const TextStyle(
@@ -417,8 +438,9 @@ class ProfileScreen extends ConsumerWidget {
   Widget _buildMenuItem(IconData icon, String title, {VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap ?? () {},
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
             Icon(icon, size: 20, color: AppTheme.black),
@@ -461,37 +483,6 @@ class _HeaderButton extends StatelessWidget {
         ),
         child: Icon(icon, color: AppTheme.black, size: 18),
       ),
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: AppTheme.black),
-      title: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Syne',
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-          color: AppTheme.black,
-        ),
-      ),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.dimmed),
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
     );
   }
 }

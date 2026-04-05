@@ -76,6 +76,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           userId: user.uid,
           title: fileName.split('.').first,
           type: 'AI',
+          category: 'AI Generated', // AI decks get this category by default
           cards: flashcards,
           createdAt: DateTime.now(),
         );
@@ -163,7 +164,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           _buildManualButton(),
           const SizedBox(height: 40),
           
-          // ── Search Bar ──────────────────────────────────────────
           _buildSearchBar(),
           const SizedBox(height: 24),
 
@@ -172,7 +172,11 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           
           userDecksAsync.when(
             data: (decks) {
-              final filtered = decks.where((d) => d.title.toLowerCase().contains(_query)).toList();
+              final filtered = decks.where((d) => 
+                d.title.toLowerCase().contains(_query) || 
+                d.category.toLowerCase().contains(_query)
+              ).toList();
+              
               if (filtered.isEmpty && _query.isNotEmpty) {
                 return const Center(child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
@@ -205,7 +209,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
         focusNode: _searchFocus,
         style: const TextStyle(fontFamily: 'DM Mono', fontSize: 13),
         decoration: InputDecoration(
-          hintText: 'Search your decks...',
+          hintText: 'Search decks or categories...',
           hintStyle: const TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted, fontSize: 13),
           prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.muted, size: 20),
           suffixIcon: _query.isNotEmpty 
@@ -670,7 +674,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${deck.cards.length} cards · ${deck.type} Generated',
+                    '${deck.cards.length} cards · ${deck.category}',
                     style: const TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 10,

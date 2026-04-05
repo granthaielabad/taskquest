@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
 
@@ -66,7 +67,7 @@ class BadgesScreen extends ConsumerWidget {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 0.85,
+                          childAspectRatio: 0.75,
                         ),
                         itemCount: badges.length,
                         itemBuilder: (context, index) => _BadgeCard(badge: badges[index]),
@@ -155,30 +156,59 @@ class _BadgeCard extends StatelessWidget {
   final BadgeModel badge;
   const _BadgeCard({required this.badge});
 
+  void _shareBadge() {
+    SharePlus.instance.share(
+      ShareParams(
+        text: 'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
+        subject: 'TaskQuest Achievement!',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: badge.isUnlocked ? AppTheme.white : AppTheme.white.withValues(alpha: 0.5),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: badge.isUnlocked ? AppTheme.black.withValues(alpha: 0.1) : AppTheme.border),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: badge.isUnlocked ? AppTheme.black : AppTheme.background,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              badge.isUnlocked ? Icons.verified_rounded : Icons.lock_outline_rounded,
-              color: badge.isUnlocked ? Colors.white : AppTheme.border,
-              size: 24,
-            ),
+          Stack(
+            alignment: Alignment.topRight,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: badge.isUnlocked ? AppTheme.black : AppTheme.background,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  badge.isUnlocked ? Icons.verified_rounded : Icons.lock_outline_rounded,
+                  color: badge.isUnlocked ? Colors.white : AppTheme.border,
+                  size: 24,
+                ),
+              ),
+              if (badge.isUnlocked)
+                Transform.translate(
+                  offset: const Offset(10, -10),
+                  child: GestureDetector(
+                    onTap: _shareBadge,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.black,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.share_rounded, color: Colors.white, size: 12),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 16),
           Text(

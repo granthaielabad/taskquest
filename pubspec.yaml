@@ -29,6 +29,8 @@ dependencies:
   syncfusion_flutter_pdf: ^33.1.46
   firebase_ai: ^3.10.0
   confetti: ^0.8.0
+  audioplayers: ^6.6.0
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +44,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/images/
+    - assets/sounds/
 
   fonts:
     - family: Syne

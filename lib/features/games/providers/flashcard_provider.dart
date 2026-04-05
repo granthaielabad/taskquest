@@ -32,6 +32,7 @@ class FlashcardDeckModel {
   final String userId;
   final String title;
   final String type; // 'AI' or 'Manual'
+  final String category; // e.g., 'Data Structures', 'Algorithms'
   final List<FlashcardModel> cards;
   final int masteryProgress; // 0-100
   final DateTime createdAt;
@@ -41,6 +42,7 @@ class FlashcardDeckModel {
     required this.userId,
     required this.title,
     required this.type,
+    this.category = 'General',
     required this.cards,
     this.masteryProgress = 0,
     required this.createdAt,
@@ -52,6 +54,7 @@ class FlashcardDeckModel {
       'userId': userId,
       'title': title,
       'type': type,
+      'category': category,
       'cards': cards.map((c) => c.toMap()).toList(),
       'masteryProgress': masteryProgress,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -64,6 +67,7 @@ class FlashcardDeckModel {
       userId: map['userId'] ?? '',
       title: map['title'] ?? '',
       type: map['type'] ?? 'Manual',
+      category: map['category'] ?? 'General',
       cards: (map['cards'] as List? ?? [])
           .map((c) => FlashcardModel.fromMap(c as Map<String, dynamic>))
           .toList(),

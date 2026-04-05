@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
+import 'package:taskquest/core/services/sound_service.dart';
 
 class QuizQuestion {
   final String code;
@@ -32,6 +34,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   String? _selectedOption;
   int _timeLeft = 15;
   Timer? _timer;
+  final SoundService _soundService = SoundService();
 
   final List<QuizQuestion> _questions = [
     QuizQuestion(
@@ -84,22 +87,34 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     if (_isAnswered) return;
     _timer?.cancel();
 
+    final bool isCorrect = option == _questions[_currentQuestionIndex].correctAnswer;
+    
+    if (isCorrect) {
+      HapticFeedback.mediumImpact();
+      _soundService.playCorrect();
+    } else {
+      HapticFeedback.heavyImpact();
+      _soundService.playWrong();
+    }
+
     setState(() {
       _isAnswered = true;
       _selectedOption = option;
-      if (option == _questions[_currentQuestionIndex].correctAnswer) {
+      if (isCorrect) {
         _score++;
       }
     });
 
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (_currentQuestionIndex < _questions.length - 1) {
-        setState(() {
-          _currentQuestionIndex++;
-          _isAnswered = false;
-          _selectedOption = null;
-        });
-        _startTimer();
+        if (mounted) {
+          setState(() {
+            _currentQuestionIndex++;
+            _isAnswered = false;
+            _selectedOption = null;
+          });
+          _startTimer();
+        }
       } else {
         _showResults();
       }
@@ -115,11 +130,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       if (xpEarned > 0) {
         await ref.read(userServiceProvider).addXp(user.uid, xpEarned);
       }
-      // Check for Logic Master badge
       await ref.read(badgeServiceProvider).checkLogicMaster(user.uid, isPerfect);
     }
 
     if (mounted) {
+      HapticFeedback.vibrate();
+      _soundService.playLevelUp(); // Generic achievement sound
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -138,6 +154,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           actions: [
             TextButton(
               onPressed: () {
+                _soundService.playTap();
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -159,7 +176,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         title: const Text('Which Lang?', style: TextStyle(fontFamily: 'Syne', fontSize: 16)),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            _soundService.playTap();
+            Navigator.pop(context);
+          },
         ),
         actions: [
           Center(
@@ -182,7 +202,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            // Progress Bar
             LinearProgressIndicator(
               value: (_currentQuestionIndex + 1) / _questions.length,
               backgroundColor: AppTheme.border,
@@ -191,7 +210,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
             const SizedBox(height: 32),
             
-            // Code block
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -211,7 +229,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
             const SizedBox(height: 40),
             
-            // Options
             Expanded(
               child: ListView.builder(
                 itemCount: question.options.length,
@@ -247,7 +264,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
-        onTap: () => _handleAnswer(option),
+        onTap: () {
+          _soundService.playTap();
+          _handleAnswer(option);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -268,7 +288,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   color: AppTheme.black,
                 ),
               ),
-              if (icon != null) icon,
+              ?icon,
             ],
           ),
         ),

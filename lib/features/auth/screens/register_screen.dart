@@ -87,15 +87,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           );
       
       if (cred.user != null) {
+        debugPrint('RegisterScreen: Auth successful, updating display name...');
+        // 1. Update Firebase Auth internal profile
+        await cred.user!.updateDisplayName(_nameController.text.trim());
+        
+        // 2. Force a reload to ensure the local user object is updated
+        await cred.user!.reload();
+        
+        debugPrint('RegisterScreen: Creating Firestore profile...');
+        // 3. Create the Firestore document explicitly with the name from the controller
         await ref.read(userServiceProvider).checkAndCreateProfile(
           cred.user!.uid,
           cred.user!.email!,
           _nameController.text.trim(),
         );
-        
-        if (mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
+        debugPrint('RegisterScreen: Handshake complete.');
       }
     } catch (e) {
       if (mounted) {
@@ -120,10 +126,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           cred.user!.email!,
           cred.user!.displayName ?? 'Scholar',
         );
-        
-        if (mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
       } else {
         ref.read(authTransitionProvider.notifier).setTransitioning(false);
       }

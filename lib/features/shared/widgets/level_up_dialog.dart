@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:confetti/confetti.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:taskquest/core/services/sound_service.dart';
 
 class LevelUpDialog extends StatefulWidget {
   final int newLevel;
@@ -18,18 +21,30 @@ class LevelUpDialog extends StatefulWidget {
 
 class _LevelUpDialogState extends State<LevelUpDialog> {
   late ConfettiController _controller;
+  final SoundService _soundService = SoundService();
 
   @override
   void initState() {
     super.initState();
     _controller = ConfettiController(duration: const Duration(seconds: 3));
     _controller.play();
+    HapticFeedback.vibrate();
+    _soundService.playLevelUp();
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _shareAchievement() {
+    SharePlus.instance.share(
+      ShareParams(
+        text: 'I just reached Level ${widget.newLevel} (${widget.rank}) on TaskQuest! 🚀 #TaskQuest #CS #LearningQuest',
+        subject: 'TaskQuest Level Up!',
+      ),
+    );
   }
 
   @override
@@ -86,8 +101,17 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: _shareAchievement,
+                      icon: const Icon(Icons.ios_share_rounded, color: Colors.white54, size: 20),
+                    ),
+                  ],
+                ),
                 const Icon(Icons.auto_awesome_rounded, color: Colors.orange, size: 48),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 const Text(
                   'LEVEL UP!',
                   style: TextStyle(
@@ -135,7 +159,11 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      _soundService.playTap();
+                      Navigator.pop(context);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppTheme.black,

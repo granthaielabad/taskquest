@@ -7,6 +7,11 @@ class UserModel {
   final String uid;
   final String email;
   final String displayName;
+  final String username;
+  final String bio;
+  final String school;
+  final String course;
+  final String yearLevel;
   final int level;
   final int xp;
   final int streak;
@@ -17,6 +22,11 @@ class UserModel {
     required this.uid,
     required this.email,
     required this.displayName,
+    this.username = '',
+    this.bio = '',
+    this.school = '',
+    this.course = '',
+    this.yearLevel = '',
     this.level = 1,
     this.xp = 0,
     this.streak = 0,
@@ -29,6 +39,11 @@ class UserModel {
       'uid': uid,
       'email': email,
       'displayName': displayName,
+      'username': username,
+      'bio': bio,
+      'school': school,
+      'course': course,
+      'yearLevel': yearLevel,
       'level': level,
       'xp': xp,
       'streak': streak,
@@ -42,6 +57,11 @@ class UserModel {
       uid: map['uid'] ?? '',
       email: map['email'] ?? '',
       displayName: map['displayName'] ?? '',
+      username: map['username'] ?? '',
+      bio: map['bio'] ?? '',
+      school: map['school'] ?? '',
+      course: map['course'] ?? '',
+      yearLevel: map['yearLevel'] ?? '',
       level: map['level'] ?? 1,
       xp: map['xp'] ?? 0,
       streak: map['streak'] ?? 0,
@@ -52,6 +72,11 @@ class UserModel {
 
   UserModel copyWith({
     String? displayName,
+    String? username,
+    String? bio,
+    String? school,
+    String? course,
+    String? yearLevel,
     int? level,
     int? xp,
     int? streak,
@@ -62,6 +87,11 @@ class UserModel {
       uid: uid,
       email: email,
       displayName: displayName ?? this.displayName,
+      username: username ?? this.username,
+      bio: bio ?? this.bio,
+      school: school ?? this.school,
+      course: course ?? this.course,
+      yearLevel: yearLevel ?? this.yearLevel,
       level: level ?? this.level,
       xp: xp ?? this.xp,
       streak: streak ?? this.streak,

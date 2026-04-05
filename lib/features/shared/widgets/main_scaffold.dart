@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/home/screens/home_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
-import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/explore/screens/explore_screen.dart';
 import 'package:taskquest/features/games/screens/flashcard_scan_screen.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
@@ -24,16 +23,22 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   @override
   void initState() {
     super.initState();
-    // Trigger streak update on startup
+    // Trigger profile sync and streak update on startup
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkStreak();
+      _performStartupHandshake();
     });
   }
 
-  void _checkStreak() async {
+  void _performStartupHandshake() async {
     final user = ref.read(authStateProvider).value;
     if (user != null) {
-      await ref.read(userServiceProvider).updateStreak(user.uid);
+      // We still run it to update lastLogin/streak, but UserService will now 
+      // handle the 'don't overwrite real name' logic internally.
+      await ref.read(userServiceProvider).checkAndCreateProfile(
+        user.uid,
+        user.email ?? '',
+        user.displayName ?? '', // Pass empty if null to avoid 'Scholar' default here
+      );
     }
   }
 
@@ -47,10 +52,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      HomeScreen(onProfileTap: () => _onTabTap(5)),
+      const HomeScreen(), 
       const GamesScreen(),
       const FlashcardScanScreen(),
-      const BadgesScreen(),
       const ExploreScreen(),
       const ProfileScreen(),
     ];
@@ -62,7 +66,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           if (!_activatedTabs.contains(i)) return const SizedBox.shrink();
           return Offstage(
             offstage: _currentIndex != i,
-            child: TickerMode(enabled: _currentIndex == i, child: screens[i]),
+            child: TickerMode(
+              enabled: _currentIndex == i,
+              child: screens[i],
+            ),
           );
         }),
       ),
@@ -78,12 +85,15 @@ class _TQBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _TQBottomNav({required this.currentIndex, required this.onTap});
+  const _TQBottomNav({
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
+      height: 94,
       decoration: const BoxDecoration(
         color: AppTheme.white,
         border: Border(top: BorderSide(color: AppTheme.border)),
@@ -95,7 +105,7 @@ class _TQBottomNav extends StatelessWidget {
             _NavItem(
               icon: Icons.home_outlined,
               label: 'Home',
-              active: currentIndex == 0 || currentIndex == 5,
+              active: currentIndex == 0,
               onTap: () => onTap(0),
             ),
             _NavItem(
@@ -129,17 +139,13 @@ class _TQBottomNav extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: AppTheme.black,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: currentIndex == 2
-                                ? [
-                                    BoxShadow(
-                                      color: AppTheme.black.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ]
-                                : null,
+                            boxShadow: currentIndex == 2 ? [
+                              BoxShadow(
+                                color: AppTheme.black.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              )
+                            ] : null,
                           ),
                           child: const Icon(
                             Icons.document_scanner_rounded,
@@ -156,9 +162,7 @@ class _TQBottomNav extends StatelessWidget {
                         fontFamily: 'DM Mono',
                         fontSize: 9,
                         letterSpacing: 0.72,
-                        color: currentIndex == 2
-                            ? AppTheme.black
-                            : AppTheme.dimmed,
+                        color: currentIndex == 2 ? AppTheme.black : AppTheme.dimmed,
                       ),
                     ),
                   ],
@@ -166,14 +170,14 @@ class _TQBottomNav extends StatelessWidget {
               ),
             ),
             _NavItem(
-              icon: Icons.star_border_rounded,
-              label: 'Badges',
+              icon: Icons.explore_outlined,
+              label: 'Explore',
               active: currentIndex == 3,
               onTap: () => onTap(3),
             ),
             _NavItem(
-              icon: Icons.explore_outlined,
-              label: 'Explore',
+              icon: Icons.person_outline_rounded,
+              label: 'Profile',
               active: currentIndex == 4,
               onTap: () => onTap(4),
             ),

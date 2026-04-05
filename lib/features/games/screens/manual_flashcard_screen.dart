@@ -24,6 +24,17 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   final Set<int> _errorIndices = {};
   bool _titleError = false;
   bool _isLoading = false;
+  String _selectedCategory = 'General';
+
+  final List<String> _categories = [
+    'General',
+    'Data Structures',
+    'Algorithms',
+    'Operating Systems',
+    'Networking',
+    'Database',
+    'Security',
+  ];
 
   @override
   void initState() {
@@ -53,12 +64,18 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   }
 
   bool get _hasChanges {
-    if (_titleController.text.isNotEmpty) return true;
+    if (_titleController.text.isNotEmpty) {
+      return true;
+    }
     for (var c in _termControllers) {
-      if (c.text.isNotEmpty) return true;
+      if (c.text.isNotEmpty) {
+        return true;
+      }
     }
     for (var c in _defControllers) {
-      if (c.text.isNotEmpty) return true;
+      if (c.text.isNotEmpty) {
+        return true;
+      }
     }
     return false;
   }
@@ -101,7 +118,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         _defFocusNodes.clear();
         _errorIndices.clear();
         _titleError = false;
+        _selectedCategory = 'General';
         
+        // Reset to one empty card
         _termControllers.add(TextEditingController());
         _defControllers.add(TextEditingController());
         final tf = FocusNode();
@@ -115,7 +134,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   }
 
   Future<bool> _confirmDiscard() async {
-    if (!_hasChanges) return true;
+    if (!_hasChanges) {
+      return true;
+    }
     
     final result = await showDialog<bool>(
       context: context,
@@ -183,6 +204,7 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
           userId: user.uid,
           title: _titleController.text.trim(),
           type: 'Manual',
+          category: _selectedCategory,
           cards: cards,
           createdAt: DateTime.now(),
         );
@@ -194,9 +216,13 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         }
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -205,9 +231,11 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
+        if (didPop) {
+          return;
+        }
         final shouldPop = await _confirmDiscard();
-        if (shouldPop && mounted) {
+        if (shouldPop && context.mounted) {
           Navigator.pop(context);
         }
       },
@@ -231,67 +259,111 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
           ],
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const FieldLabel('Deck Title'),
-              const SizedBox(height: 8),
-              TQInputField(
-                controller: _titleController, 
-                focusNode: _titleFocus,
-                hintText: 'e.g. Midterm Review',
-                hasError: _titleError,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const FieldLabel('Deck Title'),
+                    const SizedBox(height: 8),
+                    TQInputField(
+                      controller: _titleController, 
+                      focusNode: _titleFocus,
+                      hintText: 'e.g. Midterm Review',
+                      hasError: _titleError,
+                    ),
+                    const SizedBox(height: 32),
+                    const FieldLabel('Category'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: _categories.map((cat) {
+                    final isSelected = _selectedCategory == cat;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedCategory = cat),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.black : AppTheme.white,
+                          border: Border.all(color: isSelected ? AppTheme.black : AppTheme.border),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          cat,
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? Colors.white : AppTheme.muted,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
               const SizedBox(height: 32),
               
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _termControllers.length,
-                itemBuilder: (context, index) => Container(
-                  margin: const EdgeInsets.only(bottom: 24),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    border: Border.all(color: _errorIndices.contains(index) ? Colors.red : AppTheme.border),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('CARD ${index + 1}', style: AppTheme.labelMono.copyWith(color: _errorIndices.contains(index) ? Colors.red : AppTheme.muted)),
-                          if (_termControllers.length > 1)
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
-                              onPressed: () => setState(() {
-                                _termControllers.removeAt(index);
-                                _defControllers.removeAt(index);
-                                _termFocusNodes.removeAt(index);
-                                _defFocusNodes.removeAt(index);
-                                _errorIndices.clear();
-                              }),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TQInputField(
-                        controller: _termControllers[index], 
-                        focusNode: _termFocusNodes[index],
-                        hintText: 'Term / Question',
-                        hasError: _errorIndices.contains(index) && _termControllers[index].text.isEmpty,
-                      ),
-                      const SizedBox(height: 12),
-                      TQInputField(
-                        controller: _defControllers[index], 
-                        focusNode: _defFocusNodes[index],
-                        hintText: 'Definition / Answer', 
-                        maxLines: 2,
-                        hasError: _errorIndices.contains(index) && _defControllers[index].text.isEmpty,
-                      ),
-                    ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _termControllers.length,
+                  itemBuilder: (context, index) => Container(
+                    margin: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.white,
+                      border: Border.all(color: _errorIndices.contains(index) ? Colors.red : AppTheme.border),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('CARD ${index + 1}', style: AppTheme.labelMono.copyWith(color: _errorIndices.contains(index) ? Colors.red : AppTheme.muted)),
+                            if (_termControllers.length > 1)
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+                                onPressed: () => setState(() {
+                                  _termControllers.removeAt(index);
+                                  _defControllers.removeAt(index);
+                                  _termFocusNodes.removeAt(index);
+                                  _defFocusNodes.removeAt(index);
+                                  _errorIndices.clear();
+                                }),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        TQInputField(
+                          controller: _termControllers[index], 
+                          focusNode: _termFocusNodes[index],
+                          hintText: 'Term / Question',
+                          hasError: _errorIndices.contains(index) && _termControllers[index].text.isEmpty,
+                        ),
+                        const SizedBox(height: 12),
+                        TQInputField(
+                          controller: _defControllers[index], 
+                          focusNode: _defFocusNodes[index],
+                          hintText: 'Definition / Answer', 
+                          maxLines: 2,
+                          hasError: _errorIndices.contains(index) && _defControllers[index].text.isEmpty,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

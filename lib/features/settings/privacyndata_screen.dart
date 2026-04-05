@@ -39,7 +39,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Expanded( // Added Expanded to prevent overflow
+                  const Expanded(
                     child: Text(
                       'Privacy & Data',
                       overflow: TextOverflow.ellipsis,
@@ -101,7 +101,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                               fontFamily: 'DM Mono',
                               fontSize: 12,
                               height: 1.6,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -295,7 +295,7 @@ class _ControlTile extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeColor: Colors.white,
+                activeThumbColor: Colors.white,
                 activeTrackColor: iconColor,
               ),
             ],

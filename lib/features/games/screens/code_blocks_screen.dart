@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
@@ -64,6 +65,7 @@ class _CodeBlocksScreenState extends ConsumerState<CodeBlocksScreen> {
     }
 
     if (correct) {
+      HapticFeedback.vibrate();
       setState(() => _isSuccess = true);
       
       final user = ref.read(authStateProvider).value;
@@ -78,6 +80,7 @@ class _CodeBlocksScreenState extends ConsumerState<CodeBlocksScreen> {
         );
       }
     } else {
+      HapticFeedback.heavyImpact();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Not quite right. Try again!'), backgroundColor: Colors.red),
@@ -135,6 +138,7 @@ class _CodeBlocksScreenState extends ConsumerState<CodeBlocksScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               itemCount: _shuffledLines.length,
               onReorder: (oldIndex, newIndex) {
+                HapticFeedback.selectionClick();
                 setState(() {
                   if (newIndex > oldIndex) newIndex -= 1;
                   final item = _shuffledLines.removeAt(oldIndex);
@@ -181,7 +185,10 @@ class _CodeBlocksScreenState extends ConsumerState<CodeBlocksScreen> {
                   child: SizedBox(
                     height: 56,
                     child: OutlinedButton(
-                      onPressed: () => setState(() => _shuffledLines.shuffle()),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        setState(() => _shuffledLines.shuffle());
+                      },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppTheme.border),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -195,7 +202,10 @@ class _CodeBlocksScreenState extends ConsumerState<CodeBlocksScreen> {
                   child: SizedBox(
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _isSuccess ? null : _checkSolution,
+                      onPressed: _isSuccess ? null : () {
+                        HapticFeedback.mediumImpact();
+                        _checkSolution();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.black,
                         foregroundColor: Colors.white,

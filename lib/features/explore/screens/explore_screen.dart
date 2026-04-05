@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/explore/screens/explore_content_screen.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
+import 'package:taskquest/features/explore/providers/search_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -20,7 +21,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() => _query = _searchController.text.toLowerCase());
+      setState(() => _query = _searchController.text.trim());
     });
   }
 
@@ -144,7 +145,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 const SizedBox(height: 16),
                 _buildCommunityQuests(),
               ] else ...[
-                _buildSearchResults(),
+                _buildSearchResultsWidget(),
               ],
             ],
           ),
@@ -165,7 +166,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         focusNode: _searchFocus,
         style: const TextStyle(fontFamily: 'DM Mono', fontSize: 13),
         decoration: InputDecoration(
-          hintText: 'Search concepts, docs...',
+          hintText: 'Search concepts, quests...',
           hintStyle: const TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted, fontSize: 13),
           prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.muted, size: 20),
           suffixIcon: _query.isNotEmpty 
@@ -178,30 +179,39 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _buildSearchResults() {
-    final results = [
-      {'title': 'Data Structures 101', 'tag': 'CONCEPT'},
-      {'title': 'Big O Notation Guide', 'tag': 'ALGORITHMS'},
-      {'title': 'Binary Search Tree PDF', 'tag': 'DOCUMENT'},
-    ].where((r) => r['title']!.toLowerCase().contains(_query)).toList();
+  Widget _buildSearchResultsWidget() {
+    final results = ref.watch(searchResultsProvider(_query));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('SEARCH RESULTS (${results.length})', style: AppTheme.labelMono),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('SEARCH RESULTS (${results.length})', style: AppTheme.labelMono),
+              GestureDetector(
+                onTap: () => _searchController.clear(),
+                child: const Text('CLEAR', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: Colors.blue, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           if (results.isEmpty)
             const Text('No matches found. Try a different term.', style: AppTheme.bodyMono)
           else
-            ...results.map((r) => _buildResultTile(r['title']!, r['tag']!)),
+            ...results.map((r) => _buildResultTile(r.title, r.category, r.type)),
         ],
       ),
     );
   }
 
-  Widget _buildResultTile(String title, String tag) {
+  Widget _buildResultTile(String title, String tag, String type) {
+    IconData typeIcon = Icons.article_outlined;
+    if (type == 'QUEST') typeIcon = Icons.bolt_rounded;
+    if (type == 'CONCEPT') typeIcon = Icons.psychology_rounded;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -212,6 +222,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
       child: Row(
         children: [
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: AppTheme.background,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(typeIcon, size: 18, color: AppTheme.black),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,7 +241,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppTheme.border),
+          const Icon(Icons.chevron_right_rounded, color: AppTheme.border, size: 20),
         ],
       ),
     );

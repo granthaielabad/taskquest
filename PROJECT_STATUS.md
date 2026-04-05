@@ -1,5 +1,7 @@
 # TaskQuest Project Status & Roadmap
 
+This file is the "source of truth" for the development team. Move tasks between sections to keep each other updated.
+
 ## ✅ DONE (Completed Features)
 - [x] **Firebase Integration:** Core, Auth, and Firestore initialized.
 - [x] **Authentication:** Email/Password and Google Sign-In fully functional.
@@ -25,21 +27,25 @@
 - [x] **Badge Unlocking Logic:** Backend tracking for Syntax Sage, Bug Hunter, and other milestones.
 - [x] **Manual Entry Refinement:** Added "Clear All" and field-level error highlighting.
 - [x] **Edit Profile Logic:** Functional UI to update name and real-time Firestore synchronization.
+- [x] **Search Logic:** Functional search bar in Explore and Decks.
+- [x] **Deck Categorization:** Ability to group flashcards by subject (Data Structures, OS, etc.).
+- [x] **Haptic Feedback:** Tactile vibrations for buttons, correct/wrong answers, and level-ups.
+- [x] **Sound Effects:** Auditory feedback for correct/wrong answers, level-ups, and clicks.
+- [x] **Social Sharing:** Ability to share Level-Ups and unlocked Badges to social media.
 
 ---
 
 ## 🚧 IN PROGRESS (Current Focus)
-- [ ] **Search Logic:** Functional search bar in Explore and Decks. (Assigned to: **Gemini**)
-- [ ] **Sound Effects:** Add subtle "ding" and "whoosh" sounds for gameplay. (Assigned to: ______)
+- [ ] **Performance Optimization:** Profile image caching and Firestore query indexing. (Assigned to: **Gemini**)
+- [ ] **Accessibility:** Adding semantics labels for screen readers. (Assigned to: ______)
 
 ---
 
 ## ⏳ BACKLOG (To-Do List)
 
 ### Phase 3: Final Polish
-- [ ] **Deck Categorization:** Group flashcards by subject (e.g., OS, Networking).
-- [ ] **Social Sharing:** Share your badges/rank to social media.
-- [ ] **Haptic Feedback:** Vibrations for correct/wrong answers.
+- [ ] **Deck Deletion:** UI and logic to remove old decks.
+- [ ] **Notifications:** Local reminders for daily quests.
 
 ---
 

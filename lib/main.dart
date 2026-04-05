@@ -8,7 +8,7 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/shared/widgets/main_scaffold.dart';
 import 'features/auth/screens/auth_success_screen.dart';
-import 'features/auth/screens/onboarding_screen.dart';
+import 'core/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,13 +33,15 @@ class TaskQuestApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final isTransitioning = ref.watch(authTransitionProvider);
+    final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
+      key: ValueKey(authState.value?.uid ?? 'unauthenticated'),
       title: 'TaskQuest',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       home: authState.when(
         data: (user) {
           if (user != null) {

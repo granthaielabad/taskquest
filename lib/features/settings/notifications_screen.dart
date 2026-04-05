@@ -92,17 +92,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                FittedBox(
+                                const FittedBox(
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
-                                  child: const Text('All Notifications',
+                                  child: Text('All Notifications',
                                       style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
                                 ),
                                 FittedBox(
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
                                   child: Text('Master switch for all alerts',
-                                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: Colors.white.withOpacity(0.4))),
+                                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: Colors.white.withValues(alpha: 0.4))),
                                 ),
                               ],
                             ),
@@ -111,7 +111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Switch(
                             value: allNotifications,
                             onChanged: (v) => setState(() => allNotifications = v),
-                            activeColor: Colors.white,
+                            activeThumbColor: Colors.white,
                             activeTrackColor: const Color(0xFF404040),
                           ),
                         ],
@@ -199,14 +199,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           padding: const EdgeInsets.all(20),
                           child: Row(
                             children: [
-                              Expanded(
+                              const Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Enable Quiet Hours',
+                                    Text('Enable Quiet Hours',
                                         style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
-                                    const SizedBox(height: 4),
-                                    const Text('Silence all alerts during set times',
+                                    SizedBox(height: 4),
+                                    Text('Silence all alerts during set times',
                                         style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted)),
                                   ],
                                 ),
@@ -214,29 +214,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               Switch(
                                 value: quietHours,
                                 onChanged: (v) => setState(() => quietHours = v),
-                                activeColor: Colors.white,
+                                activeThumbColor: Colors.white,
                                 activeTrackColor: AppTheme.black,
                               ),
                             ],
                           ),
                         ),
                         const Divider(color: AppTheme.border, height: 1),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('START',
+                                  Text('START',
                                       style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.dimmed)),
-                                  const SizedBox(height: 4),
-                                  const Text('10:00 PM',
+                                  SizedBox(height: 4),
+                                  Text('10:00 PM',
                                       style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18, color: AppTheme.black)),
                                 ],
                               ),
-                              const Icon(Icons.chevron_right_rounded, color: AppTheme.border),
+                              Icon(Icons.chevron_right_rounded, color: AppTheme.border),
                             ],
                           ),
                         ),
@@ -352,7 +352,7 @@ class _NotificationTile extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeColor: Colors.white,
+                activeThumbColor: Colors.white,
                 activeTrackColor: iconColor,
               ),
             ],

@@ -52,14 +52,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(authTransitionProvider.notifier).setTransitioning(true);
     
     try {
-      await ref.read(authServiceProvider).signInWithEmail(
+      final cred = await ref.read(authServiceProvider).signInWithEmail(
             _emailController.text.trim(),
             _passController.text.trim(),
           );
       
-      // CRITICAL: Clear the navigation stack so main.dart's home switcher can show
-      if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+      if (cred.user != null) {
+        // Handshake: Ensure Firestore doc exists and metadata is synced
+        await ref.read(userServiceProvider).checkAndCreateProfile(
+          cred.user!.uid,
+          cred.user!.email!,
+          cred.user!.displayName ?? 'Scholar',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -84,10 +88,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           cred.user!.email!,
           cred.user!.displayName ?? 'Scholar',
         );
-        
-        if (mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
       } else {
         ref.read(authTransitionProvider.notifier).setTransitioning(false);
       }

@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
+import 'package:taskquest/core/services/sound_service.dart';
 
 class StudyFlashcardScreen extends ConsumerStatefulWidget {
   final FlashcardDeckModel deck;
@@ -18,9 +20,17 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
   int _currentIndex = 0;
   bool _isFlipped = false;
   int _correctCount = 0;
+  final SoundService _soundService = SoundService();
 
   void _nextCard(bool wasCorrect) {
-    if (wasCorrect) _correctCount++;
+    if (wasCorrect) {
+      _correctCount++;
+      HapticFeedback.mediumImpact();
+      _soundService.playCorrect();
+    } else {
+      HapticFeedback.heavyImpact();
+      _soundService.playWrong();
+    }
 
     if (_currentIndex < widget.deck.cards.length - 1) {
       setState(() {
@@ -46,6 +56,7 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     await ref.read(badgeServiceProvider).checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
     
     if (mounted) {
+      HapticFeedback.vibrate();
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -63,6 +74,7 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
           actions: [
             TextButton(
               onPressed: () {
+                _soundService.playTap();
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -84,7 +96,10 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
         title: Text(widget.deck.title, style: const TextStyle(fontFamily: 'Syne', fontSize: 16)),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            _soundService.playTap();
+            Navigator.pop(context);
+          },
         ),
         actions: [
           Padding(
@@ -105,7 +120,11 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: GestureDetector(
-                onTap: () => setState(() => _isFlipped = !_isFlipped),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _soundService.playTap();
+                  setState(() => _isFlipped = !_isFlipped);
+                },
                 child: TweenAnimationBuilder(
                   duration: const Duration(milliseconds: 400),
                   tween: Tween<double>(begin: 0, end: _isFlipped ? 180 : 0),
