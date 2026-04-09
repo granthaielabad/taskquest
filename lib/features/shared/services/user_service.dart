@@ -25,7 +25,7 @@ class UserService {
       return null;
     } catch (e) {
       debugPrint('UserService ERROR: Failed to get profile: $e');
-      return null; 
+      return null;
     }
   }
 
@@ -46,13 +46,24 @@ class UserService {
     await updateXp(uid, newTotalXp, newLevel);
   }
 
-  Future<void> checkAndCreateProfile(String uid, String email, String displayName) async {
+  Future<void> checkAndCreateProfile(
+    String uid,
+    String email,
+    String displayName,
+  ) async {
     debugPrint('UserService: Starting handshake for $uid (Name: $displayName)');
-    
+
     try {
       final user = await getUserProfile(uid);
       final now = DateTime.now();
-      final bool isNewNameGeneric = displayName.isEmpty || displayName == 'Scholar';
+      final bool isNewNameGeneric =
+          displayName.isEmpty || displayName == 'Scholar';
+
+      // Predefine username based on display name
+      String generatedUsername = '';
+      if (!isNewNameGeneric) {
+        generatedUsername = displayName.toLowerCase().replaceAll(' ', '_');
+      }
 
       if (user == null) {
         debugPrint('UserService: No profile found. Creating new one...');
@@ -60,28 +71,42 @@ class UserService {
           uid: uid,
           email: email,
           displayName: !isNewNameGeneric ? displayName : 'Scholar',
+          username: generatedUsername,
           lastLogin: now,
           streak: 1,
         );
         await createUserProfile(newUser);
       } else {
-        debugPrint('UserService: Existing profile found. Checking for updates...');
+        debugPrint(
+          'UserService: Existing profile found. Checking for updates...',
+        );
         final Map<String, dynamic> updates = {'email': email};
 
-        final bool currentIsGeneric = user.displayName.isEmpty || user.displayName == 'Scholar';
-        
+        final bool currentIsGeneric =
+            user.displayName.isEmpty || user.displayName == 'Scholar';
+
         if (currentIsGeneric && !isNewNameGeneric) {
-          debugPrint('UserService: Updating generic name "Scholar" to "$displayName"');
+          debugPrint(
+            'UserService: Updating generic name "Scholar" to "$displayName"',
+          );
           updates['displayName'] = displayName;
+          if (user.username.isEmpty) {
+            updates['username'] = generatedUsername;
+          }
         } else if (!isNewNameGeneric && displayName != user.displayName) {
           debugPrint('UserService: Syncing name change to "$displayName"');
           updates['displayName'] = displayName;
         }
 
         // We use set with merge:true to be safer than update
-        await _db.collection('users').doc(uid).set(updates, SetOptions(merge: true));
-        debugPrint('UserService: Handshake complete (updates applied: ${updates.keys.toList()})');
-        
+        await _db
+            .collection('users')
+            .doc(uid)
+            .set(updates, SetOptions(merge: true));
+        debugPrint(
+          'UserService: Handshake complete (updates applied: ${updates.keys.toList()})',
+        );
+
         await updateStreak(uid);
       }
     } catch (e) {
@@ -96,10 +121,14 @@ class UserService {
 
       final lastLogin = user.lastLogin;
       final now = DateTime.now();
-      
-      final lastLoginDate = DateTime(lastLogin.year, lastLogin.month, lastLogin.day);
+
+      final lastLoginDate = DateTime(
+        lastLogin.year,
+        lastLogin.month,
+        lastLogin.day,
+      );
       final todayDate = DateTime(now.year, now.month, now.day);
-      
+
       final difference = todayDate.difference(lastLoginDate).inDays;
 
       if (difference == 0) return;
@@ -121,12 +150,13 @@ class UserService {
   }
 
   Future<void> updateDisplayName(String uid, String newName) async {
-    await _db.collection('users').doc(uid).update({
-      'displayName': newName,
-    });
+    await _db.collection('users').doc(uid).update({'displayName': newName});
   }
 
-  Future<void> updateFullProfile(String uid, Map<String, dynamic> profileData) async {
+  Future<void> updateFullProfile(
+    String uid,
+    Map<String, dynamic> profileData,
+  ) async {
     try {
       await _db.collection('users').doc(uid).update(profileData);
       debugPrint('UserService: Profile updated successfully for $uid');

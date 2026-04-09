@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -17,7 +16,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _schoolController;
   late TextEditingController _courseController;
   late TextEditingController _yearLevelController;
-  
+
   bool _isLoading = false;
   bool _hasChanges = false;
 
@@ -25,8 +24,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = ref.read(userProfileProvider).value;
-    
-    _displayNameController = TextEditingController(text: user?.displayName ?? '');
+
+    _displayNameController = TextEditingController(
+      text: user?.displayName ?? '',
+    );
     _usernameController = TextEditingController(text: user?.username ?? '');
     _bioController = TextEditingController(text: user?.bio ?? '');
     _schoolController = TextEditingController(text: user?.school ?? '');
@@ -73,18 +74,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       };
 
       await ref.read(userServiceProvider).updateFullProfile(user.uid, updates);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!'))
+          const SnackBar(content: Text('Profile updated successfully!')),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e'))
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -93,36 +94,71 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<bool> _confirmDiscard() async {
     if (!_hasChanges) return true;
-    
+
+    final theme = Theme.of(context);
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Discard Changes?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
-        content: const Text('You have unsaved changes. Are you sure you want to leave?', 
-          style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
+        title: Text(
+          'Discard Changes?',
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        content: Text(
+          'You have unsaved changes. Are you sure you want to leave?',
+          style: TextStyle(
+            fontFamily: 'DM Mono',
+            fontSize: 13,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('KEEP EDITING', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted)),
+            child: Text(
+              'KEEP EDITING',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('DISCARD', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'DISCARD',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
     );
-    
+
     return result ?? false;
   }
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProfileProvider).value;
-    final initials = user?.displayName.isNotEmpty == true 
-        ? user!.displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final initials = user?.displayName.isNotEmpty == true
+        ? user!.displayName
+              .split(' ')
+              .map((e) => e[0])
+              .take(2)
+              .join()
+              .toUpperCase()
         : 'S';
 
     return PopScope(
@@ -135,13 +171,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -155,48 +194,65 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: AppTheme.white,
-                          border: Border.all(color: AppTheme.border),
+                          color: colorScheme.surface,
+                          border: Border.all(color: colorScheme.outline),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.chevron_left_rounded, color: AppTheme.black),
+                        child: Icon(
+                          Icons.chevron_left_rounded,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Edit Profile',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w800,
                         fontSize: 22,
                         letterSpacing: -0.5,
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     GestureDetector(
                       onTap: _isLoading || !_hasChanges ? null : _saveProfile,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: _hasChanges ? AppTheme.black : AppTheme.border,
+                          color: _hasChanges
+                              ? colorScheme.onSurface
+                              : colorScheme.outline,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: _isLoading 
-                          ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text(
-                              'Save',
-                              style: TextStyle(
-                                fontFamily: 'Syne',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12,
-                                color: Colors.white,
+                        child: _isLoading
+                            ? SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colorScheme.surface,
+                                ),
+                              )
+                            : Text(
+                                'Save',
+                                style: TextStyle(
+                                  fontFamily: 'Syne',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color: _hasChanges
+                                      ? colorScheme.surface
+                                      : colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(color: AppTheme.border, height: 1),
+              Divider(color: colorScheme.outline, height: 1),
 
               Expanded(
                 child: SingleChildScrollView(
@@ -205,7 +261,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      
+
                       // Profile Header Section
                       Row(
                         children: [
@@ -215,7 +271,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.black,
+                                  color: colorScheme.onSurface,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Center(
@@ -223,8 +279,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                     fit: BoxFit.scaleDown,
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
-                                      child: Text(initials, 
-                                        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white)),
+                                      child: Text(
+                                        initials,
+                                        style: TextStyle(
+                                          fontFamily: 'Syne',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 24,
+                                          color: colorScheme.surface,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -235,11 +298,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.black,
+                                    color: colorScheme.onSurface,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: AppTheme.white, width: 2),
+                                    border: Border.all(
+                                      color: colorScheme.surface,
+                                      width: 2,
+                                    ),
                                   ),
-                                  child: const Icon(Icons.edit_outlined, color: Colors.white, size: 14),
+                                  child: Icon(
+                                    Icons.edit_outlined,
+                                    color: colorScheme.surface,
+                                    size: 14,
+                                  ),
                                 ),
                               ),
                             ],
@@ -249,16 +319,38 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(user?.displayName ?? 'Scholar', 
-                                  style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 20, color: AppTheme.black)),
-                                Text(user?.username.isNotEmpty == true ? '@${user!.username}' : '@scholar', 
-                                  style: const TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: AppTheme.muted)),
+                                Text(
+                                  user?.displayName ?? 'Scholar',
+                                  style: TextStyle(
+                                    fontFamily: 'Syne',
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 20,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                Text(
+                                  user?.username.isNotEmpty == true
+                                      ? '@${user!.username}'
+                                      : '@scholar',
+                                  style: TextStyle(
+                                    fontFamily: 'DM Mono',
+                                    fontSize: 12,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
                                 const SizedBox(height: 12),
                                 Row(
                                   children: [
-                                    _ColorOption(color: Colors.black, isSelected: true),
-                                    _ColorOption(color: Colors.blueGrey.shade800),
-                                    _ColorOption(color: Colors.deepPurple.shade900),
+                                    _ColorOption(
+                                      color: colorScheme.onSurface,
+                                      isSelected: true,
+                                    ),
+                                    _ColorOption(
+                                      color: Colors.blueGrey.shade800,
+                                    ),
+                                    _ColorOption(
+                                      color: Colors.deepPurple.shade900,
+                                    ),
                                     _ColorOption(color: Colors.teal.shade900),
                                     _ColorOption(color: Colors.brown.shade900),
                                     _ColorOption(color: Colors.grey.shade900),
@@ -275,30 +367,63 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 12),
                       Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.white,
-                          border: Border.all(color: AppTheme.border),
+                          color: colorScheme.surface,
+                          border: Border.all(color: colorScheme.outline),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           children: [
-                            _EditField(label: 'DISPLAY NAME', controller: _displayNameController, hint: 'Your Full Name'),
-                            const Divider(color: AppTheme.border, height: 1),
-                            _EditField(label: 'USERNAME', controller: _usernameController, hint: 'charlie_quest'),
-                            const Divider(color: AppTheme.border, height: 1),
+                            _EditField(
+                              label: 'DISPLAY NAME',
+                              controller: _displayNameController,
+                              hint: 'Your Full Name',
+                            ),
+                            Divider(color: colorScheme.outline, height: 1),
+                            _EditField(
+                              label: 'USERNAME',
+                              controller: _usernameController,
+                              hint: 'charlie_quest',
+                            ),
+                            Divider(color: colorScheme.outline, height: 1),
                             // Email is usually read-only or handled via re-auth
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('EMAIL ADDRESS', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.0, color: AppTheme.dimmed)),
+                                  Text(
+                                    'EMAIL ADDRESS',
+                                    style: TextStyle(
+                                      fontFamily: 'DM Mono',
+                                      fontSize: 9,
+                                      letterSpacing: 1.0,
+                                      color: colorScheme.onSurfaceVariant
+                                          .withOpacity(0.7),
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text(user?.email ?? '', style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.muted)),
+                                  Text(
+                                    user?.email ?? '',
+                                    style: TextStyle(
+                                      fontFamily: 'Syne',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                            const Divider(color: AppTheme.border, height: 1),
-                            _EditField(label: 'BIO', controller: _bioController, hint: 'Add a short bio...', maxLines: 3),
+                            Divider(color: colorScheme.outline, height: 1),
+                            _EditField(
+                              label: 'BIO',
+                              controller: _bioController,
+                              hint: 'Add a short bio...',
+                              maxLines: 3,
+                            ),
                           ],
                         ),
                       ),
@@ -308,17 +433,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 12),
                       Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.white,
-                          border: Border.all(color: AppTheme.border),
+                          color: colorScheme.surface,
+                          border: Border.all(color: colorScheme.outline),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           children: [
-                            _EditField(label: 'SCHOOL / INSTITUTION', controller: _schoolController, hint: 'e.g. PLM Manila'),
-                            const Divider(color: AppTheme.border, height: 1),
-                            _EditField(label: 'COURSE / PROGRAM', controller: _courseController, hint: 'e.g. BS Computer Science'),
-                            const Divider(color: AppTheme.border, height: 1),
-                            _EditField(label: 'YEAR LEVEL', controller: _yearLevelController, hint: 'e.g. 3rd Year'),
+                            _EditField(
+                              label: 'SCHOOL / INSTITUTION',
+                              controller: _schoolController,
+                              hint: 'e.g. PLM Manila',
+                            ),
+                            Divider(color: colorScheme.outline, height: 1),
+                            _EditField(
+                              label: 'COURSE / PROGRAM',
+                              controller: _courseController,
+                              hint: 'e.g. BS Computer Science',
+                            ),
+                            Divider(color: colorScheme.outline, height: 1),
+                            _EditField(
+                              label: 'YEAR LEVEL',
+                              controller: _yearLevelController,
+                              hint: 'e.g. 3rd Year',
+                            ),
                           ],
                         ),
                       ),
@@ -330,21 +467,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           width: double.infinity,
                           height: 56,
                           decoration: BoxDecoration(
-                            color: _hasChanges ? AppTheme.black : AppTheme.border,
+                            color: _hasChanges
+                                ? colorScheme.onSurface
+                                : colorScheme.outline,
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check, color: Colors.white, size: 20),
+                              Icon(
+                                Icons.check,
+                                color: colorScheme.surface,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _isLoading ? 'Saving...' : 'Save Changes',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Syne',
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                 ),
                               ),
                             ],
@@ -357,25 +500,32 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 12),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF5F5),
-                          border: Border.all(color: const Color(0xFFFFE0E0)),
+                          color: colorScheme.errorContainer.withOpacity(0.1),
+                          border: Border.all(color: colorScheme.errorContainer),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
+                          children: [
                             Text(
                               'Delete Account',
                               style: TextStyle(
                                 fontFamily: 'Syne',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
-                                color: Colors.red,
+                                color: colorScheme.error,
                               ),
                             ),
-                            Icon(Icons.chevron_right_rounded, color: Colors.red, size: 20),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: colorScheme.error,
+                              size: 20,
+                            ),
                           ],
                         ),
                       ),
@@ -406,7 +556,12 @@ class _ColorOption extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(6),
-        border: isSelected ? Border.all(color: AppTheme.black, width: 2) : null,
+        border: isSelected
+            ? Border.all(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 2,
+              )
+            : null,
       ),
     );
   }
@@ -420,11 +575,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'DM Mono',
         fontSize: 10,
         letterSpacing: 1.2,
-        color: AppTheme.muted,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -445,6 +600,7 @@ class _EditField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
@@ -452,28 +608,28 @@ class _EditField extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 9,
               letterSpacing: 1.0,
-              color: AppTheme.dimmed,
+              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 4),
           TextField(
             controller: controller,
             maxLines: maxLines,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Syne',
               fontWeight: FontWeight.w700,
               fontSize: 15,
-              color: AppTheme.black,
+              color: theme.colorScheme.onSurface,
             ),
             decoration: InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.zero,
               hintText: hint,
-              hintStyle: const TextStyle(color: AppTheme.border),
+              hintStyle: TextStyle(color: theme.colorScheme.outline),
               border: InputBorder.none,
             ),
           ),

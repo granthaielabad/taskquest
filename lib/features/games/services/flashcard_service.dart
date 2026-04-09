@@ -15,10 +15,10 @@ class FlashcardService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => FlashcardDeckModel.fromMap(doc.data()))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => FlashcardDeckModel.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   Future<void> updateMastery(String deckId, int newProgress) async {

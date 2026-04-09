@@ -9,6 +9,8 @@ final leaderboardProvider = StreamProvider<List<UserModel>>((ref) {
       .limit(20)
       .snapshots()
       .map((snapshot) {
-    return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
-  });
+        return snapshot.docs
+            .map((doc) => UserModel.fromMap(doc.data()))
+            .toList();
+      });
 });

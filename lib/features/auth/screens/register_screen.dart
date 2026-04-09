@@ -48,25 +48,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     int score = 0;
     if (p.length >= 8) score++;
     if (p.contains(RegExp(r'[A-Z]')) && p.contains(RegExp(r'[a-z]'))) score++;
-    if (p.contains(RegExp(r'[0-9]')) && p.contains(RegExp(r'[^A-Za-z0-9]'))) score++;
+    if (p.contains(RegExp(r'[0-9]')) && p.contains(RegExp(r'[^A-Za-z0-9]'))) {
+      score++;
+    }
     return score;
   }
 
   String get _strengthLabel {
     switch (_passwordStrength) {
-      case 1: return 'Weak password';
-      case 2: return 'Medium password';
-      case 3: return 'Strong password';
-      default: return '';
+      case 1:
+        return 'Weak password';
+      case 2:
+        return 'Medium password';
+      case 3:
+        return 'Strong password';
+      default:
+        return '';
     }
   }
 
   Color get _strengthColor {
     switch (_passwordStrength) {
-      case 1: return const Color(0xFFE55555);
-      case 2: return const Color(0xFFE5A000);
-      case 3: return AppTheme.black;
-      default: return AppTheme.border;
+      case 1:
+        return const Color(0xFFE55555);
+      case 2:
+        return const Color(0xFFE5A000);
+      case 3:
+        return AppTheme.black;
+      default:
+        return AppTheme.borderLight;
     }
   }
 
@@ -81,26 +91,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = true);
     ref.read(authTransitionProvider.notifier).setTransitioning(true);
     try {
-      final cred = await ref.read(authServiceProvider).signUpWithEmail(
+      final cred = await ref
+          .read(authServiceProvider)
+          .signUpWithEmail(
             _emailController.text.trim(),
             _passController.text.trim(),
           );
-      
+
       if (cred.user != null) {
         debugPrint('RegisterScreen: Auth successful, updating display name...');
         // 1. Update Firebase Auth internal profile
         await cred.user!.updateDisplayName(_nameController.text.trim());
-        
+
         // 2. Force a reload to ensure the local user object is updated
         await cred.user!.reload();
-        
+
         debugPrint('RegisterScreen: Creating Firestore profile...');
         // 3. Create the Firestore document explicitly with the name from the controller
-        await ref.read(userServiceProvider).checkAndCreateProfile(
-          cred.user!.uid,
-          cred.user!.email!,
-          _nameController.text.trim(),
-        );
+        await ref
+            .read(userServiceProvider)
+            .checkAndCreateProfile(
+              cred.user!.uid,
+              cred.user!.email!,
+              _nameController.text.trim(),
+            );
         debugPrint('RegisterScreen: Handshake complete.');
       }
     } catch (e) {
@@ -121,11 +135,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       final cred = await ref.read(authServiceProvider).signInWithGoogle();
       if (cred?.user != null) {
-        await ref.read(userServiceProvider).checkAndCreateProfile(
-          cred!.user!.uid,
-          cred.user!.email!,
-          cred.user!.displayName ?? 'Scholar',
-        );
+        await ref
+            .read(userServiceProvider)
+            .checkAndCreateProfile(
+              cred!.user!.uid,
+              cred.user!.email!,
+              cred.user!.displayName ?? 'Scholar',
+            );
       } else {
         ref.read(authTransitionProvider.notifier).setTransitioning(false);
       }
@@ -144,7 +160,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -157,16 +173,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.chevron_left_rounded, size: 18, color: AppTheme.black),
+                    const Icon(
+                      Icons.chevron_left_rounded,
+                      size: 18,
+                      color: AppTheme.black,
+                    ),
                     const SizedBox(width: 2),
-                    Text('Back', style: AppTheme.bodyMono.copyWith(color: AppTheme.black, letterSpacing: 0.3)),
+                    Text(
+                      'Back',
+                      style: AppTheme.bodyMono.copyWith(
+                        color: AppTheme.black,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 28),
-              Text('Create your\naccount.', style: AppTheme.headingXL.copyWith(fontSize: 34, height: 1.05, letterSpacing: -1.0)),
+              Text(
+                'Create your\naccount.',
+                style: AppTheme.headingXL.copyWith(
+                  fontSize: 34,
+                  height: 1.05,
+                  letterSpacing: -1.0,
+                ),
+              ),
               const SizedBox(height: 12),
-              Text('Start your CS learning journey today.', style: AppTheme.bodyMono),
+              Text(
+                'Start your CS learning journey today.',
+                style: AppTheme.bodyMono,
+              ),
               const SizedBox(height: 32),
               const FieldLabel('Full Name'),
               const SizedBox(height: 6),
@@ -176,7 +212,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 hintText: 'Charlie',
                 keyboardType: TextInputType.name,
                 textCapitalization: TextCapitalization.words,
-                suffixIcon: const Icon(Icons.person_outline_rounded, size: 16, color: AppTheme.muted),
+                suffixIcon: const Icon(
+                  Icons.person_outline_rounded,
+                  size: 16,
+                  color: AppTheme.muted,
+                ),
               ),
               const SizedBox(height: 16),
               const FieldLabel('Email'),
@@ -186,7 +226,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
-                suffixIcon: const Icon(Icons.mail_outline_rounded, size: 16, color: AppTheme.muted),
+                suffixIcon: const Icon(
+                  Icons.mail_outline_rounded,
+                  size: 16,
+                  color: AppTheme.muted,
+                ),
               ),
               const SizedBox(height: 16),
               const FieldLabel('Password'),
@@ -198,7 +242,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 obscureText: _obscurePass,
                 suffixIcon: GestureDetector(
                   onTap: () => setState(() => _obscurePass = !_obscurePass),
-                  child: Icon(_obscurePass ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16, color: AppTheme.muted),
+                  child: Icon(
+                    _obscurePass
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 16,
+                    color: AppTheme.muted,
+                  ),
                 ),
               ),
               if (_passController.text.isNotEmpty) ...[
@@ -210,29 +260,57 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: Container(
                         height: 3,
                         margin: EdgeInsets.only(right: i < 2 ? 4 : 0),
-                        decoration: BoxDecoration(color: filled ? _strengthColor : AppTheme.border, borderRadius: BorderRadius.circular(2)),
+                        decoration: BoxDecoration(
+                          color: filled ? _strengthColor : AppTheme.borderLight,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     );
                   }),
                 ),
                 const SizedBox(height: 6),
-                Text(_strengthLabel, style: AppTheme.labelMono.copyWith(color: _strengthColor, letterSpacing: 0.3)),
+                Text(
+                  _strengthLabel,
+                  style: AppTheme.labelMono.copyWith(
+                    color: _strengthColor,
+                    letterSpacing: 0.3,
+                  ),
+                ),
               ],
               const SizedBox(height: 24),
-              TQButton(label: 'Create Account', isLoading: _isLoading, onTap: _register),
+              TQButton(
+                label: 'Create Account',
+                isLoading: _isLoading,
+                onTap: _register,
+              ),
               const SizedBox(height: 20),
               const OrDivider(label: 'OR SIGN UP WITH'),
               const SizedBox(height: 20),
-              GoogleButton(onTap: _registerWithGoogle, label: 'Sign up with Google'),
+              GoogleButton(
+                onTap: _registerWithGoogle,
+                label: 'Sign up with Google',
+              ),
               const SizedBox(height: 40),
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Already have an account? ', style: AppTheme.bodyMono),
+                    const Text(
+                      'Already have an account? ',
+                      style: AppTheme.bodyMono,
+                    ),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text('Log In', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.black, decoration: TextDecoration.underline)),
+                      child: const Text(
+                        'Log In',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: AppTheme.black,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
                   ],
                 ),

@@ -7,10 +7,12 @@ class BadgeService {
   Future<List<BadgeModel>> getUserBadges(String userId) async {
     // 1. Get all possible badges
     final allBadgesSnapshot = await _db.collection('badges').get();
-    
+
     // 2. Get user's unlocked badges list
     final userDoc = await _db.collection('users').doc(userId).get();
-    final unlockedIds = List<String>.from(userDoc.data()?['unlockedBadges'] ?? []);
+    final unlockedIds = List<String>.from(
+      userDoc.data()?['unlockedBadges'] ?? [],
+    );
 
     return allBadgesSnapshot.docs.map((doc) {
       final isUnlocked = unlockedIds.contains(doc.id);
@@ -27,7 +29,11 @@ class BadgeService {
   /// ── Progress Checks ─────────────────────────────────────────
 
   Future<void> checkSyntaxSage(String userId, int cardsReviewed) async {
-    final statsRef = _db.collection('users').doc(userId).collection('stats').doc('flashcards');
+    final statsRef = _db
+        .collection('users')
+        .doc(userId)
+        .collection('stats')
+        .doc('flashcards');
     await statsRef.set({
       'totalReviewed': FieldValue.increment(cardsReviewed),
     }, SetOptions(merge: true));
@@ -39,7 +45,11 @@ class BadgeService {
   }
 
   Future<void> checkBugHunter(String userId) async {
-    final statsRef = _db.collection('users').doc(userId).collection('stats').doc('coding');
+    final statsRef = _db
+        .collection('users')
+        .doc(userId)
+        .collection('stats')
+        .doc('coding');
     await statsRef.set({
       'challengesSolved': FieldValue.increment(1),
     }, SetOptions(merge: true));
@@ -51,7 +61,11 @@ class BadgeService {
   }
 
   Future<void> checkFlashAI(String userId) async {
-    final statsRef = _db.collection('users').doc(userId).collection('stats').doc('ai');
+    final statsRef = _db
+        .collection('users')
+        .doc(userId)
+        .collection('stats')
+        .doc('ai');
     await statsRef.set({
       'decksGenerated': FieldValue.increment(1),
     }, SetOptions(merge: true));

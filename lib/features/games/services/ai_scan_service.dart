@@ -1,52 +1,71 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:firebase_ai/firebase_ai.dart';
+import 'dart:typed_data';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:flutter/foundation.dart';
 import 'package:taskquest/features/games/providers/flashcard_provider.dart';
+import 'package:taskquest/core/constants/app_constants.dart';
 
 class AIScanService {
   final GenerativeModel _model;
 
   AIScanService()
-      : _model = FirebaseAI.vertexAI().generativeModel(
-          model: 'gemini-1.5-flash',
-          generationConfig: GenerationConfig(
-            responseMimeType: 'application/json',
-          ),
-        );
+    : _model = GenerativeModel(
+        model: 'gemini-2.5-flash',
+        apiKey: AppConstants.geminiApiKey,
+      );
 
   /// ── Main Entry Point ───────────────────────────────────────
-  Future<List<FlashcardModel>> generateFlashcardsFromFile(File file) async {
-    final extension = file.path.split('.').last.toLowerCase();
-    String prompt = "You are a CS Professor. Analyze the provided content and return exactly 10 high-quality flashcards for a Computer Science student. Return the result as a JSON array of objects with 'term' and 'definition' keys.";
-
-    GenerateContentResponse response;
-
-    if (extension == 'pdf') {
-      final text = await _extractTextFromPdf(file);
-      response = await _model.generateContent([
-        Content.text("$prompt\n\nContent:\n$text")
-      ]);
-    } else if (['png', 'jpg', 'jpeg'].contains(extension)) {
-      final bytes = await file.readAsBytes();
-      response = await _model.generateContent([
-        Content.multi([
-          TextPart(prompt),
-          InlineDataPart('image/jpeg', bytes),
-        ])
-      ]);
-    } else {
-      throw Exception('Unsupported file format: $extension');
+  Future<List<FlashcardModel>> generateFlashcardsFromFile(
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    if (AppConstants.geminiApiKey == 'PASTE_YOUR_API_KEY_HERE') {
+      throw Exception(
+        'Gemini API Key missing. Please add your key in lib/core/constants/app_constants.dart',
+      );
     }
 
-    return _parseResponse(response.text);
+    try {
+      final extension = fileName.split('.').last.toLowerCase();
+      String prompt =
+          "You are a CS Professor. Analyze the provided content and return exactly 10 high-quality flashcards for a Computer Science student. Return the result as a JSON array of objects with 'term' and 'definition' keys.";
+
+      GenerateContentResponse response;
+
+      if (extension == 'pdf') {
+        final text = _extractTextFromPdf(bytes);
+        response = await _model.generateContent([
+          Content.text("$prompt\n\nContent:\n$text"),
+        ]);
+      } else if (['png', 'jpg', 'jpeg'].contains(extension)) {
+        response = await _model.generateContent([
+          Content.multi([
+            TextPart(prompt),
+            DataPart('image/jpeg', bytes),
+          ]),
+        ]);
+      } else {
+        throw Exception('Unsupported file format: $extension');
+      }
+
+      if (response.text == null) {
+        throw Exception('AI returned an empty response. Try a different file.');
+      }
+
+      return _parseResponse(response.text);
+    } catch (e) {
+      debugPrint('AI Generation Error: $e');
+      if (e.toString().contains('403')) {
+        throw Exception('API Key invalid or restricted. Check your AI Studio settings.');
+      }
+      throw Exception('Failed to generate cards: ${e.toString()}');
+    }
   }
 
   /// ── PDF Extraction ─────────────────────────────────────────
-  Future<String> _extractTextFromPdf(File file) async {
+  String _extractTextFromPdf(Uint8List bytes) {
     try {
-      final Uint8List bytes = await file.readAsBytes();
       final PdfDocument document = PdfDocument(inputBytes: bytes);
       final String text = PdfTextExtractor(document).extractText();
       document.dispose();
@@ -62,21 +81,36 @@ class AIScanService {
     if (text == null) return [];
     try {
       final List<dynamic> decoded = jsonDecode(text);
-      return decoded.map((item) => FlashcardModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString() + decoded.indexOf(item).toString(),
-        term: item['term'] ?? '',
-        definition: item['definition'] ?? '',
-      )).toList();
+      return decoded
+          .map(
+            (item) => FlashcardModel(
+              id:
+                  DateTime.now().millisecondsSinceEpoch.toString() +
+                  decoded.indexOf(item).toString(),
+              term: item['term'] ?? '',
+              definition: item['definition'] ?? '',
+            ),
+          )
+          .toList();
     } catch (e) {
       debugPrint('AI Parsing Error: $e');
       // Fallback cleanup
-      final cleaned = text.replaceAll('```json', '').replaceAll('```', '').trim();
+      final cleaned = text
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
       final List<dynamic> decoded = jsonDecode(cleaned);
-      return decoded.map((item) => FlashcardModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString() + decoded.indexOf(item).toString(),
-        term: item['term'] ?? '',
-        definition: item['definition'] ?? '',
-      )).toList();
+      return decoded
+          .map(
+            (item) => FlashcardModel(
+              id:
+                  DateTime.now().millisecondsSinceEpoch.toString() +
+                  decoded.indexOf(item).toString(),
+              term: item['term'] ?? '',
+              definition: item['definition'] ?? '',
+            ),
+          )
+          .toList();
     }
   }
 }

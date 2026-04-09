@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/home/services/quest_service.dart';
+import 'package:taskquest/features/auth/providers/auth_provider.dart';
 
 enum QuestDifficulty { easy, medium, hard }
 
@@ -55,5 +56,7 @@ final questServiceProvider = Provider<QuestService>((ref) {
 });
 
 final dailyQuestsProvider = StreamProvider<List<QuestModel>>((ref) {
-  return ref.watch(questServiceProvider).getDailyQuests();
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return Stream.value([]);
+  return ref.watch(questServiceProvider).getDailyQuests(user.uid);
 });

@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 
-// Shared field label 
+// Shared field label
 class FieldLabel extends StatelessWidget {
   final String text;
   const FieldLabel(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: AppTheme.labelMono,
-    );
+    return Text(text.toUpperCase(), style: AppTheme.labelMono);
   }
 }
 
@@ -47,9 +44,9 @@ class TQInputField extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.white,
         border: Border.all(
-          color: hasError 
-              ? Colors.red 
-              : (isFocused ? AppTheme.black : AppTheme.border),
+          color: hasError
+              ? Colors.red
+              : (isFocused ? AppTheme.black : AppTheme.borderLight),
           width: (isFocused || hasError) ? 1.5 : 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -64,7 +61,10 @@ class TQInputField extends StatelessWidget {
         style: AppTheme.bodyMono.copyWith(color: AppTheme.black, fontSize: 13),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: AppTheme.bodyMono.copyWith(color: AppTheme.dimmed, fontSize: 13),
+          hintStyle: AppTheme.bodyMono.copyWith(
+            color: AppTheme.dimmed,
+            fontSize: 13,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -76,8 +76,10 @@ class TQInputField extends StatelessWidget {
                   child: suffixIcon,
                 )
               : null,
-          suffixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
         ),
       ),
     );
@@ -88,13 +90,13 @@ class TQInputField extends StatelessWidget {
 class TQButton extends StatelessWidget {
   final String label;
   final bool isLoading;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const TQButton({
     super.key,
     required this.label,
     required this.isLoading,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
@@ -103,13 +105,15 @@ class TQButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: isLoading ? null : () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
+        onPressed: (isLoading || onTap == null)
+            ? null
+            : () {
+                HapticFeedback.lightImpact();
+                onTap!();
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.black,
-          disabledBackgroundColor: AppTheme.black.withValues(alpha: 0.6),
+          disabledBackgroundColor: AppTheme.black.withOpacity(0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -153,15 +157,18 @@ class OrDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppTheme.border)),
+        const Expanded(child: Divider(color: AppTheme.borderLight)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
             label,
-            style: AppTheme.labelMono.copyWith(fontSize: 9, color: AppTheme.dimmed),
+            style: AppTheme.labelMono.copyWith(
+              fontSize: 9,
+              color: AppTheme.dimmed,
+            ),
           ),
         ),
-        const Expanded(child: Divider(color: AppTheme.border)),
+        const Expanded(child: Divider(color: AppTheme.borderLight)),
       ],
     );
   }
@@ -172,7 +179,7 @@ class GoogleButton extends StatelessWidget {
   final VoidCallback onTap;
   final String label;
   const GoogleButton({
-    super.key, 
+    super.key,
     required this.onTap,
     this.label = 'Continue with Google',
   });
@@ -189,7 +196,7 @@ class GoogleButton extends StatelessWidget {
         },
         style: OutlinedButton.styleFrom(
           backgroundColor: AppTheme.white,
-          side: const BorderSide(color: AppTheme.border),
+          side: const BorderSide(color: AppTheme.borderLight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -239,15 +246,18 @@ class GoogleIconPainter extends CustomPainter {
       ..color = const Color(0xFF4285F4)
       ..strokeWidth = r * 0.28
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(cx, cy),
-      Offset(cx + r * 0.85, cy),
-      barPaint,
-    );
+    canvas.drawLine(Offset(cx, cy), Offset(cx + r * 0.85, cy), barPaint);
   }
 
-  void _drawArc(Canvas canvas, double cx, double cy, double r,
-      double startAngle, double sweepAngle, Color color) {
+  void _drawArc(
+    Canvas canvas,
+    double cx,
+    double cy,
+    double r,
+    double startAngle,
+    double sweepAngle,
+    Color color,
+  ) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;

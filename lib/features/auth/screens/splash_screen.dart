@@ -35,9 +35,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       duration: const Duration(milliseconds: 2000),
     );
 
-    _progressAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _progressAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _controller.forward();
 
@@ -71,28 +72,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: Stack(
         children: [
-          // Layer 1: Grid background 
+          // Layer 1: Grid background
           const Positioned.fill(
-            child: RepaintBoundary( // ✅ Isolates grid from repaints
-              child: CustomPaint(
-                painter: _GridPainter(),
-              ),
+            child: RepaintBoundary(
+              // ✅ Isolates grid from repaints
+              child: CustomPaint(painter: _GridPainter()),
             ),
           ),
 
-          // Layer 2: Corner accent — top left 
+          // Layer 2: Corner accent — top left
           const Positioned(
             top: 80,
             left: 36,
             child: SizedBox(
               width: 28,
               height: 28,
-              child: CustomPaint(
-                painter: _CornerPainter(topLeft: true),
-              ),
+              child: CustomPaint(painter: _CornerPainter(topLeft: true)),
             ),
           ),
 
@@ -103,9 +101,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: SizedBox(
               width: 28,
               height: 28,
-              child: CustomPaint(
-                painter: _CornerPainter(topLeft: false),
-              ),
+              child: CustomPaint(painter: _CornerPainter(topLeft: false)),
             ),
           ),
 
@@ -152,7 +148,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
           ),
 
-          // Layer 5: Animated progress loader 
+          // Layer 5: Animated progress loader
           Positioned(
             bottom: 90,
             left: 40,
@@ -164,7 +160,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   Container(
                     height: 2,
                     decoration: BoxDecoration(
-                      color: AppTheme.border,
+                      color: AppTheme.borderLight,
                       borderRadius: BorderRadius.circular(2),
                     ),
                     child: AnimatedBuilder(
@@ -210,7 +206,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 fontWeight: FontWeight.w400,
                 fontSize: 9,
                 letterSpacing: 1.26,
-                color: AppTheme.border,
+                color: AppTheme.borderLight,
               ),
             ),
           ),
@@ -226,7 +222,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.border
+      ..color = AppTheme.borderLight
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
@@ -255,7 +251,7 @@ class _CornerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.border
+      ..color = AppTheme.borderLight
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -265,9 +261,15 @@ class _CornerPainter extends CustomPainter {
       canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
     } else {
       canvas.drawLine(
-          Offset(0, size.height), Offset(size.width, size.height), paint);
+        Offset(0, size.height),
+        Offset(size.width, size.height),
+        paint,
+      );
       canvas.drawLine(
-          Offset(size.width, 0), Offset(size.width, size.height), paint);
+        Offset(size.width, 0),
+        Offset(size.width, size.height),
+        paint,
+      );
     }
   }
 

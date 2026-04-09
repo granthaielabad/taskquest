@@ -1,27 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class NotificationsScreen extends StatefulWidget {
+// Use Notifier instead of StateProvider for better compatibility
+class NotificationSettingsNotifier extends Notifier<Map<String, bool>> {
+  @override
+  Map<String, bool> build() {
+    return {
+      'all': true,
+      'daily': true,
+      'streak': true,
+      'quest': true,
+      'xp': false,
+      'social': false,
+      'announcements': true,
+      'quiet': true,
+    };
+  }
+
+  void toggle(String key, bool value) {
+    state = {...state, key: value};
+  }
+}
+
+final notificationSettingsProvider =
+    NotifierProvider<NotificationSettingsNotifier, Map<String, bool>>(
+      NotificationSettingsNotifier.new,
+    );
+
+class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(notificationSettingsProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  bool allNotifications = true;
-  bool dailyReminder = true;
-  bool streakAlert = true;
-  bool questComplete = true;
-  bool xpMilestones = false;
-  bool friendActivity = false;
-  bool appAnnouncements = true;
-  bool quietHours = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -36,31 +52,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.chevron_left_rounded, color: AppTheme.black),
+                      child: Icon(
+                        Icons.chevron_left_rounded,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Notifications',
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w800,
-                        fontSize: 24,
+                        fontSize: 22,
                         letterSpacing: -0.5,
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppTheme.border, height: 1),
+            Divider(color: colorScheme.outline, height: 1),
 
             Expanded(
               child: SingleChildScrollView(
@@ -68,13 +87,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
-                    
+                    const SizedBox(height: 24),
+
                     // Master Switch Card
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -82,37 +104,47 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF262626),
+                              color: colorScheme.surface.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 20),
+                            child: Icon(
+                              Icons.notifications_none_rounded,
+                              color: colorScheme.surface,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text('All Notifications',
-                                      style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
+                                Text(
+                                  'All Notifications',
+                                  style: TextStyle(
+                                    fontFamily: 'Syne',
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                    color: colorScheme.surface,
+                                  ),
                                 ),
-                                FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text('Master switch for all alerts',
-                                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: Colors.white.withValues(alpha: 0.4))),
+                                Text(
+                                  'Master switch for all alerts',
+                                  style: TextStyle(
+                                    fontFamily: 'DM Mono',
+                                    fontSize: 10,
+                                    color: colorScheme.surface.withOpacity(0.5),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 12),
                           Switch(
-                            value: allNotifications,
-                            onChanged: (v) => setState(() => allNotifications = v),
-                            activeThumbColor: Colors.white,
-                            activeTrackColor: const Color(0xFF404040),
+                            value: settings['all'] ?? true,
+                            onChanged: (v) => ref
+                                .read(notificationSettingsProvider.notifier)
+                                .toggle('all', v),
+                            activeThumbColor: colorScheme.surface,
                           ),
                         ],
                       ),
@@ -129,8 +161,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           iconColor: const Color(0xFF4A8BFF),
                           title: 'Daily Reminder',
                           subtitle: 'Nudge to complete daily quest',
-                          value: dailyReminder,
-                          onChanged: (v) => setState(() => dailyReminder = v),
+                          value: settings['daily'] ?? true,
+                          onChanged: (v) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .toggle('daily', v),
                         ),
                         _NotificationTile(
                           icon: Icons.star_outline_rounded,
@@ -138,8 +172,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           iconColor: const Color(0xFFFFAB00),
                           title: 'Streak Alert',
                           subtitle: 'Remind before streak breaks',
-                          value: streakAlert,
-                          onChanged: (v) => setState(() => streakAlert = v),
+                          value: settings['streak'] ?? true,
+                          onChanged: (v) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .toggle('streak', v),
                         ),
                         _NotificationTile(
                           icon: Icons.check_box_outlined,
@@ -147,17 +183,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           iconColor: const Color(0xFF00C853),
                           title: 'Quest Complete',
                           subtitle: 'When you finish a daily quest',
-                          value: questComplete,
-                          onChanged: (v) => setState(() => questComplete = v),
+                          value: settings['quest'] ?? true,
+                          onChanged: (v) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .toggle('quest', v),
                         ),
                         _NotificationTile(
                           icon: Icons.timeline_rounded,
-                          iconBg: const Color(0xFFF5F5F5),
-                          iconColor: const Color(0xFF9E9E9E),
+                          iconBg: colorScheme.outline.withOpacity(0.2),
+                          iconColor: colorScheme.onSurfaceVariant,
                           title: 'XP Milestones',
                           subtitle: 'Level-up and XP threshold alerts',
-                          value: xpMilestones,
-                          onChanged: (v) => setState(() => xpMilestones = v),
+                          value: settings['xp'] ?? false,
+                          onChanged: (v) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .toggle('xp', v),
                           isLast: true,
                         ),
                       ],
@@ -170,21 +210,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       children: [
                         _NotificationTile(
                           icon: Icons.people_outline_rounded,
-                          iconBg: const Color(0xFFF5F5F5),
-                          iconColor: const Color(0xFF9E9E9E),
+                          iconBg: colorScheme.outline.withOpacity(0.2),
+                          iconColor: colorScheme.onSurfaceVariant,
                           title: 'Friend Activity',
                           subtitle: 'When friends earn badges or level up',
-                          value: friendActivity,
-                          onChanged: (v) => setState(() => friendActivity = v),
+                          value: settings['social'] ?? false,
+                          onChanged: (v) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .toggle('social', v),
                         ),
                         _NotificationTile(
                           icon: Icons.branding_watermark_outlined,
-                          iconBg: const Color(0xFFF5F5F5),
-                          iconColor: const Color(0xFF9E9E9E),
+                          iconBg: colorScheme.outline.withOpacity(0.2),
+                          iconColor: colorScheme.onSurfaceVariant,
                           title: 'App Announcements',
                           subtitle: 'New content and feature updates',
-                          value: appAnnouncements,
-                          onChanged: (v) => setState(() => appAnnouncements = v),
+                          value: settings['announcements'] ?? true,
+                          onChanged: (v) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .toggle('announcements', v),
                           isLast: true,
                         ),
                       ],
@@ -199,44 +243,78 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           padding: const EdgeInsets.all(20),
                           child: Row(
                             children: [
-                              const Expanded(
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Enable Quiet Hours',
-                                        style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
-                                    SizedBox(height: 4),
-                                    Text('Silence all alerts during set times',
-                                        style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted)),
+                                    Text(
+                                      'Enable Quiet Hours',
+                                      style: TextStyle(
+                                        fontFamily: 'Syne',
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Silence all alerts during set times',
+                                      style: TextStyle(
+                                        fontFamily: 'DM Mono',
+                                        fontSize: 10,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                               Switch(
-                                value: quietHours,
-                                onChanged: (v) => setState(() => quietHours = v),
-                                activeThumbColor: Colors.white,
-                                activeTrackColor: AppTheme.black,
+                                value: settings['quiet'] ?? true,
+                                onChanged: (v) => ref
+                                    .read(notificationSettingsProvider.notifier)
+                                    .toggle('quiet', v),
+                                activeThumbColor: colorScheme.onSurface,
                               ),
                             ],
                           ),
                         ),
-                        const Divider(color: AppTheme.border, height: 1),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        Divider(color: colorScheme.outline, height: 1),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('START',
-                                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.dimmed)),
-                                  SizedBox(height: 4),
-                                  Text('10:00 PM',
-                                      style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18, color: AppTheme.black)),
+                                  Text(
+                                    'START',
+                                    style: TextStyle(
+                                      fontFamily: 'DM Mono',
+                                      fontSize: 9,
+                                      color: colorScheme.onSurfaceVariant
+                                          .withOpacity(0.5),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '10:00 PM',
+                                    style: TextStyle(
+                                      fontFamily: 'Syne',
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 18,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
                                 ],
                               ),
-                              Icon(Icons.chevron_right_rounded, color: AppTheme.border),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: colorScheme.outline,
+                              ),
                             ],
                           ),
                         ),
@@ -262,11 +340,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'DM Mono',
         fontSize: 10,
         letterSpacing: 1.2,
-        color: AppTheme.muted,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -278,10 +356,11 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.white,
-        border: Border.all(color: AppTheme.border),
+        color: theme.colorScheme.surface,
+        border: Border.all(color: theme.colorScheme.outline),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(children: children),
@@ -312,6 +391,9 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       children: [
         Padding(
@@ -335,15 +417,28 @@ class _NotificationTile extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text(title,
-                          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 2),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text(subtitle,
-                          style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
+                      child: Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 9,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -352,13 +447,12 @@ class _NotificationTile extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: Colors.white,
-                activeTrackColor: iconColor,
+                activeThumbColor: iconColor,
               ),
             ],
           ),
         ),
-        if (!isLast) const Divider(color: AppTheme.border, height: 1, indent: 72),
+        if (!isLast) Divider(color: colorScheme.outline, height: 1, indent: 72),
       ],
     );
   }

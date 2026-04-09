@@ -26,10 +26,10 @@ class XpUtils {
     final currentLevel = calculateLevel(totalXp);
     final xpAtStartOfLevel = totalXpForLevel(currentLevel);
     final xpAtEndOfLevel = totalXpForLevel(currentLevel + 1);
-    
+
     final xpInCurrentLevel = totalXp - xpAtStartOfLevel;
     final xpRequiredForNextLevel = xpAtEndOfLevel - xpAtStartOfLevel;
-    
+
     final progressFactor = xpInCurrentLevel / xpRequiredForNextLevel;
 
     return {

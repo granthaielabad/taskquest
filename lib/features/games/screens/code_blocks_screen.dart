@@ -1,25 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
-
-class CodeLine {
-  final String content;
-  final int correctIndex;
-
-  CodeLine({required this.content, required this.correctIndex});
-}
-
-class CodeChallenge {
-  final String title;
-  final String language;
-  final List<CodeLine> lines;
-
-  CodeChallenge({required this.title, required this.language, required this.lines});
-}
+import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
+import 'package:taskquest/features/games/widgets/game_timer.dart';
+import 'package:taskquest/features/shared/widgets/report_dialog.dart';
 
 class CodeBlocksScreen extends ConsumerStatefulWidget {
   const CodeBlocksScreen({super.key});
@@ -29,196 +19,403 @@ class CodeBlocksScreen extends ConsumerStatefulWidget {
 }
 
 class _CodeBlocksScreenState extends ConsumerState<CodeBlocksScreen> {
-  late CodeChallenge _currentChallenge;
-  late List<CodeLine> _shuffledLines;
-  bool _isSuccess = false;
+  int _timeLeft = 35;
+  int _totalTime = 35;
+  Timer? _timer;
+  String? _placedValue;
+
+  final String _correctValue = '"Hello, "';
+  final List<String> _options = ['"Hello, "', 'console.log', 'null'];
 
   @override
   void initState() {
     super.initState();
-    _loadChallenge();
+    _initializeDifficulty();
+    _startTimer();
   }
 
-  void _loadChallenge() {
-    _currentChallenge = CodeChallenge(
-      title: 'Python List Comprehension',
-      language: 'PYTHON',
-      lines: [
-        CodeLine(content: 'numbers = [1, 2, 3, 4, 5]', correctIndex: 0),
-        CodeLine(content: 'squares = [x**2 for x in numbers]', correctIndex: 1),
-        CodeLine(content: 'if x % 2 == 0]', correctIndex: 2),
-        CodeLine(content: 'print(squares)', correctIndex: 3),
-      ],
-    );
-    
-    _shuffledLines = List.from(_currentChallenge.lines)..shuffle();
-    _isSuccess = false;
+  void _initializeDifficulty() {
+    final user = ref.read(userProfileProvider).value;
+    final level = user?.level ?? 1;
+
+    if (level >= 8) {
+      _totalTime = 15;
+    } else if (level >= 4) {
+      _totalTime = 25;
+    } else {
+      _totalTime = 35;
+    }
+    _timeLeft = _totalTime;
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_timeLeft > 0) {
+        setState(() => _timeLeft--);
+      } else {
+        _timer?.cancel();
+        _showGameOver();
+      }
+    });
   }
 
   void _checkSolution() async {
-    bool correct = true;
-    for (int i = 0; i < _shuffledLines.length; i++) {
-      if (_shuffledLines[i].correctIndex != i) {
-        correct = false;
-        break;
-      }
-    }
-
-    if (correct) {
+    if (_placedValue == _correctValue) {
       HapticFeedback.vibrate();
-      setState(() => _isSuccess = true);
-      
-      final user = ref.read(authStateProvider).value;
+      _timer?.cancel();
+
+      final user = ref.read(currentUserProvider);
       if (user != null) {
         await ref.read(userServiceProvider).addXp(user.uid, 100);
         await ref.read(badgeServiceProvider).checkBugHunter(user.uid);
+        
+        // Record activity
+        await ref.read(activityServiceProvider).recordActivity(
+              user.uid,
+              ActivityModel(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                title: 'Code Blocks Mastered',
+                subtitle: 'Completed syntax challenge',
+                xpReward: 100,
+                timestamp: DateTime.now(),
+                type: ActivityType.game,
+              ),
+            );
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Correct! +100 XP Earned'), backgroundColor: Colors.green),
-        );
+        _showSuccessDialog();
       }
     } else {
       HapticFeedback.heavyImpact();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Not quite right. Try again!'), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text('Not quite right. Try again!'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('Code Blocks', style: TextStyle(fontFamily: 'Syne', fontSize: 16)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => Navigator.pop(context),
+  void _showGameOver() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Time\'s Up!',
+          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold),
         ),
+        content: const Text(
+          'Try to think faster next time!',
+          style: TextStyle(fontFamily: 'DM Mono'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _timeLeft = _totalTime;
+                _placedValue = null;
+              });
+              _startTimer();
+            },
+            child: const Text('RETRY'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('QUIT'),
+          ),
+        ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.black,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _currentChallenge.language,
-                    style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  _currentChallenge.title,
-                  style: AppTheme.headingL,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Drag the blocks to reorder the code correctly.',
-                  style: AppTheme.bodyMono,
-                ),
-              ],
+    );
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text(
+          'Correct!',
+          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'You filled in the missing code correctly.',
+              style: TextStyle(fontFamily: 'DM Mono', fontSize: 13),
             ),
-          ),
-          
-          Expanded(
-            child: ReorderableListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              itemCount: _shuffledLines.length,
-              onReorder: (oldIndex, newIndex) {
-                HapticFeedback.selectionClick();
-                setState(() {
-                  if (newIndex > oldIndex) newIndex -= 1;
-                  final item = _shuffledLines.removeAt(oldIndex);
-                  _shuffledLines.insert(newIndex, item);
-                });
-              },
-              itemBuilder: (context, index) {
-                final line = _shuffledLines[index];
-                return Container(
-                  key: ValueKey(line.content),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    border: Border.all(color: AppTheme.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.drag_indicator_rounded, color: AppTheme.dimmed, size: 20),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          line.content,
-                          style: const TextStyle(
-                            fontFamily: 'DM Mono',
-                            fontSize: 13,
-                            color: AppTheme.black,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+            const SizedBox(height: 20),
+            const Text(
+              '🔥 +100 XP Earned',
+              style: TextStyle(
+                fontFamily: 'Syne',
+                fontWeight: FontWeight.bold,
+                color: Colors.orange,
+              ),
             ),
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 56,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() => _shuffledLines.shuffle());
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppTheme.border),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('RESET', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isSuccess ? null : () {
-                        HapticFeedback.mediumImpact();
-                        _checkSolution();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.black,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: Text(_isSuccess ? 'COMPLETED' : 'CHECK', style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                ),
-              ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'DONE',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const ReportDialog(
+        gameType: 'code_blocks',
+        contentId: 'greet_function_missing_hello',
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          'Code Blocks',
+          style: TextStyle(fontFamily: 'Syne', fontSize: 16),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.report_problem_outlined, size: 20),
+            tooltip: 'Report Issue',
+            onPressed: _showReportDialog,
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GameTimer(timeLeft: _timeLeft, totalTime: _totalTime),
+            const SizedBox(height: 24),
+
+            const FieldLabel('FILL IN THE MISSING CODE'),
+            const SizedBox(height: 12),
+
+            // Code block card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTheme.black,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 14,
+                        height: 1.8,
+                      ),
+                      children: [
+                        const TextSpan(
+                          text: 'function ',
+                          style: TextStyle(color: Color(0xFF7BA3F5)),
+                        ),
+                        const TextSpan(
+                          text: 'greet',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        const TextSpan(
+                          text: '(name) {\n  ',
+                          style: TextStyle(color: Color(0xFFCCCCCC)),
+                        ),
+                        const TextSpan(
+                          text: 'return ',
+                          style: TextStyle(color: Color(0xFF7BA3F5)),
+                        ),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: DragTarget<String>(
+                            onAcceptWithDetails: (details) {
+                              setState(() {
+                                _placedValue = details.data;
+                              });
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return Container(
+                                width: 80,
+                                height: 24,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: candidateData.isNotEmpty
+                                      ? Colors.white24
+                                      : const Color(0xFF333333),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: _placedValue != null
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _placedValue ?? '',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: 'DM Mono',
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const TextSpan(
+                          text: ' + name;\n}',
+                          style: TextStyle(color: Color(0xFFCCCCCC)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            const FieldLabel('DRAG A CHIP INTO THE SLOT'),
+            const SizedBox(height: 16),
+
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: _options.map((option) {
+                final isPlaced = _placedValue == option;
+                return Draggable<String>(
+                  data: option,
+                  feedback: Material(
+                    color: Colors.transparent,
+                    child: _CodeChip(label: option, isDragging: true),
+                  ),
+                  childWhenDragging: Opacity(
+                    opacity: 0.3,
+                    child: _CodeChip(label: option),
+                  ),
+                  child: Opacity(
+                    opacity: isPlaced ? 0.3 : 1.0,
+                    child: _CodeChip(label: option),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 48),
+
+            TQButton(
+              label: 'CHECK SOLUTION',
+              isLoading: false,
+              onTap: _placedValue == null ? null : _checkSolution,
+            ),
+
+            const SizedBox(height: 12),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    _placedValue = null;
+                  });
+                },
+                child: Text(
+                  'RESET',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 11,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CodeChip extends StatelessWidget {
+  final String label;
+  final bool isDragging;
+  const _CodeChip({required this.label, this.isDragging = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF222222),
+        border: Border.all(
+          color: isDragging ? Colors.white : const Color(0xFF444444),
+        ),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: isDragging
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ]
+            : null,
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 12,
+          color: Color(0xFFCCCCCC),
+        ),
       ),
     );
   }

@@ -45,7 +45,8 @@ class AuthService {
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: null, // accessToken is optional for Firebase Google Auth if idToken is present
+        accessToken:
+            null, // accessToken is optional for Firebase Google Auth if idToken is present
         idToken: googleAuth.idToken,
       );
 

@@ -7,7 +7,7 @@ class ExploreContentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: Stack(
         children: [
           CustomScrollView(
@@ -20,10 +20,12 @@ class ExploreContentScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.black,
                     image: DecorationImage(
-                      image: const NetworkImage('https://picsum.photos/seed/turing/800/600'),
+                      image: const NetworkImage(
+                        'https://picsum.photos/seed/turing/800/600',
+                      ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
-                        Colors.black.withValues(alpha: 0.5),
+                        Colors.black.withOpacity(0.5),
                         BlendMode.darken,
                       ),
                     ),
@@ -35,10 +37,15 @@ class ExploreContentScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                            color: Colors.white.withOpacity(0.2),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -71,7 +78,7 @@ class ExploreContentScreen extends StatelessWidget {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: Colors.white.withOpacity(0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: const Center(
@@ -106,7 +113,7 @@ class ExploreContentScreen extends StatelessWidget {
                 ),
               ),
 
-              // Article Body 
+              // Article Body
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(26, 32, 26, 100),
                 sliver: SliverList(
@@ -121,13 +128,16 @@ class ExploreContentScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Pull Quote
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 24,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        border: Border.all(color: AppTheme.borderLight),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -262,10 +272,14 @@ class ExploreContentScreen extends StatelessWidget {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: Colors.white.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                            child: const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                         ],
                       ),
@@ -286,15 +300,24 @@ class ExploreContentScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.3),
+                        color: Colors.black.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                        ),
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 12),
+                          Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Multimedia',
@@ -313,11 +336,15 @@ class ExploreContentScreen extends StatelessWidget {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withOpacity(0.3),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
                     ),
-                    child: const Icon(Icons.share_rounded, color: Colors.white, size: 16),
+                    child: const Icon(
+                      Icons.share_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ],
               ),
@@ -333,7 +360,9 @@ class ExploreContentScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isHighlight ? AppTheme.black : Colors.transparent,
-        border: Border.all(color: isHighlight ? AppTheme.black : AppTheme.border),
+        border: Border.all(
+          color: isHighlight ? AppTheme.black : AppTheme.borderLight,
+        ),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

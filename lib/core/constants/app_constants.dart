@@ -1,4 +1,8 @@
 class AppConstants {
+  // AI Configuration
+  // Get your free key at: https://aistudio.google.com/app/apikey
+  static const String geminiApiKey = 'PASTE_YOUR_API_KEY_HERE';
+
   // XP per task difficulty
   static const int xpEasy = 10;
   static const int xpMedium = 25;
@@ -6,16 +10,16 @@ class AppConstants {
 
   // XP required per level
   static const List<int> levelThresholds = [
-    0,    // Level 1
-    100,  // Level 2
-    250,  // Level 3
-    500,  // Level 4
+    0, // Level 1
+    100, // Level 2
+    250, // Level 3
+    500, // Level 4
     1000, // Level 5
     2000, // Level 6
     3500, // Level 7
     5500, // Level 8
     8000, // Level 9
-    12000,// Level 10
+    12000, // Level 10
   ];
 
   static int getLevelFromXP(int xp) {

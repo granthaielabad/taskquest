@@ -22,6 +22,8 @@ class AuthTransitionNotifier extends Notifier<bool> {
   void setTransitioning(bool value) => state = value;
 }
 
-final authTransitionProvider = NotifierProvider<AuthTransitionNotifier, bool>(() {
-  return AuthTransitionNotifier();
-});
+final authTransitionProvider = NotifierProvider<AuthTransitionNotifier, bool>(
+  () {
+    return AuthTransitionNotifier();
+  },
+);

@@ -50,20 +50,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isLoading = true);
     ref.read(authTransitionProvider.notifier).setTransitioning(true);
-    
+
     try {
-      final cred = await ref.read(authServiceProvider).signInWithEmail(
+      final cred = await ref
+          .read(authServiceProvider)
+          .signInWithEmail(
             _emailController.text.trim(),
             _passController.text.trim(),
           );
-      
+
       if (cred.user != null) {
         // Handshake: Ensure Firestore doc exists and metadata is synced
-        await ref.read(userServiceProvider).checkAndCreateProfile(
-          cred.user!.uid,
-          cred.user!.email!,
-          cred.user!.displayName ?? 'Scholar',
-        );
+        await ref
+            .read(userServiceProvider)
+            .checkAndCreateProfile(
+              cred.user!.uid,
+              cred.user!.email!,
+              cred.user!.displayName ?? 'Scholar',
+            );
       }
     } catch (e) {
       if (mounted) {
@@ -83,11 +87,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final cred = await ref.read(authServiceProvider).signInWithGoogle();
       if (cred?.user != null) {
-        await ref.read(userServiceProvider).checkAndCreateProfile(
-          cred!.user!.uid,
-          cred.user!.email!,
-          cred.user!.displayName ?? 'Scholar',
-        );
+        await ref
+            .read(userServiceProvider)
+            .checkAndCreateProfile(
+              cred!.user!.uid,
+              cred.user!.email!,
+              cred.user!.displayName ?? 'Scholar',
+            );
       } else {
         ref.read(authTransitionProvider.notifier).setTransitioning(false);
       }
@@ -106,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -195,7 +201,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordScreen(),
+                      ),
                     );
                   },
                   child: Text(
@@ -210,11 +218,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              TQButton(
-                label: 'Log In',
-                isLoading: _isLoading,
-                onTap: _login,
-              ),
+              TQButton(label: 'Log In', isLoading: _isLoading, onTap: _login),
               const SizedBox(height: 20),
 
               const OrDivider(label: 'OR CONTINUE WITH'),
@@ -227,22 +231,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: AppTheme.bodyMono,
-                    ),
+                    Text("Don't have an account? ", style: AppTheme.bodyMono),
                     GestureDetector(
                       onTap: () => Navigator.push(
                         context,
                         PageRouteBuilder(
                           pageBuilder: (_, animation, _) =>
                               const RegisterScreen(),
-                          transitionsBuilder:
-                              (_, animation, _, child) =>
-                                  FadeTransition(
-                                      opacity: animation, child: child),
-                          transitionDuration:
-                              const Duration(milliseconds: 300),
+                          transitionsBuilder: (_, animation, _, child) =>
+                              FadeTransition(opacity: animation, child: child),
+                          transitionDuration: const Duration(milliseconds: 300),
                         ),
                       ),
                       child: const Text(

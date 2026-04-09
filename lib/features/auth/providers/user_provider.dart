@@ -8,6 +8,7 @@ class UserModel {
   final String email;
   final String displayName;
   final String username;
+  final String photoUrl;
   final String bio;
   final String school;
   final String course;
@@ -23,6 +24,7 @@ class UserModel {
     required this.email,
     required this.displayName,
     this.username = '',
+    this.photoUrl = '',
     this.bio = '',
     this.school = '',
     this.course = '',
@@ -40,6 +42,7 @@ class UserModel {
       'email': email,
       'displayName': displayName,
       'username': username,
+      'photoUrl': photoUrl,
       'bio': bio,
       'school': school,
       'course': course,
@@ -58,6 +61,7 @@ class UserModel {
       email: map['email'] ?? '',
       displayName: map['displayName'] ?? '',
       username: map['username'] ?? '',
+      photoUrl: map['photoUrl'] ?? '',
       bio: map['bio'] ?? '',
       school: map['school'] ?? '',
       course: map['course'] ?? '',
@@ -73,6 +77,7 @@ class UserModel {
   UserModel copyWith({
     String? displayName,
     String? username,
+    String? photoUrl,
     String? bio,
     String? school,
     String? course,
@@ -88,6 +93,7 @@ class UserModel {
       email: email,
       displayName: displayName ?? this.displayName,
       username: username ?? this.username,
+      photoUrl: photoUrl ?? this.photoUrl,
       bio: bio ?? this.bio,
       school: school ?? this.school,
       course: course ?? this.course,

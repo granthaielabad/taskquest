@@ -9,11 +9,7 @@ class LevelUpDialog extends StatefulWidget {
   final int newLevel;
   final String rank;
 
-  const LevelUpDialog({
-    super.key,
-    required this.newLevel,
-    required this.rank,
-  });
+  const LevelUpDialog({super.key, required this.newLevel, required this.rank});
 
   @override
   State<LevelUpDialog> createState() => _LevelUpDialogState();
@@ -41,7 +37,8 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
   void _shareAchievement() {
     SharePlus.instance.share(
       ShareParams(
-        text: 'I just reached Level ${widget.newLevel} (${widget.rank}) on TaskQuest! 🚀 #TaskQuest #CS #LearningQuest',
+        text:
+            'I just reached Level ${widget.newLevel} (${widget.rank}) on TaskQuest! 🚀 #TaskQuest #CS #LearningQuest',
         subject: 'TaskQuest Level Up!',
       ),
     );
@@ -81,7 +78,7 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   blurRadius: 100,
                   spreadRadius: 20,
                 ),
@@ -96,7 +93,10 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
             decoration: BoxDecoration(
               color: AppTheme.black,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 2),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 2,
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -106,11 +106,19 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                   children: [
                     IconButton(
                       onPressed: _shareAchievement,
-                      icon: const Icon(Icons.ios_share_rounded, color: Colors.white54, size: 20),
+                      icon: const Icon(
+                        Icons.ios_share_rounded,
+                        color: Colors.white54,
+                        size: 20,
+                      ),
                     ),
                   ],
                 ),
-                const Icon(Icons.auto_awesome_rounded, color: Colors.orange, size: 48),
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.orange,
+                  size: 48,
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'LEVEL UP!',
@@ -167,7 +175,9 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppTheme.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: const Text(
                       'CONTINUE QUEST',

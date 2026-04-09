@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -14,7 +15,8 @@ class FlashcardScanScreen extends ConsumerStatefulWidget {
   const FlashcardScanScreen({super.key});
 
   @override
-  ConsumerState<FlashcardScanScreen> createState() => _FlashcardScanScreenState();
+  ConsumerState<FlashcardScanScreen> createState() =>
+      _FlashcardScanScreenState();
 }
 
 class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
@@ -22,7 +24,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
   String _query = '';
-  
+
   bool _isScanning = false;
   double _progress = 0.0;
   String? _selectedFileName;
@@ -47,13 +49,29 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true, // Required for Web
     );
 
-    if (result == null || result.files.single.path == null) return;
-
-    final file = File(result.files.single.path!);
+    if (result == null) return;
+    
+    final fileBytes = result.files.single.bytes;
     final fileName = result.files.single.name;
-    final fileSize = '${(result.files.single.size / 1024 / 1024).toStringAsFixed(1)} MB';
+    
+    if (fileBytes == null) {
+      // Fallback for non-web if bytes are null (though withData should provide them)
+      if (result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final bytes = await file.readAsBytes();
+        _processFile(bytes, fileName);
+      }
+      return;
+    }
+
+    _processFile(fileBytes, fileName);
+  }
+
+  void _processFile(Uint8List bytes, String fileName) async {
+    final fileSize = '${(bytes.length / 1024 / 1024).toStringAsFixed(1)} MB';
 
     setState(() {
       _isScanning = true;
@@ -66,7 +84,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
       await Future.delayed(const Duration(milliseconds: 800));
       setState(() => _progress = 0.3);
 
-      final flashcards = await _aiService.generateFlashcardsFromFile(file);
+      final flashcards = await _aiService.generateFlashcardsFromFile(bytes, fileName);
       setState(() => _progress = 0.7);
 
       final user = ref.read(currentUserProvider);
@@ -86,18 +104,22 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
 
       setState(() => _progress = 1.0);
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved ${flashcards.length} cards to "${fileName.split('.').first}"')),
+          SnackBar(
+            content: Text(
+              'Saved ${flashcards.length} cards to "${fileName.split('.').first}"',
+            ),
+          ),
         );
         setState(() => _isScanning = false);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
         setState(() => _isScanning = false);
       }
     }
@@ -108,11 +130,13 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     final userDecksAsync = ref.watch(userDecksProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 400),
-          child: _isScanning ? _buildScanningView() : _buildUploadView(userDecksAsync),
+          child: _isScanning
+              ? _buildScanningView()
+              : _buildUploadView(userDecksAsync),
         ),
       ),
     );
@@ -163,34 +187,44 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           const SizedBox(height: 24),
           _buildManualButton(),
           const SizedBox(height: 40),
-          
+
           _buildSearchBar(),
           const SizedBox(height: 24),
 
           _buildMyDecksHeader(),
           const SizedBox(height: 16),
-          
+
           userDecksAsync.when(
             data: (decks) {
-              final filtered = decks.where((d) => 
-                d.title.toLowerCase().contains(_query) || 
-                d.category.toLowerCase().contains(_query)
-              ).toList();
-              
+              final filtered = decks
+                  .where(
+                    (d) =>
+                        d.title.toLowerCase().contains(_query) ||
+                        d.category.toLowerCase().contains(_query),
+                  )
+                  .toList();
+
               if (filtered.isEmpty && _query.isNotEmpty) {
-                return const Center(child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text('No matching decks found.', style: AppTheme.bodyMono),
-                ));
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Text(
+                      'No matching decks found.',
+                      style: AppTheme.bodyMono,
+                    ),
+                  ),
+                );
               }
               return Column(
-                children: filtered.map((d) => _buildDeckItem(context, d)).toList(),
+                children: filtered
+                    .map((d) => _buildDeckItem(context, d))
+                    .toList(),
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, s) => Text('Error: $e'),
           ),
-          
+
           const SizedBox(height: 40),
         ],
       ),
@@ -201,7 +235,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.white,
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
         borderRadius: BorderRadius.circular(14),
       ),
       child: TextField(
@@ -210,10 +244,21 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
         style: const TextStyle(fontFamily: 'DM Mono', fontSize: 13),
         decoration: InputDecoration(
           hintText: 'Search decks or categories...',
-          hintStyle: const TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted, fontSize: 13),
-          prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.muted, size: 20),
-          suffixIcon: _query.isNotEmpty 
-              ? IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: () => _searchController.clear())
+          hintStyle: const TextStyle(
+            fontFamily: 'DM Mono',
+            color: AppTheme.muted,
+            fontSize: 13,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppTheme.muted,
+            size: 20,
+          ),
+          suffixIcon: _query.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 18),
+                  onPressed: () => _searchController.clear(),
+                )
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -249,10 +294,14 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.file_present_rounded, color: Colors.white, size: 28),
+                  child: const Icon(
+                    Icons.file_present_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 const Text(
@@ -316,7 +365,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   child: LinearProgressIndicator(
                     value: _progress,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    backgroundColor: Colors.white.withOpacity(0.1),
                     valueColor: const AlwaysStoppedAnimation(Colors.white),
                   ),
                 ),
@@ -325,7 +374,11 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 const SizedBox(height: 12),
                 _buildStatusRow('Text extracted', _progress >= 0.7),
                 const SizedBox(height: 12),
-                _buildStatusRow('Generating flashcards...', _progress >= 1.0, isLast: true),
+                _buildStatusRow(
+                  'Generating flashcards...',
+                  _progress >= 1.0,
+                  isLast: true,
+                ),
               ],
             ),
           ),
@@ -344,10 +397,14 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           height: 20,
           decoration: BoxDecoration(
             color: isDone ? Colors.white : Colors.transparent,
-            border: Border.all(color: isDone ? Colors.white : const Color(0xFF444444)),
+            border: Border.all(
+              color: isDone ? Colors.white : const Color(0xFF444444),
+            ),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: isDone ? const Icon(Icons.check, size: 12, color: AppTheme.black) : null,
+          child: isDone
+              ? const Icon(Icons.check, size: 12, color: AppTheme.black)
+              : null,
         ),
         const SizedBox(width: 12),
         Text(
@@ -367,7 +424,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.white,
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -376,10 +433,14 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppTheme.background,
+              color: AppTheme.backgroundLight,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.description_outlined, color: AppTheme.black, size: 20),
+            child: const Icon(
+              Icons.description_outlined,
+              color: AppTheme.black,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -390,12 +451,20 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   _selectedFileName ?? 'Document.pdf',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 13),
+                  style: const TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${_selectedFileSize ?? '0.0 MB'} · Uploaded just now',
-                  style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted),
+                  style: const TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    color: AppTheme.muted,
+                  ),
                 ),
               ],
             ),
@@ -403,12 +472,16 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.border),
+              border: Border.all(color: AppTheme.borderLight),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               _selectedFileName?.split('.').last.toUpperCase() ?? 'FILE',
-              style: const TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: AppTheme.muted),
+              style: const TextStyle(
+                fontFamily: 'DM Mono',
+                fontSize: 8,
+                color: AppTheme.muted,
+              ),
             ),
           ),
         ],
@@ -457,7 +530,11 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 color: const Color(0xFFF0EFEA),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.file_upload_outlined, size: 28, color: AppTheme.black),
+              child: const Icon(
+                Icons.file_upload_outlined,
+                size: 28,
+                color: AppTheme.black,
+              ),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -504,8 +581,14 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.black,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  textStyle: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ),
@@ -537,7 +620,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   Widget _buildManualDivider() {
     return Row(
       children: [
-        Expanded(child: Container(height: 1, color: AppTheme.border)),
+        Expanded(child: Container(height: 1, color: AppTheme.borderLight)),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -550,7 +633,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             ),
           ),
         ),
-        Expanded(child: Container(height: 1, color: AppTheme.border)),
+        Expanded(child: Container(height: 1, color: AppTheme.borderLight)),
       ],
     );
   }
@@ -561,7 +644,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
       height: 64,
       decoration: BoxDecoration(
         color: AppTheme.white,
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
@@ -570,7 +653,9 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ManualFlashcardScreen()),
+              MaterialPageRoute(
+                builder: (context) => const ManualFlashcardScreen(),
+              ),
             );
           },
           borderRadius: BorderRadius.circular(16),
@@ -640,7 +725,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.white,
-          border: Border.all(color: AppTheme.border),
+          border: Border.all(color: AppTheme.borderLight),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -653,7 +738,9 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                deck.type == 'AI' ? Icons.auto_awesome_motion_rounded : Icons.style_rounded,
+                deck.type == 'AI'
+                    ? Icons.auto_awesome_motion_rounded
+                    : Icons.style_rounded,
                 color: Colors.white,
                 size: 20,
               ),
@@ -688,10 +775,13 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: AppTheme.background,
-                    border: Border.all(color: AppTheme.border),
+                    color: AppTheme.backgroundLight,
+                    border: Border.all(color: AppTheme.borderLight),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -737,40 +827,60 @@ class _DashedRectPainter extends CustomPainter {
     const cornerLength = 12.0;
 
     final path = Path();
-    
+
     path.moveTo(0, cornerLength);
     path.lineTo(0, 0);
     path.lineTo(cornerLength, 0);
-    
+
     path.moveTo(size.width - cornerLength, 0);
     path.lineTo(size.width, 0);
     path.lineTo(size.width, cornerLength);
-    
+
     path.moveTo(size.width, size.height - cornerLength);
     path.lineTo(size.width, size.height);
     path.lineTo(size.width - cornerLength, size.height);
-    
+
     path.moveTo(cornerLength, size.height);
     path.lineTo(0, size.height);
     path.lineTo(0, size.height - cornerLength);
 
     canvas.drawPath(path, paint);
 
-    _drawDashedLine(canvas, paint, Offset(cornerLength + dashSpace, 0), Offset(size.width - cornerLength - dashSpace, 0));
-    _drawDashedLine(canvas, paint, Offset(size.width, cornerLength + dashSpace), Offset(size.width, size.height - cornerLength - dashSpace));
-    _drawDashedLine(canvas, paint, Offset(size.width - cornerLength - dashSpace, size.height), Offset(cornerLength + dashSpace, size.height));
-    _drawDashedLine(canvas, paint, Offset(0, size.height - cornerLength - dashSpace), Offset(0, cornerLength + dashSpace));
+    _drawDashedLine(
+      canvas,
+      paint,
+      Offset(cornerLength + dashSpace, 0),
+      Offset(size.width - cornerLength - dashSpace, 0),
+    );
+    _drawDashedLine(
+      canvas,
+      paint,
+      Offset(size.width, cornerLength + dashSpace),
+      Offset(size.width, size.height - cornerLength - dashSpace),
+    );
+    _drawDashedLine(
+      canvas,
+      paint,
+      Offset(size.width - cornerLength - dashSpace, size.height),
+      Offset(cornerLength + dashSpace, size.height),
+    );
+    _drawDashedLine(
+      canvas,
+      paint,
+      Offset(0, size.height - cornerLength - dashSpace),
+      Offset(0, cornerLength + dashSpace),
+    );
   }
 
   void _drawDashedLine(Canvas canvas, Paint paint, Offset start, Offset end) {
     const dashWidth = 6.0;
     const dashSpace = 4.0;
-    
+
     double distance = (end - start).distance;
     int count = (distance / (dashWidth + dashSpace)).floor();
-    
+
     Offset direction = (end - start) / distance;
-    
+
     for (int i = 0; i < count; i++) {
       Offset dashStart = start + direction * (i * (dashWidth + dashSpace));
       Offset dashEnd = dashStart + direction * dashWidth;

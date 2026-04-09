@@ -12,18 +12,19 @@ import 'core/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  await GoogleSignIn.instance.initialize();
-  
-  runApp(
-    const ProviderScope(
-      child: TaskQuestApp(),
-    ),
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Safely initialize Google Sign-In for Web compatibility
+  try {
+    await GoogleSignIn.instance.initialize(
+      // clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+    );
+  } catch (e) {
+    debugPrint('Google Sign-In initialization note: $e');
+  }
+
+  runApp(const ProviderScope(child: TaskQuestApp()));
 }
 
 class TaskQuestApp extends ConsumerWidget {

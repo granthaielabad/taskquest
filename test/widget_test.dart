@@ -13,11 +13,7 @@ import 'package:taskquest/main.dart';
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: TaskQuestApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: TaskQuestApp()));
 
     // Verify that the app starts (e.g., checking for TaskQuest text in SplashScreen)
     expect(find.text('TaskQuest'), findsOneWidget);

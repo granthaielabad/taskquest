@@ -8,14 +8,14 @@ class FlashcardModel {
   final String term;
   final String definition;
 
-  FlashcardModel({required this.id, required this.term, required this.definition});
+  FlashcardModel({
+    required this.id,
+    required this.term,
+    required this.definition,
+  });
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'term': term,
-      'definition': definition,
-    };
+    return {'id': id, 'term': term, 'definition': definition};
   }
 
   factory FlashcardModel.fromMap(Map<String, dynamic> map) {

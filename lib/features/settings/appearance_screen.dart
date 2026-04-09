@@ -28,9 +28,11 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -45,28 +47,31 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.chevron_left_rounded, color: AppTheme.black),
+                      child: Icon(
+                        Icons.chevron_left_rounded,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Text(
+                  Text(
                     'Appearance',
                     style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w800,
                       fontSize: 24,
                       letterSpacing: -0.5,
-                      color: AppTheme.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppTheme.border, height: 1),
+            Divider(color: colorScheme.outline, height: 1),
 
             Expanded(
               child: SingleChildScrollView(
@@ -83,24 +88,30 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                         _ThemeOption(
                           label: 'Light',
                           isSelected: themeMode == ThemeMode.light,
-                          onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.light),
-                          child: _ThemePreview(isDark: false),
+                          onTap: () => ref
+                              .read(themeProvider.notifier)
+                              .setThemeMode(ThemeMode.light),
+                          child: const _ThemePreview(isDark: false),
                         ),
                         _ThemeOption(
                           label: 'Dark',
                           isSelected: themeMode == ThemeMode.dark,
-                          onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.dark),
-                          child: _ThemePreview(isDark: true),
+                          onTap: () => ref
+                              .read(themeProvider.notifier)
+                              .setThemeMode(ThemeMode.dark),
+                          child: const _ThemePreview(isDark: true),
                         ),
                         _ThemeOption(
                           label: 'System',
                           isSelected: themeMode == ThemeMode.system,
-                          onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.system),
-                          child: _ThemePreview(isSystem: true),
+                          onTap: () => ref
+                              .read(themeProvider.notifier)
+                              .setThemeMode(ThemeMode.system),
+                          child: const _ThemePreview(isSystem: true),
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 32),
                     const _SectionLabel(label: 'ACCENT COLOR'),
                     const SizedBox(height: 16),
@@ -121,13 +132,24 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                                 color: accentColors[index],
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isSelected ? AppTheme.black : AppTheme.border,
+                                  color: isSelected
+                                      ? colorScheme.onSurface
+                                      : colorScheme.outline,
                                   width: isSelected ? 2 : 1,
                                 ),
                               ),
-                              child: isSelected 
-                                ? Icon(Icons.check, color: accentColors[index].computeLuminance() > 0.5 ? Colors.black : Colors.white, size: 20)
-                                : null,
+                              child: isSelected
+                                  ? Icon(
+                                      Icons.check,
+                                      color:
+                                          accentColors[index]
+                                                  .computeLuminance() >
+                                              0.5
+                                          ? Colors.black
+                                          : Colors.white,
+                                      size: 20,
+                                    )
+                                  : null,
                             ),
                           );
                         },
@@ -139,8 +161,8 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -151,31 +173,49 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                             value: reduceMotion,
                             onChanged: (v) => setState(() => reduceMotion = v),
                           ),
-                          const Divider(color: AppTheme.border, height: 1),
+                          Divider(color: colorScheme.outline, height: 1),
                           Padding(
                             padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text('Text Size', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14)),
-                                    Text('Default', style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted)),
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Text Size',
+                                      style: TextStyle(
+                                        fontFamily: 'Syne',
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Default',
+                                      style: TextStyle(
+                                        fontFamily: 'DM Mono',
+                                        fontSize: 10,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
                                 SliderTheme(
                                   data: SliderThemeData(
-                                    activeTrackColor: AppTheme.black,
-                                    inactiveTrackColor: AppTheme.background,
-                                    thumbColor: AppTheme.black,
-                                    overlayColor: AppTheme.black.withValues(alpha: 0.1),
+                                    activeTrackColor: colorScheme.onSurface,
+                                    inactiveTrackColor: colorScheme.outline,
+                                    thumbColor: colorScheme.onSurface,
+                                    overlayColor: colorScheme.onSurface
+                                        .withOpacity(0.1),
                                     trackHeight: 4,
                                   ),
                                   child: Slider(
                                     value: textSize,
-                                    onChanged: (v) => setState(() => textSize = v),
+                                    onChanged: (v) =>
+                                        setState(() => textSize = v),
                                   ),
                                 ),
                               ],
@@ -204,11 +244,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'DM Mono',
         fontSize: 10,
         letterSpacing: 1.2,
-        color: AppTheme.muted,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -229,6 +269,7 @@ class _ThemeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -237,9 +278,11 @@ class _ThemeOption extends StatelessWidget {
             width: (MediaQuery.of(context).size.width - 64) / 3,
             height: 120,
             decoration: BoxDecoration(
-              color: AppTheme.white,
+              color: theme.colorScheme.surface,
               border: Border.all(
-                color: isSelected ? AppTheme.black : AppTheme.border,
+                color: isSelected
+                    ? theme.colorScheme.onSurface
+                    : theme.colorScheme.outline,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(16),
@@ -256,7 +299,9 @@ class _ThemeOption extends StatelessWidget {
               fontFamily: 'DM Mono',
               fontSize: 10,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-              color: isSelected ? AppTheme.black : AppTheme.muted,
+              color: isSelected
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -276,12 +321,14 @@ class _ThemePreview extends StatelessWidget {
     if (isSystem) {
       return Row(
         children: [
-          Expanded(child: Container(color: const Color(0xFFF7F6F2))),
-          Expanded(child: Container(color: const Color(0xFF0A0A0A))),
+          Expanded(child: Container(color: AppTheme.backgroundLight)),
+          Expanded(child: Container(color: AppTheme.backgroundDark)),
         ],
       );
     }
-    return Container(color: isDark ? const Color(0xFF0A0A0A) : const Color(0xFFF7F6F2));
+    return Container(
+      color: isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight,
+    );
   }
 }
 
@@ -300,6 +347,7 @@ class _DisplayToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -308,17 +356,31 @@ class _DisplayToggle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(desc, style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: AppTheme.black,
-            activeTrackColor: AppTheme.black.withValues(alpha: 0.1),
+            activeThumbColor: theme.colorScheme.primary,
           ),
         ],
       ),

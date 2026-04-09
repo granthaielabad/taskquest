@@ -12,7 +12,7 @@ class BadgesScreen extends ConsumerWidget {
     final badgesAsync = ref.watch(userBadgesProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -20,7 +20,7 @@ class BadgesScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              
+
               // ── Header ──────────────────────────────────────────────
               Text(
                 'Hall of\nAchievements',
@@ -44,7 +44,9 @@ class BadgesScreen extends ConsumerWidget {
 
               badgesAsync.when(
                 data: (badges) {
-                  final unlockedCount = badges.where((b) => b.isUnlocked).length;
+                  final unlockedCount = badges
+                      .where((b) => b.isUnlocked)
+                      .length;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -63,14 +65,16 @@ class BadgesScreen extends ConsumerWidget {
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.75,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.75,
+                            ),
                         itemCount: badges.length,
-                        itemBuilder: (context, index) => _BadgeCard(badge: badges[index]),
+                        itemBuilder: (context, index) =>
+                            _BadgeCard(badge: badges[index]),
                       ),
                     ],
                   );
@@ -78,7 +82,7 @@ class BadgesScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, s) => Text('Error: $e'),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),
@@ -159,7 +163,8 @@ class _BadgeCard extends StatelessWidget {
   void _shareBadge() {
     SharePlus.instance.share(
       ShareParams(
-        text: 'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
+        text:
+            'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
         subject: 'TaskQuest Achievement!',
       ),
     );
@@ -170,8 +175,14 @@ class _BadgeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: badge.isUnlocked ? AppTheme.white : AppTheme.white.withValues(alpha: 0.5),
-        border: Border.all(color: badge.isUnlocked ? AppTheme.black.withValues(alpha: 0.1) : AppTheme.border),
+        color: badge.isUnlocked
+            ? AppTheme.white
+            : AppTheme.white.withOpacity(0.5),
+        border: Border.all(
+          color: badge.isUnlocked
+              ? AppTheme.black.withOpacity(0.1)
+              : AppTheme.borderLight,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -184,12 +195,16 @@ class _BadgeCard extends StatelessWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: badge.isUnlocked ? AppTheme.black : AppTheme.background,
+                  color: badge.isUnlocked
+                      ? AppTheme.black
+                      : AppTheme.backgroundLight,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  badge.isUnlocked ? Icons.verified_rounded : Icons.lock_outline_rounded,
-                  color: badge.isUnlocked ? Colors.white : AppTheme.border,
+                  badge.isUnlocked
+                      ? Icons.verified_rounded
+                      : Icons.lock_outline_rounded,
+                  color: badge.isUnlocked ? Colors.white : AppTheme.borderLight,
                   size: 24,
                 ),
               ),
@@ -204,7 +219,11 @@ class _BadgeCard extends StatelessWidget {
                         color: AppTheme.black,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.share_rounded, color: Colors.white, size: 12),
+                      child: const Icon(
+                        Icons.share_rounded,
+                        color: Colors.white,
+                        size: 12,
+                      ),
                     ),
                   ),
                 ),

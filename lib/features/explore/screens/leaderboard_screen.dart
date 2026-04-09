@@ -14,9 +14,12 @@ class LeaderboardScreen extends ConsumerWidget {
     final currentUser = ref.watch(authStateProvider).value;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Global Ranking', style: TextStyle(fontFamily: 'Syne', fontSize: 16)),
+        title: const Text(
+          'Global Ranking',
+          style: TextStyle(fontFamily: 'Syne', fontSize: 16),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => Navigator.pop(context),
@@ -24,8 +27,10 @@ class LeaderboardScreen extends ConsumerWidget {
       ),
       body: leaderboardAsync.when(
         data: (users) {
-          if (users.isEmpty) return const Center(child: Text('No scholars found yet.'));
-          
+          if (users.isEmpty) {
+            return const Center(child: Text('No scholars found yet.'));
+          }
+
           final top3 = users.take(3).toList();
           final others = users.skip(3).toList();
 
@@ -34,25 +39,30 @@ class LeaderboardScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               // ── Top 3 Podium ────────────────────────────────────────
               _buildPodium(top3),
-              
+
               const SizedBox(height: 32),
-              
+
               // ── Ranked List ─────────────────────────────────────────
               Expanded(
                 child: Container(
                   decoration: const BoxDecoration(
                     color: AppTheme.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(32),
+                    ),
                   ),
                   child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 32,
+                    ),
                     itemCount: others.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final user = others[index];
                       final rank = index + 4;
                       final isCurrent = user.uid == currentUser?.uid;
-                      
+
                       return _buildLeaderboardTile(user, rank, isCurrent);
                     },
                   ),
@@ -69,7 +79,7 @@ class LeaderboardScreen extends ConsumerWidget {
 
   Widget _buildPodium(List<UserModel> top3) {
     if (top3.isEmpty) return const SizedBox.shrink();
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -118,13 +128,20 @@ class LeaderboardScreen extends ConsumerWidget {
             Transform.translate(
               offset: const Offset(0, 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  rank == 1 ? '1ST' : rank == 2 ? '2ND' : '3RD',
+                  rank == 1
+                      ? '1ST'
+                      : rank == 2
+                      ? '2ND'
+                      : '3RD',
                   style: const TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 8,
@@ -139,11 +156,19 @@ class LeaderboardScreen extends ConsumerWidget {
         const SizedBox(height: 24),
         Text(
           user.displayName.split(' ').first,
-          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 13),
+          style: const TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
         ),
         Text(
           '${(user.xp / 1000).toStringAsFixed(1)}k XP',
-          style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted),
+          style: const TextStyle(
+            fontFamily: 'DM Mono',
+            fontSize: 10,
+            color: AppTheme.muted,
+          ),
         ),
       ],
     );
@@ -153,8 +178,10 @@ class LeaderboardScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isCurrent ? AppTheme.background : Colors.transparent,
-        border: Border.all(color: isCurrent ? AppTheme.black : AppTheme.border),
+        color: isCurrent ? AppTheme.backgroundLight : Colors.transparent,
+        border: Border.all(
+          color: isCurrent ? AppTheme.black : AppTheme.borderLight,
+        ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -163,7 +190,11 @@ class LeaderboardScreen extends ConsumerWidget {
             width: 24,
             child: Text(
               '$rank',
-              style: const TextStyle(fontFamily: 'DM Mono', fontWeight: FontWeight.bold, fontSize: 12),
+              style: const TextStyle(
+                fontFamily: 'DM Mono',
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -177,7 +208,12 @@ class LeaderboardScreen extends ConsumerWidget {
             child: Center(
               child: Text(
                 user.displayName[0].toUpperCase(),
-                style: const TextStyle(fontFamily: 'Syne', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                style: const TextStyle(
+                  fontFamily: 'Syne',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
               ),
             ),
           ),
@@ -185,12 +221,20 @@ class LeaderboardScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               user.displayName,
-              style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14),
+              style: const TextStyle(
+                fontFamily: 'Syne',
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
             ),
           ),
           Text(
             '${user.xp} XP',
-            style: const TextStyle(fontFamily: 'DM Mono', fontWeight: FontWeight.bold, fontSize: 11),
+            style: const TextStyle(
+              fontFamily: 'DM Mono',
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
         ],
       ),

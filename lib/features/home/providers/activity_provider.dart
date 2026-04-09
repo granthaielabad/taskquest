@@ -58,9 +58,11 @@ class ActivityService {
         .orderBy('timestamp', descending: true)
         .limit(10)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ActivityModel.fromMap(doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ActivityModel.fromMap(doc.data()))
+              .toList(),
+        );
   }
 
   Future<void> recordActivity(String userId, ActivityModel activity) async {

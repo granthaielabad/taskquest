@@ -30,11 +30,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _sendResetLink() async {
     if (_emailController.text.isEmpty) return;
-    
+
     setState(() => _isLoading = true);
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 1200));
-    
+
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -46,7 +46,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -54,7 +54,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              
+
               // Back button
               GestureDetector(
                 onTap: () => Navigator.pop(context),

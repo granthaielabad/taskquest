@@ -19,7 +19,11 @@ class BadgeModel {
     this.unlockedAt,
   });
 
-  factory BadgeModel.fromMap(Map<String, dynamic> map, bool unlocked, DateTime? date) {
+  factory BadgeModel.fromMap(
+    Map<String, dynamic> map,
+    bool unlocked,
+    DateTime? date,
+  ) {
     return BadgeModel(
       id: map['id'] ?? '',
       title: map['title'] ?? '',

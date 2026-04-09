@@ -13,7 +13,8 @@ class StudyFlashcardScreen extends ConsumerStatefulWidget {
   const StudyFlashcardScreen({super.key, required this.deck});
 
   @override
-  ConsumerState<StudyFlashcardScreen> createState() => _StudyFlashcardScreenState();
+  ConsumerState<StudyFlashcardScreen> createState() =>
+      _StudyFlashcardScreenState();
 }
 
 class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
@@ -44,31 +45,50 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
 
   void _finishStudy() async {
     final mastery = ((_correctCount / widget.deck.cards.length) * 100).round();
-    
+
     // 1. Save progress to deck
-    await ref.read(flashcardServiceProvider).updateMastery(widget.deck.id, mastery);
-    
+    await ref
+        .read(flashcardServiceProvider)
+        .updateMastery(widget.deck.id, mastery);
+
     // 2. Reward XP to user profile
     const xpReward = 50;
     await ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
 
     // 3. Check for "Syntax Sage" Badge progress
-    await ref.read(badgeServiceProvider).checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
-    
+    await ref
+        .read(badgeServiceProvider)
+        .checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
+
     if (mounted) {
       HapticFeedback.vibrate();
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppTheme.background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Text('Study Complete!', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
+          backgroundColor: AppTheme.backgroundLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: const Text(
+            'Study Complete!',
+            style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('You mastered $mastery% of this deck.', style: AppTheme.bodyMono),
+              Text(
+                'You mastered $mastery% of this deck.',
+                style: AppTheme.bodyMono,
+              ),
               const SizedBox(height: 20),
-              const Text('🔥 +50 XP Earned', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold, color: Colors.orange)),
+              const Text(
+                '🔥 +50 XP Earned',
+                style: TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange,
+                ),
+              ),
             ],
           ),
           actions: [
@@ -78,7 +98,14 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text('BACK TO DECKS', style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.black, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'BACK TO DECKS',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  color: AppTheme.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -91,9 +118,12 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     final card = widget.deck.cards[_currentIndex];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text(widget.deck.title, style: const TextStyle(fontFamily: 'Syne', fontSize: 16)),
+        title: Text(
+          widget.deck.title,
+          style: const TextStyle(fontFamily: 'Syne', fontSize: 16),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
@@ -140,19 +170,23 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                         decoration: BoxDecoration(
                           color: isBack ? AppTheme.black : AppTheme.white,
                           borderRadius: BorderRadius.circular(32),
-                          border: Border.all(color: AppTheme.border, width: 2),
+                          border: Border.all(
+                            color: AppTheme.borderLight,
+                            width: 2,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.black.withValues(alpha: 0.05),
+                              color: AppTheme.black.withOpacity(0.05),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
-                            )
+                            ),
                           ],
                         ),
                         child: Center(
                           child: Transform(
                             alignment: Alignment.center,
-                            transform: Matrix4.identity()..rotateY(isBack ? pi : 0),
+                            transform: Matrix4.identity()
+                              ..rotateY(isBack ? pi : 0),
                             child: Padding(
                               padding: const EdgeInsets.all(40),
                               child: Text(
@@ -161,7 +195,9 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                                 style: TextStyle(
                                   fontFamily: isBack ? 'DM Mono' : 'Syne',
                                   fontSize: isBack ? 16 : 24,
-                                  fontWeight: isBack ? FontWeight.w400 : FontWeight.w800,
+                                  fontWeight: isBack
+                                      ? FontWeight.w400
+                                      : FontWeight.w800,
                                   color: isBack ? Colors.white : AppTheme.black,
                                 ),
                               ),
@@ -180,9 +216,19 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
             child: Row(
               children: [
-                _buildActionButton(Icons.close_rounded, 'WRONG', Colors.red, () => _nextCard(false)),
+                _buildActionButton(
+                  Icons.close_rounded,
+                  'WRONG',
+                  Colors.red,
+                  () => _nextCard(false),
+                ),
                 const SizedBox(width: 20),
-                _buildActionButton(Icons.check_rounded, 'CORRECT', Colors.green, () => _nextCard(true)),
+                _buildActionButton(
+                  Icons.check_rounded,
+                  'CORRECT',
+                  Colors.green,
+                  () => _nextCard(true),
+                ),
               ],
             ),
           ),
@@ -191,16 +237,21 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _buildActionButton(
+    IconData icon,
+    String label,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
+            border: Border.all(color: color.withOpacity(0.2)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
