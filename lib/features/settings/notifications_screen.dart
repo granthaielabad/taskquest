@@ -111,7 +111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Switch(
                             value: allNotifications,
                             onChanged: (v) => setState(() => allNotifications = v),
-                            activeColor: Colors.white,
+                            activeThumbColor: Colors.white,
                             activeTrackColor: const Color(0xFF404040),
                           ),
                         ],
@@ -214,7 +214,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               Switch(
                                 value: quietHours,
                                 onChanged: (v) => setState(() => quietHours = v),
-                                activeColor: Colors.white,
+                                activeThumbColor: Colors.white,
                                 activeTrackColor: AppTheme.black,
                               ),
                             ],
@@ -352,7 +352,7 @@ class _NotificationTile extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeColor: Colors.white,
+                activeThumbColor: Colors.white,
                 activeTrackColor: iconColor,
               ),
             ],
