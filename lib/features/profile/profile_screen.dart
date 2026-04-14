@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
-import 'package:taskquest/core/services/database_seed_service.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/profile/editprofile_screen.dart';
 import 'package:taskquest/features/settings/appearance_screen.dart';
 import 'package:taskquest/features/settings/notifications_screen.dart';
-import 'package:taskquest/features/settings/switchaccount_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   void _showInfoModal(BuildContext context, String title, String content) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: AppTheme.backgroundLight,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           children: [
@@ -32,19 +30,19 @@ class ProfileScreen extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.borderLight,
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
-            Text(title, style: AppTheme.headingL),
+            Text(title, style: theme.textTheme.displayMedium),
             const SizedBox(height: 24),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Text(
                   content,
-                  style: AppTheme.bodyMono.copyWith(height: 1.6),
+                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
                 ),
               ),
             ),
@@ -63,10 +61,11 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.backgroundLight,
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text(
           'Logout',
@@ -79,9 +78,9 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'CANCEL',
-              style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted),
+              style: TextStyle(fontFamily: 'DM Mono', color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
           TextButton(
@@ -93,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
               'LOGOUT',
               style: TextStyle(
                 fontFamily: 'DM Mono',
-                color: Colors.red,
+                color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -106,584 +105,314 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProfileProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
-        child: userAsync.when(
-          data: (user) => _buildProfileContent(context, ref, user),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, s) => Center(child: Text('Error: $e')),
-        ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: userAsync.when(
+        data: (user) => _buildProfileContent(context, ref, user),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  Widget _buildProfileContent(
-    BuildContext context,
-    WidgetRef ref,
-    UserModel? user,
-  ) {
-    if (user == null) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Loading your profile...',
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 12,
-                color: AppTheme.muted,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+  Widget _buildProfileContent(BuildContext context, WidgetRef ref, UserModel? user) {
+    if (user == null) return const SizedBox.shrink();
 
-    final displayName = user.displayName.isNotEmpty
-        ? user.displayName
-        : 'Scholar';
-    final totalXp = user.xp;
-    final levelData = XpUtils.getLevelProgress(totalXp);
-    final initials = displayName.isNotEmpty
-        ? displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
-        : 'S';
-
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final levelData = XpUtils.getLevelProgress(user.xp);
     final currentLevel = levelData['level'] as int;
     final nextLevelXp = levelData['nextLevelXpThreshold'] as int;
+    final progress = (levelData['progress'] as double).clamp(0.0, 1.0);
+
+    final initials = user.displayName.isNotEmpty
+        ? user.displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        : 'S';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 12),
-
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Profile',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 28,
-                  letterSpacing: -0.8,
-                  color: AppTheme.black,
-                ),
-              ),
-              _HeaderButton(
-                icon: Icons.edit_outlined,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfileScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
           const SizedBox(height: 24),
 
-          // User Info Card
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            decoration: BoxDecoration(
-              color: AppTheme.black,
-              borderRadius: BorderRadius.circular(24),
-            ),
+          // ── Centered Header ─────────────────────────────────────
+          Center(
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF262626),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF333333)),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
-                      child: Center(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              initials,
-                              style: const TextStyle(
-                                fontFamily: 'Syne',
-                                fontWeight: FontWeight.w800,
-                                fontSize: 20,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      initials,
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 32,
+                        color: colorScheme.onPrimary,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            displayName,
-                            style: const TextStyle(
-                              fontFamily: 'Syne',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 22,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            user.email,
-                            style: const TextStyle(
-                              fontFamily: 'DM Mono',
-                              fontSize: 12,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          if (user.school.isNotEmpty == true ||
-                              user.course.isNotEmpty == true) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              '${user.course}${user.school.isNotEmpty == true ? ' · ' : ''}${user.school}',
-                              style: const TextStyle(
-                                fontFamily: 'DM Mono',
-                                fontSize: 10,
-                                color: Color(0x99FFFFFF),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                          const SizedBox(height: 8),
-                          // Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A1A1A),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: const Color(0xFF333333),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  color: Colors.white,
-                                  size: 10,
-                                ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    'LEVEL ${user.level} · ${XpUtils.getRankTitle(user.level).toUpperCase()}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontFamily: 'DM Mono',
-                                      fontSize: 9,
-                                      letterSpacing: 0.5,
-                                      color: Color(0x99FFFFFF),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 24),
-                const Divider(color: Color(0xFF262626), height: 1),
                 const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: _StatItem(label: 'TOTAL XP', value: '${user.xp}'),
+                Text(
+                  user.displayName.isNotEmpty ? user.displayName : 'Scholar',
+                  style: theme.textTheme.displayMedium?.copyWith(fontSize: 24),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user.email,
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 12,
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (user.course.isNotEmpty || user.school.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    '${user.course}${user.school.isNotEmpty ? " @ ${user.school}" : ""}',
+                    style: theme.textTheme.labelSmall,
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Text(
+                    'LEVEL $currentLevel · ${XpUtils.getRankTitle(currentLevel).toUpperCase()}',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.0,
+                      color: colorScheme.primary,
                     ),
-                    Expanded(
-                      child: _StatItem(
-                        label: 'DAY STREAK',
-                        value: '${user.streak}',
-                      ),
-                    ),
-                    Expanded(
-                      child: _StatItem(
-                        label: 'BADGES',
-                        value: '${user.unlockedBadges.length}',
-                      ),
-                    ),
-                    Expanded(
-                      child: const _StatItem(label: 'RANK', value: '---'),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
 
-          // Level Progress Card
+          const SizedBox(height: 40),
+
+          // ── Stats Row ──────────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
-              borderRadius: BorderRadius.circular(20),
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outline),
+              borderRadius: BorderRadius.circular(24),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'LEVEL PROGRESS',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 10,
-                        letterSpacing: 1.2,
-                        color: AppTheme.muted,
-                      ),
-                    ),
-                    Text(
-                      'Next Level',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 10,
-                        color: AppTheme.muted,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Flexible(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            '${user.xp}',
-                            style: const TextStyle(
-                              fontFamily: 'Syne',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 24,
-                              color: AppTheme.black,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              '/ $nextLevelXp XP',
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'DM Mono',
-                                fontSize: 12,
-                                color: AppTheme.muted,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Level ${currentLevel + 1}',
-                          style: const TextStyle(
-                            fontFamily: 'Syne',
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                            color: AppTheme.black,
-                          ),
-                        ),
-                        Text(
-                          '${nextLevelXp - totalXp} XP to go',
-                          style: const TextStyle(
-                            fontFamily: 'DM Mono',
-                            fontSize: 10,
-                            color: AppTheme.muted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: (levelData['progress'] as double).clamp(0.0, 1.0),
-                    minHeight: 8,
-                    backgroundColor: AppTheme.backgroundLight,
-                    valueColor: const AlwaysStoppedAnimation(AppTheme.black),
-                  ),
-                ),
+                _StatTile(label: 'TOTAL XP', value: '${user.xp}', icon: Icons.bolt_rounded),
+                _StatTile(label: 'STREAK', value: '${user.streak}d', icon: Icons.local_fire_department_rounded),
+                _StatTile(label: 'BADGES', value: '${user.unlockedBadges.length}', icon: Icons.stars_rounded),
               ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Settings Section
-          _buildSectionHeader('Account'),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  Icons.person_outline_rounded,
-                  'Edit Profile',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfileScreen(),
-                    ),
-                  ),
-                ),
-                const Divider(color: AppTheme.borderLight, height: 1),
-                _buildMenuItem(
-                  Icons.palette_outlined,
-                  'Appearance',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AppearanceScreen(),
-                    ),
-                  ),
-                ),
-                const Divider(color: AppTheme.borderLight, height: 1),
-                _buildMenuItem(
-                  Icons.notifications_none_rounded,
-                  'Notifications',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationsScreen(),
-                    ),
-                  ),
-                ),
-                const Divider(color: AppTheme.borderLight, height: 1),
-                _buildMenuItem(
-                  Icons.switch_account_outlined,
-                  'Switch Account',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SwitchAccountScreen(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-          _buildSectionHeader('Support & Legal'),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  Icons.description_outlined,
-                  'Privacy Policy',
-                  onTap: () => _showInfoModal(
-                    context,
-                    'Privacy Policy',
-                    'TaskQuest values your privacy. We collect minimal data to provide a gamified learning experience...',
-                  ),
-                ),
-                const Divider(color: AppTheme.borderLight, height: 1),
-                _buildMenuItem(
-                  Icons.gavel_outlined,
-                  'Terms of Service',
-                  onTap: () => _showInfoModal(
-                    context,
-                    'Terms of Service',
-                    'By using TaskQuest, you agree to follow our acceptable use policy and academic integrity guidelines...',
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-          _buildSectionHeader('Development'),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: _buildMenuItem(
-              Icons.storage_rounded,
-              'Seed Database',
-              onTap: () async {
-                await DatabaseSeedService().seedAll();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Database seeded successfully!'),
-                    ),
-                  );
-                }
-              },
             ),
           ),
 
           const SizedBox(height: 32),
-          // Logout
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: TQButton(
-              label: 'Logout',
-              isLoading: false,
+
+          // ── Level Progress ──────────────────────────────────────
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'LEVEL $currentLevel',
+                    style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'LEVEL ${currentLevel + 1}',
+                    style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 10,
+                  backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
+                  valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  '${nextLevelXp - user.xp} XP remaining for next level',
+                  style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: colorScheme.onSurfaceVariant),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 40),
+
+          // ── Settings Groups ─────────────────────────────────────
+          _buildGroupHeader('ACCOUNT'),
+          _buildSettingsGroup([
+            _SettingsTile(
+              icon: Icons.person_outline_rounded,
+              title: 'Edit Profile',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfileScreen())),
+            ),
+            _SettingsTile(
+              icon: Icons.palette_outlined,
+              title: 'Appearance',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AppearanceScreen())),
+            ),
+            _SettingsTile(
+              icon: Icons.notifications_none_rounded,
+              title: 'Notifications',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())),
+            ),
+          ]),
+
+          const SizedBox(height: 24),
+          _buildGroupHeader('SUPPORT & LEGAL'),
+          _buildSettingsGroup([
+            _SettingsTile(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              onTap: () => _showInfoModal(context, 'Privacy Policy', 'TaskQuest values your privacy...'),
+            ),
+            _SettingsTile(
+              icon: Icons.description_outlined,
+              title: 'Terms of Service',
+              onTap: () => _showInfoModal(context, 'Terms of Service', 'By using TaskQuest...'),
+            ),
+          ]),
+
+          const SizedBox(height: 24),
+          _buildGroupHeader('DANGER ZONE'),
+          _buildSettingsGroup([
+            _SettingsTile(
+              icon: Icons.logout_rounded,
+              title: 'Logout',
+              iconColor: Colors.redAccent,
               onTap: () => _showLogoutConfirmation(context, ref),
             ),
-          ),
-          const SizedBox(height: 100),
+          ]),
+
+          const SizedBox(height: 60),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildGroupHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+      padding: const EdgeInsets.only(left: 12, bottom: 8),
       child: Text(
-        title.toUpperCase(),
-        style: const TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 10,
-          letterSpacing: 1.8,
-          color: AppTheme.muted,
-        ),
+        title,
+        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.5, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, {VoidCallback? onTap}) {
+  Widget _buildSettingsGroup(List<Widget> children) {
+    return Builder(builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border.all(color: colorScheme.outline),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(children: children),
+      );
+    });
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _StatTile({required this.label, required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Icon(icon, color: colorScheme.primary, size: 20),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: colorScheme.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final Color? iconColor;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
-      onTap: onTap ?? () {},
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppTheme.black),
+            Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurface),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: AppTheme.black,
-                ),
+                style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w600, fontSize: 14),
               ),
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: AppTheme.muted,
-            ),
+            Icon(Icons.chevron_right_rounded, size: 18, color: theme.colorScheme.outline),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _HeaderButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-  const _HeaderButton({required this.icon, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: AppTheme.white,
-          border: Border.all(color: AppTheme.borderLight),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: AppTheme.black, size: 18),
-      ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-  const _StatItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'Syne',
-              fontWeight: FontWeight.w800,
-              fontSize: 20,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.clip,
-          style: const TextStyle(
-            fontFamily: 'DM Mono',
-            fontSize: 8,
-            letterSpacing: 0.5,
-            color: Color(0x66FFFFFF),
-          ),
-        ),
-      ],
     );
   }
 }

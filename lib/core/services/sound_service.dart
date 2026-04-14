@@ -9,7 +9,7 @@ class SoundService {
   final AudioPlayer _player = AudioPlayer();
 
   // ── Predefined Sound Paths ───────────────────────────────────
-  // Note: These must be added to your pubspec.yaml and assets/sounds folder
+  // Note: For audioplayers 6+, use simple paths relative to 'assets/'
   static const String levelUp = 'sounds/levelup.mp3';
   static const String correct = 'sounds/correct.mp3';
   static const String wrong = 'sounds/wrong.mp3';
@@ -17,9 +17,11 @@ class SoundService {
 
   Future<void> playSound(String assetPath) async {
     try {
+      // AssetSource automatically looks in the 'assets' folder.
+      // Do NOT include 'assets/' in the string path.
       await _player.play(AssetSource(assetPath));
     } catch (e) {
-      debugPrint('Error playing sound: $e');
+      debugPrint('Error playing sound ($assetPath): $e');
     }
   }
 

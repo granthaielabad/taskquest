@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
-import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
-import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/auth/screens/login_screen.dart';
+import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -15,143 +15,59 @@ class RegisterScreen extends ConsumerStatefulWidget {
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _nameFocus = FocusNode();
   final _emailFocus = FocusNode();
-  final _passFocus = FocusNode();
-  bool _obscurePass = true;
+  final _passwordFocus = FocusNode();
+
   bool _isLoading = false;
+  bool _agreeToTerms = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _nameFocus.addListener(() => setState(() {}));
     _emailFocus.addListener(() => setState(() {}));
-    _passFocus.addListener(() => setState(() {}));
-    _passController.addListener(() => setState(() {}));
+    _passwordFocus.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _passController.dispose();
+    _passwordController.dispose();
     _nameFocus.dispose();
     _emailFocus.dispose();
-    _passFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
-  int get _passwordStrength {
-    final p = _passController.text;
-    if (p.isEmpty) return 0;
-    int score = 0;
-    if (p.length >= 8) score++;
-    if (p.contains(RegExp(r'[A-Z]')) && p.contains(RegExp(r'[a-z]'))) score++;
-    if (p.contains(RegExp(r'[0-9]')) && p.contains(RegExp(r'[^A-Za-z0-9]'))) {
-      score++;
-    }
-    return score;
-  }
-
-  String get _strengthLabel {
-    switch (_passwordStrength) {
-      case 1:
-        return 'Weak password';
-      case 2:
-        return 'Medium password';
-      case 3:
-        return 'Strong password';
-      default:
-        return '';
-    }
-  }
-
-  Color get _strengthColor {
-    switch (_passwordStrength) {
-      case 1:
-        return const Color(0xFFE55555);
-      case 2:
-        return const Color(0xFFE5A000);
-      case 3:
-        return AppTheme.black;
-      default:
-        return AppTheme.borderLight;
-    }
-  }
-
-  Future<void> _register() async {
-    if (_emailController.text.isEmpty || _passController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
-      );
+  Future<void> _handleRegister() async {
+    if (!_agreeToTerms) {
+      setState(() => _errorMessage = 'Please agree to the Terms & Privacy');
       return;
     }
 
-    setState(() => _isLoading = true);
-    ref.read(authTransitionProvider.notifier).setTransitioning(true);
-    try {
-      final cred = await ref
-          .read(authServiceProvider)
-          .signUpWithEmail(
-            _emailController.text.trim(),
-            _passController.text.trim(),
-          );
-
-      if (cred.user != null) {
-        debugPrint('RegisterScreen: Auth successful, updating display name...');
-        // 1. Update Firebase Auth internal profile
-        await cred.user!.updateDisplayName(_nameController.text.trim());
-
-        // 2. Force a reload to ensure the local user object is updated
-        await cred.user!.reload();
-
-        debugPrint('RegisterScreen: Creating Firestore profile...');
-        // 3. Create the Firestore document explicitly with the name from the controller
-        await ref
-            .read(userServiceProvider)
-            .checkAndCreateProfile(
-              cred.user!.uid,
-              cred.user!.email!,
-              _nameController.text.trim(),
-            );
-        debugPrint('RegisterScreen: Handshake complete.');
-      }
-    } catch (e) {
-      if (mounted) {
-        ref.read(authTransitionProvider.notifier).setTransitioning(false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration Failed: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      setState(() => _errorMessage = 'Please fill in all fields');
+      return;
     }
-  }
 
-  Future<void> _registerWithGoogle() async {
-    setState(() => _isLoading = true);
-    ref.read(authTransitionProvider.notifier).setTransitioning(true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     try {
-      final cred = await ref.read(authServiceProvider).signInWithGoogle();
-      if (cred?.user != null) {
-        await ref
-            .read(userServiceProvider)
-            .checkAndCreateProfile(
-              cred!.user!.uid,
-              cred.user!.email!,
-              cred.user!.displayName ?? 'Scholar',
-            );
-      } else {
-        ref.read(authTransitionProvider.notifier).setTransitioning(false);
-      }
+      await ref.read(authServiceProvider).signUpWithEmail(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
     } catch (e) {
-      if (mounted) {
-        ref.read(authTransitionProvider.notifier).setTransitioning(false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google Sign-up Failed: ${e.toString()}')),
-        );
-      }
+      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -159,163 +75,192 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.chevron_left_rounded,
-                      size: 18,
-                      color: AppTheme.black,
+              const SizedBox(height: 20),
+              // Header Logo (Fixed: No border, larger size)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Row(
+                      children: [
+                        Icon(Icons.chevron_left_rounded, color: colorScheme.onSurface, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 12,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 2),
-                    Text(
-                      'Back',
-                      style: AppTheme.bodyMono.copyWith(
-                        color: AppTheme.black,
-                        letterSpacing: 0.3,
-                      ),
+                  ),
+                  SvgPicture.asset(
+                    'assets/images/logo.svg',
+                    width: 40,
+                    height: 40,
+                    colorFilter: ColorFilter.mode(
+                      colorScheme.onSurface,
+                      BlendMode.srcIn,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 48),
+
+              // Heading
               Text(
-                'Create your\naccount.',
-                style: AppTheme.headingXL.copyWith(
-                  fontSize: 34,
-                  height: 1.05,
-                  letterSpacing: -1.0,
+                'Create\nAccount.',
+                style: TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 42,
+                  height: 0.9,
+                  letterSpacing: -1.5,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                'Start your CS learning journey today.',
-                style: AppTheme.bodyMono,
+                'Join thousands of CS students on their quest.',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-              const SizedBox(height: 32),
-              const FieldLabel('Full Name'),
+              const SizedBox(height: 40),
+
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: colorScheme.error, fontFamily: 'DM Mono', fontSize: 11),
+                  ),
+                ),
+
+              // Form
+              const FieldLabel('FULL NAME'),
               const SizedBox(height: 6),
               TQInputField(
                 controller: _nameController,
                 focusNode: _nameFocus,
-                hintText: 'Charlie',
-                keyboardType: TextInputType.name,
-                textCapitalization: TextCapitalization.words,
-                suffixIcon: const Icon(
-                  Icons.person_outline_rounded,
-                  size: 16,
-                  color: AppTheme.muted,
-                ),
+                hintText: 'John Doe',
+                suffixIcon: Icon(Icons.person_outline_rounded, size: 16, color: colorScheme.onSurfaceVariant),
               ),
-              const SizedBox(height: 16),
-              const FieldLabel('Email'),
+              const SizedBox(height: 24),
+
+              const FieldLabel('EMAIL'),
               const SizedBox(height: 6),
               TQInputField(
                 controller: _emailController,
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
-                suffixIcon: const Icon(
-                  Icons.mail_outline_rounded,
-                  size: 16,
-                  color: AppTheme.muted,
-                ),
+                suffixIcon: Icon(Icons.mail_outline_rounded, size: 16, color: colorScheme.onSurfaceVariant),
               ),
-              const SizedBox(height: 16),
-              const FieldLabel('Password'),
+              const SizedBox(height: 24),
+
+              const FieldLabel('PASSWORD'),
               const SizedBox(height: 6),
               TQInputField(
-                controller: _passController,
-                focusNode: _passFocus,
-                hintText: 'Str0ng#Pass',
-                obscureText: _obscurePass,
-                suffixIcon: GestureDetector(
-                  onTap: () => setState(() => _obscurePass = !_obscurePass),
-                  child: Icon(
-                    _obscurePass
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 16,
-                    color: AppTheme.muted,
-                  ),
-                ),
+                controller: _passwordController,
+                focusNode: _passwordFocus,
+                hintText: 'min. 8 characters',
+                obscureText: true,
+                suffixIcon: Icon(Icons.visibility_off_outlined, size: 16, color: colorScheme.onSurfaceVariant),
               ),
-              if (_passController.text.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Row(
-                  children: List.generate(3, (i) {
-                    final filled = i < _passwordStrength;
-                    return Expanded(
-                      child: Container(
-                        height: 3,
-                        margin: EdgeInsets.only(right: i < 2 ? 4 : 0),
-                        decoration: BoxDecoration(
-                          color: filled ? _strengthColor : AppTheme.borderLight,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _strengthLabel,
-                  style: AppTheme.labelMono.copyWith(
-                    color: _strengthColor,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
+
               const SizedBox(height: 24),
-              TQButton(
-                label: 'Create Account',
-                isLoading: _isLoading,
-                onTap: _register,
+
+              // Terms & Privacy
+              Row(
+                children: [
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: Checkbox(
+                      value: _agreeToTerms,
+                      onChanged: (v) => setState(() => _agreeToTerms = v ?? false),
+                      activeColor: colorScheme.onSurface,
+                      checkColor: colorScheme.surface,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(fontFamily: 'DM Mono', fontSize: 11, color: colorScheme.onSurfaceVariant),
+                        children: [
+                          const TextSpan(text: 'I agree to the '),
+                          TextSpan(
+                            text: 'Terms of Service',
+                            style: TextStyle(color: colorScheme.onSurface, decoration: TextDecoration.underline),
+                          ),
+                          const TextSpan(text: ' and '),
+                          TextSpan(
+                            text: 'Privacy Policy',
+                            style: TextStyle(color: colorScheme.onSurface, decoration: TextDecoration.underline),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              const OrDivider(label: 'OR SIGN UP WITH'),
-              const SizedBox(height: 20),
-              GoogleButton(
-                onTap: _registerWithGoogle,
-                label: 'Sign up with Google',
+
+              const SizedBox(height: 40),
+
+              // Register Button
+              TQButton(
+                label: 'Sign Up',
+                isLoading: _isLoading,
+                onTap: _handleRegister,
+              ),
+
+              const SizedBox(height: 48),
+
+              // Login Link
+              Center(
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      children: [
+                        const TextSpan(text: "Already have an account? "),
+                        TextSpan(
+                          text: 'Log In',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 40),
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: AppTheme.bodyMono,
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'Log In',
-                        style: TextStyle(
-                          fontFamily: 'Syne',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          color: AppTheme.black,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
             ],
           ),
         ),

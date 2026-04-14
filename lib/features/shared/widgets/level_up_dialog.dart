@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:confetti/confetti.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/core/services/sound_service.dart';
 
 class LevelUpDialog extends StatefulWidget {
@@ -46,6 +45,9 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 32),
@@ -78,7 +80,7 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.2),
+                  color: colorScheme.primary.withValues(alpha: 0.2),
                   blurRadius: 100,
                   spreadRadius: 20,
                 ),
@@ -91,10 +93,10 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
             width: double.infinity,
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: AppTheme.black,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(32),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: colorScheme.outline.withValues(alpha: 0.1),
                 width: 2,
               ),
             ),
@@ -106,9 +108,9 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                   children: [
                     IconButton(
                       onPressed: _shareAchievement,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.ios_share_rounded,
-                        color: Colors.white54,
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         size: 20,
                       ),
                     ),
@@ -133,33 +135,33 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                 const SizedBox(height: 12),
                 Text(
                   'Level ${widget.newLevel}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Syne',
                     fontSize: 42,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: colorScheme.onSurface,
                     height: 1.0,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   widget.rank.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 10,
                     letterSpacing: 1.2,
-                    color: Color(0xFF777777),
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
+                Text(
                   'You unlocked new challenges and rewards. Keep pushing the boundaries of your knowledge.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 11,
                     height: 1.6,
-                    color: Color(0xFF999999),
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -173,8 +175,8 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.black,
+                      backgroundColor: colorScheme.onSurface,
+                      foregroundColor: colorScheme.surface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),

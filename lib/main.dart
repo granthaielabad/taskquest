@@ -4,15 +4,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
+import 'core/providers/theme_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
-import 'features/shared/widgets/main_scaffold.dart';
 import 'features/auth/screens/auth_success_screen.dart';
-import 'core/providers/theme_provider.dart';
+import 'features/shared/widgets/main_scaffold.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Safely initialize Google Sign-In for Web compatibility

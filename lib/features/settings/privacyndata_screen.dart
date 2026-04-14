@@ -108,7 +108,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                               fontFamily: 'DM Mono',
                               fontSize: 12,
                               height: 1.6,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                           ),
                         ],

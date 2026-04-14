@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 
 // Shared field label
 class FieldLabel extends StatelessWidget {
@@ -9,7 +8,17 @@ class FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text.toUpperCase(), style: AppTheme.labelMono);
+    final colorScheme = Theme.of(context).colorScheme;
+    return Text(
+      text.toUpperCase(),
+      style: TextStyle(
+        fontFamily: 'DM Mono',
+        fontWeight: FontWeight.w400,
+        fontSize: 10,
+        letterSpacing: 1.4,
+        color: colorScheme.onSurfaceVariant,
+      ),
+    );
   }
 }
 
@@ -39,14 +48,17 @@ class TQInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isFocused = focusNode.hasFocus;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: colorScheme.surface,
         border: Border.all(
           color: hasError
-              ? Colors.red
-              : (isFocused ? AppTheme.black : AppTheme.borderLight),
+              ? colorScheme.error
+              : (isFocused ? colorScheme.onSurface : colorScheme.outline),
           width: (isFocused || hasError) ? 1.5 : 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -58,11 +70,16 @@ class TQInputField extends StatelessWidget {
         keyboardType: keyboardType,
         textCapitalization: textCapitalization,
         maxLines: maxLines,
-        style: AppTheme.bodyMono.copyWith(color: AppTheme.black, fontSize: 13),
+        style: TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 13,
+          color: colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: AppTheme.bodyMono.copyWith(
-            color: AppTheme.dimmed,
+          hintStyle: TextStyle(
+            fontFamily: 'DM Mono',
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
             fontSize: 13,
           ),
           border: InputBorder.none,
@@ -101,6 +118,9 @@ class TQButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -112,19 +132,19 @@ class TQButton extends StatelessWidget {
                 onTap!();
               },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.black,
-          disabledBackgroundColor: AppTheme.black.withOpacity(0.6),
+          backgroundColor: colorScheme.onSurface,
+          disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           elevation: 0,
         ),
         child: isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   strokeWidth: 2,
                 ),
               )
@@ -133,12 +153,18 @@ class TQButton extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: AppTheme.headingM.copyWith(color: Colors.white),
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      letterSpacing: -0.3,
+                      color: colorScheme.surface,
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_rounded,
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     size: 16,
                   ),
                 ],
@@ -155,20 +181,24 @@ class OrDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppTheme.borderLight)),
+        Expanded(child: Divider(color: colorScheme.outline)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             label,
-            style: AppTheme.labelMono.copyWith(
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontWeight: FontWeight.w400,
               fontSize: 9,
-              color: AppTheme.dimmed,
+              letterSpacing: 1.4,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ),
         ),
-        const Expanded(child: Divider(color: AppTheme.borderLight)),
+        Expanded(child: Divider(color: colorScheme.outline)),
       ],
     );
   }
@@ -178,49 +208,67 @@ class OrDivider extends StatelessWidget {
 class GoogleButton extends StatelessWidget {
   final VoidCallback onTap;
   final String label;
+  final bool isLoading;
+
   const GoogleButton({
     super.key,
     required this.onTap,
     this.label = 'Continue with Google',
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 56,
       child: OutlinedButton(
-        onPressed: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
+        onPressed: isLoading
+            ? null
+            : () {
+                HapticFeedback.lightImpact();
+                onTap();
+              },
         style: OutlinedButton.styleFrom(
-          backgroundColor: AppTheme.white,
-          side: const BorderSide(color: AppTheme.borderLight),
+          backgroundColor: colorScheme.surface,
+          side: BorderSide(color: colorScheme.outline),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           elevation: 0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CustomPaint(painter: GoogleIconPainter()),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: AppTheme.bodyMono.copyWith(
-                fontSize: 12,
-                color: AppTheme.black,
-                letterSpacing: 0.3,
+        child: isLoading
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: colorScheme.onSurface,
+                  strokeWidth: 2,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CustomPaint(painter: GoogleIconPainter()),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

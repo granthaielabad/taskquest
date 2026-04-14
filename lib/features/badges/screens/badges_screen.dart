@@ -177,10 +177,10 @@ class _BadgeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: badge.isUnlocked
             ? AppTheme.white
-            : AppTheme.white.withOpacity(0.5),
+            : AppTheme.white.withValues(alpha: 0.5),
         border: Border.all(
           color: badge.isUnlocked
-              ? AppTheme.black.withOpacity(0.1)
+              ? AppTheme.black.withValues(alpha: 0.1)
               : AppTheme.borderLight,
         ),
         borderRadius: BorderRadius.circular(20),

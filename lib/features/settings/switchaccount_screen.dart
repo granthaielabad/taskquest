@@ -89,10 +89,10 @@ class SwitchAccountScreen extends ConsumerWidget {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: colorScheme.surface.withOpacity(0.1),
+                              color: colorScheme.surface.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: colorScheme.surface.withOpacity(0.2),
+                                color: colorScheme.surface.withValues(alpha: 0.2),
                               ),
                             ),
                             child: Center(
@@ -126,7 +126,7 @@ class SwitchAccountScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontFamily: 'DM Mono',
                                     fontSize: 11,
-                                    color: colorScheme.surface.withOpacity(0.6),
+                                    color: colorScheme.surface.withValues(alpha: 0.6),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -136,13 +136,13 @@ class SwitchAccountScreen extends ConsumerWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.surface.withOpacity(
-                                      0.05,
+                                    color: colorScheme.surface.withValues(
+                                      alpha: 0.05,
                                     ),
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(
-                                      color: colorScheme.surface.withOpacity(
-                                        0.1,
+                                      color: colorScheme.surface.withValues(
+                                        alpha: 0.1,
                                       ),
                                     ),
                                   ),
@@ -152,8 +152,8 @@ class SwitchAccountScreen extends ConsumerWidget {
                                       fontFamily: 'DM Mono',
                                       fontSize: 8,
                                       letterSpacing: 0.5,
-                                      color: colorScheme.surface.withOpacity(
-                                        0.8,
+                                      color: colorScheme.surface.withValues(
+                                        alpha: 0.8,
                                       ),
                                     ),
                                   ),
@@ -353,8 +353,8 @@ class SwitchAccountScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontFamily: 'DM Mono',
                             fontSize: 10,
-                            color: colorScheme.onSurfaceVariant.withOpacity(
-                              0.5,
+                            color: colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.5,
                             ),
                             height: 1.6,
                           ),

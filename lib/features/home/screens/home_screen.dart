@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
@@ -7,8 +8,12 @@ import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
-import 'package:taskquest/features/games/screens/code_blocks_screen.dart';
-import 'package:taskquest/features/games/screens/quiz_screen.dart';
+import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
+import 'package:taskquest/features/settings/notifications_screen.dart';
+import 'package:taskquest/features/badges/screens/badges_screen.dart';
+import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -96,15 +101,24 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final displayName = user.displayName.isNotEmpty
-        ? user.displayName
+        ? user.displayName.split(' ').first
         : 'Scholar';
-    final totalXp = user.xp;
-    final levelData = XpUtils.getLevelProgress(totalXp);
+
+    final levelData = XpUtils.getLevelProgress(user.xp);
+    final progress = (levelData['progress'] as double).clamp(0.0, 1.0);
+
+    final hour = DateTime.now().hour;
+    String greeting = 'GOOD MORNING,';
+    if (hour >= 12 && hour < 17) {
+      greeting = 'GOOD AFTERNOON,';
+    } else if (hour >= 17) {
+      greeting = 'GOOD EVENING,';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Top Nav
+        // ── Header ──────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
@@ -114,74 +128,91 @@ class HomeScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'GOOD MORNING',
+                    greeting,
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 10,
-                      letterSpacing: 1.4,
+                      letterSpacing: 1.2,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
-                    '${displayName.split(' ').first} 👋',
+                    displayName.toUpperCase(),
                     style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w800,
-                      fontSize: 20,
-                      letterSpacing: -0.4,
+                      fontSize: 28,
+                      letterSpacing: -0.84,
                       color: colorScheme.onSurface,
                     ),
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  _buildIconButton(
+              IconButton(
+                icon: Icon(Icons.notifications_none_rounded, color: colorScheme.onSurface),
+                onPressed: () {
+                  Navigator.push(
                     context,
-                    Icons.notifications_none_rounded,
-                    hasBadge: true,
-                  ),
-                ],
+                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                  );
+                },
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
 
-        // Streak Banner
+        const SizedBox(height: 24),
+
+        // ── Streak Banner ───────────────────────────────────────
         _buildStreakBanner(
           context,
           user.streak,
-          levelData['level'] as int,
-          totalXp,
-          levelData['progress'] as double,
+          user.level,
+          user.xp,
+          progress,
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 32),
 
-        // Global Ranking (Moved from Explore)
+        // ── Leaderboard Link ────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _buildLeaderboardCard(context),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 16),
 
-        // Daily Quest
+        // ── Badges Link ─────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'DAILY QUEST',
-            style: TextStyle(
-              fontFamily: 'DM Mono',
-              fontSize: 10,
-              letterSpacing: 1.8,
-              color: colorScheme.onSurfaceVariant,
-            ),
+          child: _buildBadgesCard(context, user.unlockedBadges.length),
+        ),
+
+        const SizedBox(height: 40),
+
+        // ── Today's Challenges ──────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'TODAY\'S CHALLENGES',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 10,
+                  letterSpacing: 1.8,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              _buildStatusBadge(context, questsAsync),
+            ],
           ),
         ),
-        const SizedBox(height: 10),
+
+        const SizedBox(height: 20),
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
@@ -189,62 +220,60 @@ class HomeScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: colorScheme.surface,
               border: Border.all(color: colorScheme.outline),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Today's Challenges",
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        letterSpacing: -0.3,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    _buildStatusBadge(context, questsAsync),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                questsAsync.when(
-                  data: (quests) => Column(
-                    children: quests
-                        .map(
-                          (q) => _QuestItem(
-                            done: q.isCompleted,
-                            title: q.title,
-                            sub: q.description,
-                            xp: q.xpReward,
-                            onTap: () {
-                              if (!q.isCompleted) {
-                                ref
-                                    .read(questServiceProvider)
-                                    .completeQuest(user.uid, q);
-                              }
-                            },
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  loading: () => const Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (e, s) => Text('Error: $e'),
-                ),
-                const SizedBox(height: 14),
                 _buildProgressIndicator(context, questsAsync),
+                const SizedBox(height: 24),
+                questsAsync.when(
+                  data: (quests) {
+                    if (quests.isEmpty) {
+                      return const Text(
+                        'No quests available. Check back soon!',
+                        style: TextStyle(fontFamily: 'DM Mono', fontSize: 11),
+                      );
+                    }
+                    return Column(
+                      children: quests.map((q) {
+                        return _QuestItem(
+                          done: q.isCompleted,
+                          title: q.title,
+                          sub: q.description,
+                          xp: q.xpReward,
+                          onTap: () async {
+                            if (!q.isCompleted) {
+                              HapticFeedback.mediumImpact();
+                              await ref
+                                  .read(questServiceProvider)
+                                  .completeQuest(user.uid, q);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Quest Completed: +${q.xpReward} XP!',
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        );
+                      }).toList(),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, s) => Text('Error loading quests: $e'),
+                ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 32),
 
-        // Game Modes
+        const SizedBox(height: 40),
+
+        // ── Game Modes ──────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
@@ -257,57 +286,16 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         _buildGameModes(context),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 40),
 
-        // Recent Activity
+        // ── Recent Activity ────────────────────────────────────
         _buildRecentActivityHeader(context),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         _buildActivityList(context, ref),
       ],
-    );
-  }
-
-  Widget _buildIconButton(
-    BuildContext context,
-    IconData icon, {
-    bool hasBadge = false,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Stack(
-        children: [
-          Center(
-            child: Icon(icon, color: theme.colorScheme.onSurface, size: 16),
-          ),
-          if (hasBadge)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: theme.colorScheme.surface,
-                    width: 1.5,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 
@@ -327,7 +315,7 @@ class HomeScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: colorScheme.onSurface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -342,7 +330,7 @@ class HomeScreen extends ConsumerWidget {
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 1.44,
-                    color: colorScheme.surface.withOpacity(0.6),
+                    color: colorScheme.surface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -367,7 +355,7 @@ class HomeScreen extends ConsumerWidget {
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
-                        color: colorScheme.surface.withOpacity(0.6),
+                        color: colorScheme.surface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -386,7 +374,7 @@ class HomeScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: isToday
                                 ? colorScheme.surface
-                                : colorScheme.surface.withOpacity(0.2),
+                                : colorScheme.surface.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(7),
                           ),
                           child: Center(
@@ -397,7 +385,7 @@ class HomeScreen extends ConsumerWidget {
                                 fontSize: 9,
                                 color: isToday
                                     ? colorScheme.onSurface
-                                    : colorScheme.surface.withOpacity(0.8),
+                                    : colorScheme.surface.withValues(alpha: 0.8),
                               ),
                             ),
                           ),
@@ -427,7 +415,7 @@ class HomeScreen extends ConsumerWidget {
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 0.9,
-                    color: colorScheme.surface.withOpacity(0.5),
+                    color: colorScheme.surface.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -438,7 +426,7 @@ class HomeScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 3,
-                      backgroundColor: colorScheme.surface.withOpacity(0.1),
+                      backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
                       valueColor: AlwaysStoppedAnimation(colorScheme.surface),
                     ),
                   ),
@@ -453,6 +441,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildLeaderboardCard(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -463,8 +452,8 @@ class HomeScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: theme.colorScheme.onSurface,
-          borderRadius: BorderRadius.circular(20),
+          color: colorScheme.onSurface,
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           children: [
@@ -472,12 +461,12 @@ class HomeScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withOpacity(0.1),
+                color: colorScheme.surface.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.leaderboard_rounded,
-                color: theme.colorScheme.surface,
+                color: colorScheme.surface,
                 size: 20,
               ),
             ),
@@ -492,7 +481,7 @@ class HomeScreen extends ConsumerWidget {
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
-                      color: theme.colorScheme.surface,
+                      color: colorScheme.surface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -501,7 +490,7 @@ class HomeScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 9,
-                      color: theme.colorScheme.surface.withOpacity(0.5),
+                      color: colorScheme.surface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -509,7 +498,75 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: theme.colorScheme.surface.withOpacity(0.5),
+              color: colorScheme.surface.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadgesCard(BuildContext context, int unlockedCount) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const BadgesScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border.all(color: colorScheme.outline),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.stars_rounded,
+                color: colorScheme.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hall of Achievements',
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$unlockedCount badges unlocked',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -592,7 +649,7 @@ class HomeScreen extends ConsumerWidget {
                 value: progress,
                 minHeight: 4,
                 backgroundColor: theme.colorScheme.outline,
-                valueColor: AlwaysStoppedAnimation(theme.colorScheme.onSurface),
+                valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
               ),
             ),
           ],
@@ -631,9 +688,24 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const CodeBlocksScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const GameLobbyScreen(
+                  title: 'Code Blocks',
+                  description: 'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!',
+                  icon: Icons.code_rounded,
+                  stats: [
+                    {'value': '6', 'label': 'PUZZLES'},
+                    {'value': '190', 'label': 'BEST XP'},
+                    {'value': '+150', 'label': 'XP REWARD'},
+                    {'value': '6m', 'label': 'EST. TIME'},
+                  ],
+                  configOptions: {
+                    'Language': ['Python', 'JavaScript', 'Java', 'C++'],
+                    'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
+                    'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
+                  },
+                  startButtonText: 'Start Coding',
+                  gameScreen: CodeBlocksGameplayScreen(),
+                )),
               );
             },
           ),
@@ -646,7 +718,24 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const QuizScreen()),
+                MaterialPageRoute(builder: (context) => const GameLobbyScreen(
+                  title: 'Which Lang?',
+                  description: 'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?',
+                  icon: Icons.quiz_rounded,
+                  stats: [
+                    {'value': '10', 'label': 'QUESTIONS'},
+                    {'value': '8/10', 'label': 'BEST SCORE'},
+                    {'value': '+100', 'label': 'XP REWARD'},
+                    {'value': '4m', 'label': 'EST. TIME'},
+                  ],
+                  configOptions: {
+                    'Clue Type': ['Mix of All', 'Syntax Only', 'Description', 'Fun Facts'],
+                    'Language Pool': ['All (20 langs)', 'Popular 10', 'Beginner Set'],
+                    'Time per Question': ['45s', '30s', '15s'],
+                  },
+                  startButtonText: 'Start Quiz',
+                  gameScreen: QuizGameplayScreen(),
+                )),
               );
             },
           ),
@@ -672,14 +761,19 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AllActivityScreen()),
+              );
+            },
             child: Text(
               'SEE ALL',
               style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 9,
                 letterSpacing: 1.0,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -884,7 +978,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.1)
+                    ? colorScheme.surface.withValues(alpha: 0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null
@@ -915,7 +1009,7 @@ class _GamePill extends StatelessWidget {
                 fontSize: 9,
                 height: 1.4,
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.4)
+                    ? colorScheme.surface.withValues(alpha: 0.4)
                     : colorScheme.onSurfaceVariant,
               ),
             ),
@@ -924,7 +1018,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.1)
+                    ? colorScheme.surface.withValues(alpha: 0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -935,7 +1029,7 @@ class _GamePill extends StatelessWidget {
                   fontSize: 8,
                   letterSpacing: 0.08,
                   color: isFeatured
-                      ? colorScheme.surface.withOpacity(0.6)
+                      ? colorScheme.surface.withValues(alpha: 0.6)
                       : colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -1040,7 +1134,7 @@ class _ActivityItem extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 9,
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 ),
               ),
             ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 
 class TQBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -13,11 +12,14 @@ class TQBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       height: 80,
-      decoration: const BoxDecoration(
-        color: AppTheme.white,
-        border: Border(top: BorderSide(color: AppTheme.borderLight)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(top: BorderSide(color: colorScheme.outline)),
       ),
       child: SafeArea(
         top: false,
@@ -45,21 +47,21 @@ class TQBottomNav extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppTheme.black,
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: currentIndex == 2
                           ? [
                               BoxShadow(
-                                color: AppTheme.black.withOpacity(0.3),
+                                color: colorScheme.primary.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
                             ]
                           : null,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.document_scanner_rounded,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 20,
                     ),
                   ),
@@ -100,6 +102,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -110,7 +115,7 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: active ? AppTheme.black : AppTheme.dimmed,
+              color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 4),
             Text(
@@ -119,7 +124,7 @@ class _NavItem extends StatelessWidget {
                 fontFamily: 'DM Mono',
                 fontSize: 9,
                 letterSpacing: 0.72,
-                color: active ? AppTheme.black : AppTheme.dimmed,
+                color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
               ),
             ),
           ],

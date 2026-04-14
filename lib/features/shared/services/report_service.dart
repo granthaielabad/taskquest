@@ -7,6 +7,7 @@ class ReportModel {
   final String gameType; // 'quiz' or 'code_blocks'
   final String contentId; // Question text or code snippet identifier
   final String reason;
+  final String? attachmentName;
   final DateTime timestamp;
 
   ReportModel({
@@ -15,6 +16,7 @@ class ReportModel {
     required this.gameType,
     required this.contentId,
     required this.reason,
+    this.attachmentName,
     required this.timestamp,
   });
 
@@ -25,6 +27,7 @@ class ReportModel {
       'gameType': gameType,
       'contentId': contentId,
       'reason': reason,
+      'attachmentName': attachmentName,
       'timestamp': Timestamp.fromDate(timestamp),
     };
   }

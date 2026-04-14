@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/home/screens/home_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/explore/screens/explore_screen.dart';
@@ -60,7 +59,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: List.generate(screens.length, (i) {
           if (!_activatedTabs.contains(i)) return const SizedBox.shrink();

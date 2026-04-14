@@ -104,7 +104,7 @@ class NotificationsScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: colorScheme.surface.withOpacity(0.1),
+                              color: colorScheme.surface.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -132,7 +132,7 @@ class NotificationsScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontFamily: 'DM Mono',
                                     fontSize: 10,
-                                    color: colorScheme.surface.withOpacity(0.5),
+                                    color: colorScheme.surface.withValues(alpha: 0.5),
                                   ),
                                 ),
                               ],
@@ -190,7 +190,7 @@ class NotificationsScreen extends ConsumerWidget {
                         ),
                         _NotificationTile(
                           icon: Icons.timeline_rounded,
-                          iconBg: colorScheme.outline.withOpacity(0.2),
+                          iconBg: colorScheme.outline.withValues(alpha: 0.2),
                           iconColor: colorScheme.onSurfaceVariant,
                           title: 'XP Milestones',
                           subtitle: 'Level-up and XP threshold alerts',
@@ -210,7 +210,7 @@ class NotificationsScreen extends ConsumerWidget {
                       children: [
                         _NotificationTile(
                           icon: Icons.people_outline_rounded,
-                          iconBg: colorScheme.outline.withOpacity(0.2),
+                          iconBg: colorScheme.outline.withValues(alpha: 0.2),
                           iconColor: colorScheme.onSurfaceVariant,
                           title: 'Friend Activity',
                           subtitle: 'When friends earn badges or level up',
@@ -221,7 +221,7 @@ class NotificationsScreen extends ConsumerWidget {
                         ),
                         _NotificationTile(
                           icon: Icons.branding_watermark_outlined,
-                          iconBg: colorScheme.outline.withOpacity(0.2),
+                          iconBg: colorScheme.outline.withValues(alpha: 0.2),
                           iconColor: colorScheme.onSurfaceVariant,
                           title: 'App Announcements',
                           subtitle: 'New content and feature updates',
@@ -296,7 +296,7 @@ class NotificationsScreen extends ConsumerWidget {
                                       fontFamily: 'DM Mono',
                                       fontSize: 9,
                                       color: colorScheme.onSurfaceVariant
-                                          .withOpacity(0.5),
+                                          .withValues(alpha: 0.5),
                                     ),
                                   ),
                                   const SizedBox(height: 4),

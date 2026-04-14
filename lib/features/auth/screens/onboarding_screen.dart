@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/screens/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -43,8 +42,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -64,13 +66,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 right: 24,
                 child: TextButton(
                   onPressed: _goToLogin,
-                  child: const Text(
+                  child: Text(
                     'SKIP',
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 11,
                       letterSpacing: 1.2,
-                      color: AppTheme.muted,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -102,9 +104,12 @@ class _BottomControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
-      color: AppTheme.backgroundLight,
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      color: theme.scaffoldBackgroundColor,
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -119,13 +124,13 @@ class _BottomControls extends StatelessWidget {
                 width: isActive ? 24 : 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: isActive ? AppTheme.black : AppTheme.dimmed,
+                  color: isActive ? colorScheme.onSurface : colorScheme.outline,
                   borderRadius: BorderRadius.circular(3),
                 ),
               );
             }),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
           // CTA button
           SizedBox(
@@ -134,8 +139,8 @@ class _BottomControls extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onNext,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.black,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.onSurface,
+                foregroundColor: colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -146,35 +151,34 @@ class _BottomControls extends StatelessWidget {
                 children: [
                   Text(
                     currentPage < 2 ? 'Next' : 'Get Started',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
-                      color: Colors.white,
+                      color: colorScheme.surface,
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward,
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     size: 16,
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           Text(
             '${currentPage + 1} of 3',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 11,
-              color: AppTheme.dimmed,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 12),
         ],
       ),
     );
@@ -196,14 +200,16 @@ class _Slide1State extends State<_Slide1> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 180),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1
-          const Row(
-            children: [
+          Row(
+            children: const [
               Expanded(
                 child: _GameCard(
                   icon: Icons.style_rounded,
@@ -227,9 +233,8 @@ class _Slide1State extends State<_Slide1> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 10),
 
-          // Row 2
-          const Row(
-            children: [
+          Row(
+            children: const [
               Expanded(
                 child: _GameCard(
                   icon: Icons.quiz_rounded,
@@ -253,38 +258,37 @@ class _Slide1State extends State<_Slide1> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 10),
 
-          // Row 3
           const _AlgorithmCard(),
           const SizedBox(height: 28),
 
-          const Text(
+          Text(
             '01 — WHAT IS TASKQUEST?',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.4,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Learn CS\nthrough play.',
             style: TextStyle(
               fontFamily: 'Syne',
               fontWeight: FontWeight.w800,
               fontSize: 36,
               letterSpacing: -1.0,
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               height: 1.05,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Five interactive game modes designed to sharpen your programming and computational thinking skills.',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 12,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
               height: 1.7,
             ),
           ),
@@ -309,40 +313,42 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 180),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Timer bar
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
+                  children: [
                     Row(
                       children: [
                         Icon(
                           Icons.timer_outlined,
                           size: 12,
-                          color: AppTheme.muted,
+                          color: colorScheme.onSurfaceVariant,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
                           'TIME REMAINING',
                           style: TextStyle(
                             fontFamily: 'DM Mono',
                             fontSize: 9,
                             letterSpacing: 1.2,
-                            color: AppTheme.muted,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -354,7 +360,7 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                         fontWeight: FontWeight.w500,
                         fontSize: 18,
                         letterSpacing: 1.0,
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -362,11 +368,11 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                 const SizedBox(height: 10),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(3),
-                  child: const LinearProgressIndicator(
+                  child: LinearProgressIndicator(
                     value: 0.70,
                     minHeight: 5,
-                    backgroundColor: AppTheme.borderLight,
-                    valueColor: AlwaysStoppedAnimation(AppTheme.black),
+                    backgroundColor: colorScheme.outline,
+                    valueColor: AlwaysStoppedAnimation(colorScheme.onSurface),
                   ),
                 ),
               ],
@@ -374,24 +380,23 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 10),
 
-          // Code block card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'FILL IN THE MISSING CODE',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 1.2,
-                    color: Color(0xFF777777),
+                    color: colorScheme.surface.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -407,13 +412,13 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                         text: 'function ',
                         style: TextStyle(color: Color(0xFF7BA3F5)),
                       ),
-                      const TextSpan(
+                      TextSpan(
                         text: 'greet',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: colorScheme.surface),
                       ),
-                      const TextSpan(
+                      TextSpan(
                         text: '(name) {\n  ',
-                        style: TextStyle(color: Color(0xFFCCCCCC)),
+                        style: TextStyle(color: colorScheme.surface.withValues(alpha: 0.8)),
                       ),
                       const TextSpan(
                         text: 'return ',
@@ -426,22 +431,22 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                           height: 20,
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF333333),
+                            color: colorScheme.surface.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                       ),
-                      const TextSpan(
+                      TextSpan(
                         text: ' + name;\n}',
-                        style: TextStyle(color: Color(0xFFCCCCCC)),
+                        style: TextStyle(color: colorScheme.surface.withValues(alpha: 0.8)),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Wrap(
+                Wrap(
                   spacing: 8,
-                  children: [
+                  children: const [
                     _CodeChip(label: '"Hello, "'),
                     _CodeChip(label: 'console.log'),
                     _CodeChip(label: 'null'),
@@ -452,26 +457,25 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 10),
 
-          const Text(
+          Text(
             'INSTANT FEEDBACK',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 9,
               letterSpacing: 1.4,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
 
-          // Feedback cards
           Row(
             children: [
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    border: Border.all(color: AppTheme.black, width: 1.5),
+                    color: colorScheme.surface,
+                    border: Border.all(color: colorScheme.onSurface, width: 1.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -482,30 +486,30 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                           Container(
                             width: 10,
                             height: 10,
-                            decoration: const BoxDecoration(
-                              color: AppTheme.black,
+                            decoration: BoxDecoration(
+                              color: colorScheme.onSurface,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Text(
+                          Text(
                             'Correct!',
                             style: TextStyle(
                               fontFamily: 'Syne',
                               fontWeight: FontWeight.w700,
                               fontSize: 12,
-                              color: AppTheme.black,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
+                      Text(
                         '"Hello, " concatenates with the name parameter correctly.',
                         style: TextStyle(
                           fontFamily: 'DM Mono',
                           fontSize: 9,
-                          color: AppTheme.muted,
+                          color: colorScheme.onSurfaceVariant,
                           height: 1.6,
                         ),
                       ),
@@ -518,8 +522,8 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    border: Border.all(color: AppTheme.borderLight),
+                    color: colorScheme.surface,
+                    border: Border.all(color: colorScheme.outline),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -532,28 +536,28 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                             height: 10,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppTheme.dimmed),
+                              border: Border.all(color: colorScheme.outline),
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Text(
+                          Text(
                             'Incorrect',
                             style: TextStyle(
                               fontFamily: 'Syne',
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
-                              color: AppTheme.muted,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
+                      Text(
                         'null would cause a type error when concatenated.',
                         style: TextStyle(
                           fontFamily: 'DM Mono',
                           fontSize: 9,
-                          color: AppTheme.muted,
+                          color: colorScheme.onSurfaceVariant,
                           height: 1.6,
                         ),
                       ),
@@ -565,55 +569,54 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 10),
 
-          // Difficulty hint
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(
+            child: Text(
               'Difficulty adapts as you level up — tasks get harder the better you get.',
               style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 10,
-                color: AppTheme.muted,
+                color: colorScheme.onSurfaceVariant,
                 height: 1.6,
               ),
             ),
           ),
           const SizedBox(height: 28),
 
-          const Text(
+          Text(
             '02 — HOW IT WORKS',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.4,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Think fast,\nlearn faster.',
             style: TextStyle(
               fontFamily: 'Syne',
               fontWeight: FontWeight.w800,
               fontSize: 36,
               letterSpacing: -1.0,
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               height: 1.05,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Timed challenges keep you focused. Instant feedback tells you exactly what you got right — and why you got it wrong.',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 12,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
               height: 1.7,
             ),
           ),
@@ -638,24 +641,26 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 180),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Score banner
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -664,10 +669,10 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
                         fontFamily: 'DM Mono',
                         fontSize: 9,
                         letterSpacing: 1.4,
-                        color: Color(0xFF666666),
+                        color: colorScheme.surface.withValues(alpha: 0.5),
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
@@ -678,17 +683,17 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
                             fontFamily: 'Syne',
                             fontWeight: FontWeight.w800,
                             fontSize: 36,
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             letterSpacing: -1.0,
                           ),
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
                           'pts',
                           style: TextStyle(
                             fontFamily: 'DM Mono',
                             fontSize: 13,
-                            color: Color(0xFF666666),
+                            color: colorScheme.surface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -697,34 +702,34 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
+                  children: [
                     Text(
                       '12  correct',
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 11,
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         letterSpacing: 0.3,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       '3  missed',
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 11,
-                        color: Color(0xFF666666),
+                        color: colorScheme.surface.withValues(alpha: 0.5),
                         letterSpacing: 0.3,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Level 4',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
-                        color: Colors.white,
+                        color: colorScheme.surface,
                       ),
                     ),
                   ],
@@ -734,16 +739,15 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 10),
 
-          // Skill breakdown
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -752,45 +756,44 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 1.4,
-                    color: AppTheme.muted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                SizedBox(height: 14),
-                _SkillBar(label: 'Programming Logic', value: 0.82),
-                SizedBox(height: 12),
-                _SkillBar(label: 'Syntax Knowledge', value: 0.67),
-                SizedBox(height: 12),
-                _SkillBar(label: 'SDLC Concepts', value: 0.55),
+                const SizedBox(height: 14),
+                const _SkillBar(label: 'Programming Logic', value: 0.82),
+                const SizedBox(height: 12),
+                const _SkillBar(label: 'Syntax Knowledge', value: 0.67),
+                const SizedBox(height: 12),
+                const _SkillBar(label: 'SDLC Concepts', value: 0.55),
               ],
             ),
           ),
           const SizedBox(height: 10),
 
-          // Achievements
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.white,
-              border: Border.all(color: AppTheme.borderLight),
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'ACHIEVEMENTS UNLOCKED',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 1.4,
-                    color: AppTheme.muted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 14),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
+                  children: const [
                     _AchievementBadge(
                       icon: Icons.star_rounded,
                       label: 'First Quest',
@@ -818,34 +821,34 @@ class _Slide3State extends State<_Slide3> with AutomaticKeepAliveClientMixin {
           ),
           const SizedBox(height: 28),
 
-          const Text(
+          Text(
             '03 — TRACK & EARN',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.4,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'See your\ngrowth,\nearn your\nbadges.',
             style: TextStyle(
               fontFamily: 'Syne',
               fontWeight: FontWeight.w800,
               fontSize: 36,
               letterSpacing: -1.0,
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               height: 1.05,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Every session shows your skill breakdown. Complete challenges to unlock achievement badges and level up your CS profile.',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 12,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
               height: 1.7,
             ),
           ),
@@ -872,18 +875,21 @@ class _GameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark ? AppTheme.black : AppTheme.white;
-    final border = isDark ? AppTheme.black : AppTheme.borderLight;
-    final titleColor = isDark ? Colors.white : AppTheme.black;
-    final subColor = isDark ? Colors.white.withOpacity(0.45) : AppTheme.muted;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final bg = isDark ? colorScheme.onSurface : colorScheme.surface;
+    final border = isDark ? colorScheme.onSurface : colorScheme.outline;
+    final titleColor = isDark ? colorScheme.surface : colorScheme.onSurface;
+    final subColor = isDark ? colorScheme.surface.withValues(alpha: 0.45) : colorScheme.onSurfaceVariant;
     final tagBg = isDark
-        ? Colors.white.withOpacity(0.12)
-        : AppTheme.backgroundLight;
-    final tagColor = isDark ? Colors.white.withOpacity(0.55) : AppTheme.muted;
+        ? colorScheme.surface.withValues(alpha: 0.12)
+        : theme.scaffoldBackgroundColor;
+    final tagColor = isDark ? colorScheme.surface.withValues(alpha: 0.55) : colorScheme.onSurfaceVariant;
     final iconBg = isDark
-        ? Colors.white.withOpacity(0.12)
-        : AppTheme.backgroundLight;
-    final iconColor = isDark ? Colors.white : AppTheme.black;
+        ? colorScheme.surface.withValues(alpha: 0.12)
+        : theme.scaffoldBackgroundColor;
+    final iconColor = isDark ? colorScheme.surface : colorScheme.onSurface;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -901,7 +907,7 @@ class _GameCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: iconBg,
               border: Border.all(
-                color: isDark ? Colors.transparent : AppTheme.borderLight,
+                color: isDark ? Colors.transparent : colorScheme.outline,
               ),
               borderRadius: BorderRadius.circular(9),
             ),
@@ -934,7 +940,7 @@ class _GameCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: tagBg,
               border: Border.all(
-                color: isDark ? Colors.transparent : AppTheme.borderLight,
+                color: isDark ? Colors.transparent : colorScheme.outline,
               ),
               borderRadius: BorderRadius.circular(5),
             ),
@@ -959,12 +965,15 @@ class _AlgorithmCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.white,
-        border: Border.all(color: AppTheme.borderLight),
+        color: colorScheme.surface,
+        border: Border.all(color: colorScheme.outline),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -973,18 +982,18 @@ class _AlgorithmCard extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: AppTheme.backgroundLight,
-              border: Border.all(color: AppTheme.borderLight),
+              color: theme.scaffoldBackgroundColor,
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(9),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.functions_rounded,
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               size: 16,
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -994,16 +1003,16 @@ class _AlgorithmCard extends StatelessWidget {
                     fontFamily: 'Syne',
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
-                    color: AppTheme.black,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                SizedBox(height: 3),
+                const SizedBox(height: 3),
                 Text(
                   'Work through pseudocode problem-solving challenges step by step',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 9,
-                    color: AppTheme.muted,
+                    color: colorScheme.onSurfaceVariant,
                     height: 1.5,
                   ),
                 ),
@@ -1014,17 +1023,17 @@ class _AlgorithmCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: AppTheme.backgroundLight,
-              border: Border.all(color: AppTheme.borderLight),
+              color: theme.scaffoldBackgroundColor,
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(5),
             ),
-            child: const Text(
+            child: Text(
               'LOGIC',
               style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 8,
                 letterSpacing: 0.8,
-                color: AppTheme.muted,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -1040,19 +1049,20 @@ class _CodeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF222222),
-        border: Border.all(color: const Color(0xFF444444)),
+        color: colorScheme.surface.withValues(alpha: 0.1),
+        border: Border.all(color: colorScheme.surface.withValues(alpha: 0.2)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'DM Mono',
           fontSize: 10,
-          color: Color(0xFFCCCCCC),
+          color: colorScheme.surface.withValues(alpha: 0.8),
         ),
       ),
     );
@@ -1066,6 +1076,9 @@ class _SkillBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1074,18 +1087,18 @@ class _SkillBar extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 11,
-                color: AppTheme.black,
+                color: colorScheme.onSurface,
               ),
             ),
             Text(
               '${(value * 100).round()}%',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 11,
-                color: AppTheme.muted,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -1096,8 +1109,8 @@ class _SkillBar extends StatelessWidget {
           child: LinearProgressIndicator(
             value: value,
             minHeight: 5,
-            backgroundColor: AppTheme.borderLight,
-            valueColor: const AlwaysStoppedAnimation(AppTheme.black),
+            backgroundColor: colorScheme.outline,
+            valueColor: AlwaysStoppedAnimation(colorScheme.onSurface),
           ),
         ),
       ],
@@ -1118,23 +1131,24 @@ class _AchievementBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: unlocked ? const Color(0xFF111111) : const Color(0xFFF7F6F2),
+            color: unlocked ? colorScheme.onSurface : colorScheme.surface,
             border: Border.all(
               color: unlocked
-                  ? const Color(0xFF111111)
-                  : const Color(0xFFE2E1DC),
+                  ? colorScheme.onSurface
+                  : colorScheme.outline,
             ),
             borderRadius: BorderRadius.circular(13),
           ),
           child: Icon(
             icon,
-            color: unlocked ? Colors.white : const Color(0xFFCCCAC4),
+            color: unlocked ? colorScheme.surface : colorScheme.outline,
             size: 22,
           ),
         ),
@@ -1147,10 +1161,9 @@ class _AchievementBadge extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 9,
-
               color: unlocked
-                  ? const Color(0xFF111111)
-                  : const Color(0xFFCCCAC4),
+                  ? colorScheme.onSurface
+                  : colorScheme.outline,
               height: 1.4,
             ),
           ),

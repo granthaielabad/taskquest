@@ -345,15 +345,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                       color: colorScheme.onSurface,
                                       isSelected: true,
                                     ),
-                                    _ColorOption(
-                                      color: Colors.blueGrey.shade800,
+                                    const _ColorOption(
+                                      color: Colors.grey,
                                     ),
                                     _ColorOption(
-                                      color: Colors.deepPurple.shade900,
+                                      color: Color(0xFF424242), // shade 800
                                     ),
-                                    _ColorOption(color: Colors.teal.shade900),
-                                    _ColorOption(color: Colors.brown.shade900),
-                                    _ColorOption(color: Colors.grey.shade900),
+                                    const _ColorOption(color: Color(0xFFBDBDBD)), // shade 400
+                                    const _ColorOption(color: Colors.black),
+                                    const _ColorOption(color: Color(0xFFEEEEEE)), // shade 200
                                   ],
                                 ),
                               ],
@@ -401,7 +401,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                       fontSize: 9,
                                       letterSpacing: 1.0,
                                       color: colorScheme.onSurfaceVariant
-                                          .withOpacity(0.7),
+                                          .withValues(alpha: 0.7),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -505,7 +505,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           vertical: 16,
                         ),
                         decoration: BoxDecoration(
-                          color: colorScheme.errorContainer.withOpacity(0.1),
+                          color: colorScheme.errorContainer.withValues(alpha: 0.1),
                           border: Border.all(color: colorScheme.errorContainer),
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -612,7 +612,7 @@ class _EditField extends StatelessWidget {
               fontFamily: 'DM Mono',
               fontSize: 9,
               letterSpacing: 1.0,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 4),

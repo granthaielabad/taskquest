@@ -13,17 +13,6 @@ class AppearanceScreen extends ConsumerStatefulWidget {
 class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
   bool reduceMotion = false;
   double textSize = 0.5;
-  int selectedAccent = 0;
-
-  final List<Color> accentColors = [
-    Colors.black,
-    const Color(0xFF4A8BFF),
-    const Color(0xFF00C853),
-    const Color(0xFFFFAB00),
-    const Color(0xFFFF5252),
-    const Color(0xFF7C4DFF),
-    Colors.white,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +69,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 24),
-                    const _SectionLabel(label: 'THEME'),
+                    const _SectionLabel(label: 'THEME MODE'),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,50 +99,6 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                           child: const _ThemePreview(isSystem: true),
                         ),
                       ],
-                    ),
-
-                    const SizedBox(height: 32),
-                    const _SectionLabel(label: 'ACCENT COLOR'),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 44,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: accentColors.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 12),
-                        itemBuilder: (context, index) {
-                          final isSelected = selectedAccent == index;
-                          return GestureDetector(
-                            onTap: () => setState(() => selectedAccent = index),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: accentColors[index],
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? colorScheme.onSurface
-                                      : colorScheme.outline,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                              ),
-                              child: isSelected
-                                  ? Icon(
-                                      Icons.check,
-                                      color:
-                                          accentColors[index]
-                                                  .computeLuminance() >
-                                              0.5
-                                          ? Colors.black
-                                          : Colors.white,
-                                      size: 20,
-                                    )
-                                  : null,
-                            ),
-                          );
-                        },
-                      ),
                     ),
 
                     const SizedBox(height: 32),
@@ -205,11 +150,11 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                                 const SizedBox(height: 8),
                                 SliderTheme(
                                   data: SliderThemeData(
-                                    activeTrackColor: colorScheme.onSurface,
+                                    activeTrackColor: colorScheme.primary,
                                     inactiveTrackColor: colorScheme.outline,
-                                    thumbColor: colorScheme.onSurface,
-                                    overlayColor: colorScheme.onSurface
-                                        .withOpacity(0.1),
+                                    thumbColor: colorScheme.primary,
+                                    overlayColor: colorScheme.primary
+                                        .withValues(alpha: 0.1),
                                     trackHeight: 4,
                                   ),
                                   child: Slider(
@@ -281,7 +226,7 @@ class _ThemeOption extends StatelessWidget {
               color: theme.colorScheme.surface,
               border: Border.all(
                 color: isSelected
-                    ? theme.colorScheme.onSurface
+                    ? theme.colorScheme.primary
                     : theme.colorScheme.outline,
                 width: isSelected ? 2 : 1,
               ),
@@ -380,6 +325,7 @@ class _DisplayToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
+            activeTrackColor: theme.colorScheme.primary.withValues(alpha: 0.5),
             activeThumbColor: theme.colorScheme.primary,
           ),
         ],

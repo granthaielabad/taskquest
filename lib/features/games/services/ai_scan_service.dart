@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:flutter/foundation.dart';
@@ -29,7 +28,7 @@ class AIScanService {
     try {
       final extension = fileName.split('.').last.toLowerCase();
       String prompt =
-          "You are a CS Professor. Analyze the provided content and return exactly 10 high-quality flashcards for a Computer Science student. Return the result as a JSON array of objects with 'term' and 'definition' keys.";
+          "You are a CS Professor. Analyze the provided content and return exactly 10 high-quality flashcards for a Computer Science student. Return the result as a JSON array of objects with 'term' and 'definition' keys. Do not include any explanation text, only the JSON array.";
 
       GenerateContentResponse response;
 
@@ -79,8 +78,19 @@ class AIScanService {
   /// ── Parser ─────────────────────────────────────────────────
   List<FlashcardModel> _parseResponse(String? text) {
     if (text == null) return [];
+    
+    String jsonString = text.trim();
+    
+    // Robust extraction: Find the first '[' and last ']' to isolate the JSON array
     try {
-      final List<dynamic> decoded = jsonDecode(text);
+      final firstBracket = jsonString.indexOf('[');
+      final lastBracket = jsonString.lastIndexOf(']');
+      
+      if (firstBracket != -1 && lastBracket != -1 && lastBracket > firstBracket) {
+        jsonString = jsonString.substring(firstBracket, lastBracket + 1);
+      }
+
+      final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded
           .map(
             (item) => FlashcardModel(
@@ -94,23 +104,27 @@ class AIScanService {
           .toList();
     } catch (e) {
       debugPrint('AI Parsing Error: $e');
-      // Fallback cleanup
-      final cleaned = text
+      // Final attempt: manual cleanup if brackets were missing or malformed
+      final cleaned = jsonString
           .replaceAll('```json', '')
           .replaceAll('```', '')
           .trim();
-      final List<dynamic> decoded = jsonDecode(cleaned);
-      return decoded
-          .map(
-            (item) => FlashcardModel(
-              id:
-                  DateTime.now().millisecondsSinceEpoch.toString() +
-                  decoded.indexOf(item).toString(),
-              term: item['term'] ?? '',
-              definition: item['definition'] ?? '',
-            ),
-          )
-          .toList();
+      try {
+        final List<dynamic> decoded = jsonDecode(cleaned);
+        return decoded
+            .map(
+              (item) => FlashcardModel(
+                id:
+                    DateTime.now().millisecondsSinceEpoch.toString() +
+                    decoded.indexOf(item).toString(),
+                term: item['term'] ?? '',
+                definition: item['definition'] ?? '',
+              ),
+            )
+            .toList();
+      } catch (innerE) {
+        throw Exception('AI returned invalid format. Please try again.');
+      }
     }
   }
 }
