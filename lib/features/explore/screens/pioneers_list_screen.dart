@@ -100,75 +100,82 @@ class _PioneersListScreenState extends ConsumerState<PioneersListScreen> {
                         fontSize: 12,
                       ),
                       prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.close_rounded, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                ref.read(pioneersProvider.notifier).setSearchQuery('');
+                                setState(() {});
+                              },
+                            )
+                          : null,
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _filterCategories.map((cat) {
-                      final isSelected =
-                          pioneersAsync.value?.category == cat['tag'];
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(
-                            cat['label']!,
-                            style: TextStyle(
-                              fontFamily: 'DM Mono',
-                              fontSize: 10,
-                              color:
-                                  isSelected
-                                      ? colorScheme.surface
-                                      : colorScheme.onSurface,
-                            ),
-                          ),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            if (selected) {
-                              ref
-                                  .read(pioneersProvider.notifier)
-                                  .setCategory(cat['tag']!);
-                            }
-                          },
-                          selectedColor: colorScheme.onSurface,
-                          backgroundColor: colorScheme.surface,
-                          showCheckmark: false,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(
-                              color:
-                                  isSelected
-                                      ? colorScheme.onSurface
-                                      : colorScheme.outline,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
               ],
             ),
           ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: _filterCategories.map((cat) {
+                final isSelected =
+                    pioneersAsync.value?.category == cat['tag'];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(
+                      cat['label']!,
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 10,
+                        color:
+                            isSelected
+                                ? colorScheme.surface
+                                : colorScheme.onSurface,
+                      ),
+                    ),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        _searchController.clear();
+                        ref
+                            .read(pioneersProvider.notifier)
+                            .setCategory(cat['tag']!);
+                        setState(() {});
+                      }
+                    },
+                    selectedColor: colorScheme.onSurface,
+                    backgroundColor: colorScheme.surface,
+                    showCheckmark: false,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color:
+                            isSelected
+                                ? colorScheme.onSurface
+                                : colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 8),
 
           // ── Grid List ─────────────────────────────────────────────
           Expanded(
             child: pioneersAsync.when(
               data: (state) {
-                final filteredList =
-                    state.pioneers
-                        .where(
-                          (p) => p.toLowerCase().contains(
-                            state.searchQuery.toLowerCase(),
-                          ),
-                        )
-                        .toList();
+                final pioneers = state.pioneers;
 
-                if (filteredList.isEmpty) {
+                if (pioneers.isEmpty) {
                   return const Center(
                     child: Text(
                       'No pioneers found.',
@@ -186,12 +193,12 @@ class _PioneersListScreenState extends ConsumerState<PioneersListScreen> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 0.85,
                   ),
-                  itemCount: filteredList.length + (state.isLoadingMore ? 2 : 0),
+                  itemCount: pioneers.length + (state.isLoadingMore ? 2 : 0),
                   itemBuilder: (context, index) {
-                    if (index >= filteredList.length) {
+                    if (index >= pioneers.length) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    return _PioneerGridCard(title: filteredList[index]);
+                    return _PioneerGridCard(title: pioneers[index]);
                   },
                 );
               },

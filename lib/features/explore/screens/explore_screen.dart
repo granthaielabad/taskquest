@@ -883,7 +883,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     return timelineAsync.when(
       data: (items) => SizedBox(
-        height: 140,
+        height: 180,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -894,11 +894,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
       ),
       loading: () => const SizedBox(
-        height: 140,
+        height: 180,
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (e, s) => const SizedBox(
-        height: 140,
+        height: 180,
         child: Center(
           child: Text(
             'Failed to load timeline',
@@ -930,7 +930,7 @@ class _TimelineCard extends StatelessWidget {
         );
       },
       child: Container(
-        width: 180,
+        width: 200,
         margin: const EdgeInsets.only(right: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -941,19 +941,40 @@ class _TimelineCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              item.date,
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurfaceVariant,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  item.date,
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'MILESTONE',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 7,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
               item.title,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: 'Syne',
@@ -963,25 +984,37 @@ class _TimelineCard extends StatelessWidget {
                 color: colorScheme.onSurface,
               ),
             ),
-            const Spacer(),
-            Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 4,
-                  decoration: BoxDecoration(
+            const SizedBox(height: 6),
+            if (item.description != null)
+              Expanded(
+                child: Text(
+                  item.description!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    height: 1.3,
                     color: colorScheme.onSurfaceVariant,
-                    shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 6),
+              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.auto_stories_rounded,
+                  size: 10,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
                 Text(
-                  'MILESTONE',
+                  'READ MORE',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 8,
-                    letterSpacing: 1.0,
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

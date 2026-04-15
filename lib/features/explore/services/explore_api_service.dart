@@ -201,6 +201,27 @@ class ExploreApiService {
     }
   }
 
+  Future<List<String>> searchPioneers(String query) async {
+    try {
+      final refinedQuery =
+          '$query (computer scientist OR computing OR pioneer OR technology)';
+      final url =
+          '$_wikiActionUrl?action=query&list=search&srsearch=${Uri.encodeComponent(refinedQuery)}&utf8=&format=json&origin=*';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final results = data['query']?['search'] as List?;
+        if (results != null) {
+          return results.map((m) => m['title'] as String).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<WikiPageSummary?> fetchWikiSummary(String title) async {
     try {
       final url = '$_wikiRestUrl/page/summary/${Uri.encodeComponent(title)}';
@@ -208,6 +229,20 @@ class ExploreApiService {
 
       if (response.statusCode == 200) {
         return WikiPageSummary.fromJson(jsonDecode(response.body));
+      }
+
+      // ── Smart Fallback ───────────────────────────────────────
+      // If direct hit fails, search for the title and try the first result
+      final searchResults = await searchWikipedia(title);
+      if (searchResults.isNotEmpty) {
+        final refinedTitle = searchResults.first.title;
+        final refinedUrl =
+            '$_wikiRestUrl/page/summary/${Uri.encodeComponent(refinedTitle)}';
+        final refinedResponse = await http.get(Uri.parse(refinedUrl));
+
+        if (refinedResponse.statusCode == 200) {
+          return WikiPageSummary.fromJson(jsonDecode(refinedResponse.body));
+        }
       }
       return null;
     } catch (e) {
@@ -321,21 +356,114 @@ class ExploreApiService {
     // For timeline, we'll use a curated list of significant tech milestones
     // and verify their summaries if needed. This is much faster than complex SPARQL.
     final items = [
-      WikiTimelineItem(title: 'World Wide Web', date: '1990'),
-      WikiTimelineItem(title: 'Linux Kernel', date: '1991'),
-      WikiTimelineItem(title: 'Python (programming language)', date: '1991'),
-      WikiTimelineItem(title: 'Java (programming language)', date: '1995'),
-      WikiTimelineItem(title: 'C++', date: '1985'),
-      WikiTimelineItem(title: 'Apple Macintosh', date: '1984'),
-      WikiTimelineItem(title: 'IBM Personal Computer', date: '1981'),
-      WikiTimelineItem(title: 'C (programming language)', date: '1972'),
-      WikiTimelineItem(title: 'ARPANET', date: '1969'),
-      WikiTimelineItem(title: 'COBOL', date: '1959'),
-      WikiTimelineItem(title: 'Integrated circuit', date: '1958'),
-      WikiTimelineItem(title: 'FORTRAN', date: '1957'),
-      WikiTimelineItem(title: 'ENIAC', date: '1946'),
-      WikiTimelineItem(title: 'Turing machine', date: '1936'),
+      WikiTimelineItem(
+        title: 'World Wide Web',
+        date: '1990',
+        description: 'Tim Berners-Lee wrote the first web server and browser.',
+      ),
+      WikiTimelineItem(
+        title: 'Linux kernel',
+        date: '1991',
+        description: 'Linus Torvalds released the first version of Linux.',
+      ),
+      WikiTimelineItem(
+        title: 'Python (programming language)',
+        date: '1991',
+        description: 'Guido van Rossum released the first version of Python.',
+      ),
+      WikiTimelineItem(
+        title: 'Java (programming language)',
+        date: '1995',
+        description:
+            'Sun Microsystems released Java as a write-once, run-anywhere language.',
+      ),
+      WikiTimelineItem(
+        title: 'C++',
+        date: '1985',
+        description: 'Bjarne Stroustrup released the C++ programming language.',
+      ),
+      WikiTimelineItem(
+        title: 'Macintosh',
+        date: '1984',
+        description:
+            'Apple introduced the Macintosh, the first successful GUI-based computer.',
+      ),
+      WikiTimelineItem(
+        title: 'IBM Personal Computer',
+        date: '1981',
+        description:
+            'IBM released its PC, setting the standard for personal computers.',
+      ),
+      WikiTimelineItem(
+        title: 'C (programming language)',
+        date: '1972',
+        description: 'Dennis Ritchie developed C at Bell Labs for the Unix OS.',
+      ),
+      WikiTimelineItem(
+        title: 'ARPANET',
+        date: '1969',
+        description:
+            'The first message was sent over ARPANET, the precursor to the internet.',
+      ),
+      WikiTimelineItem(
+        title: 'COBOL',
+        date: '1959',
+        description:
+            'COBOL was designed as a portable language for business data processing.',
+      ),
+      WikiTimelineItem(
+        title: 'Integrated circuit',
+        date: '1958',
+        description:
+            'Jack Kilby and Robert Noyce independently invented the integrated circuit.',
+      ),
+      WikiTimelineItem(
+        title: 'Fortran',
+        date: '1957',
+        description:
+            'John Backus and IBM developed FORTRAN, the first high-level language.',
+      ),
+      WikiTimelineItem(
+        title: 'ENIAC',
+        date: '1946',
+        description:
+            'ENIAC, the first general-purpose electronic computer, was unveiled.',
+      ),
+      WikiTimelineItem(
+        title: 'Turing machine',
+        date: '1936',
+        description:
+            'Alan Turing published "On Computable Numbers," introducing the Turing machine.',
+      ),
+      WikiTimelineItem(
+        title: 'Relational database',
+        date: '1970',
+        description:
+            'E.F. Codd proposed the relational model for database management.',
+      ),
+      WikiTimelineItem(
+        title: 'Deep Blue versus Garry Kasparov',
+        date: '1997',
+        description:
+            'IBM\'s Deep Blue defeated world chess champion Garry Kasparov.',
+      ),
+      WikiTimelineItem(
+        title: 'Bitcoin',
+        date: '2008',
+        description:
+            'Satoshi Nakamoto published the whitepaper for Bitcoin, the first cryptocurrency.',
+      ),
+      WikiTimelineItem(
+        title: 'GPT-3',
+        date: '2020',
+        description:
+            'OpenAI released GPT-3, a massive jump in large language model capabilities.',
+      ),
     ];
+
+    // Sort items chronologically by year (descending for a "history" feel)
+    items.sort((a, b) => b.date.compareTo(a.date));
+
     return items;
   }
 }
