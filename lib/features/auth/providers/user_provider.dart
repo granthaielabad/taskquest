@@ -9,6 +9,7 @@ class UserModel {
   final String displayName;
   final String username;
   final String photoUrl;
+  final String photoBackground;
   final String bio;
   final String school;
   final String course;
@@ -25,6 +26,7 @@ class UserModel {
     required this.displayName,
     this.username = '',
     this.photoUrl = '',
+    this.photoBackground = '#111111',
     this.bio = '',
     this.school = '',
     this.course = '',
@@ -43,6 +45,7 @@ class UserModel {
       'displayName': displayName,
       'username': username,
       'photoUrl': photoUrl,
+      'photoBackground': photoBackground,
       'bio': bio,
       'school': school,
       'course': course,
@@ -62,6 +65,7 @@ class UserModel {
       displayName: map['displayName'] ?? '',
       username: map['username'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
+      photoBackground: map['photoBackground'] ?? '#111111',
       bio: map['bio'] ?? '',
       school: map['school'] ?? '',
       course: map['course'] ?? '',
@@ -78,6 +82,7 @@ class UserModel {
     String? displayName,
     String? username,
     String? photoUrl,
+    String? photoBackground,
     String? bio,
     String? school,
     String? course,
@@ -94,6 +99,7 @@ class UserModel {
       displayName: displayName ?? this.displayName,
       username: username ?? this.username,
       photoUrl: photoUrl ?? this.photoUrl,
+      photoBackground: photoBackground ?? this.photoBackground,
       bio: bio ?? this.bio,
       school: school ?? this.school,
       course: course ?? this.course,

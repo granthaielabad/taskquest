@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
@@ -162,6 +163,24 @@ class UserService {
       debugPrint('UserService: Profile updated successfully for $uid');
     } catch (e) {
       debugPrint('UserService ERROR: Failed to update full profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteUserAccount(String uid) async {
+    try {
+      // 1. Delete Auth user first (this is the most likely to fail)
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.uid == uid) {
+        await user.delete();
+      }
+
+      // 2. If Auth deletion succeeds, delete Firestore data
+      await _db.collection('users').doc(uid).delete();
+      
+      debugPrint('UserService: Account and data deleted for $uid');
+    } catch (e) {
+      debugPrint('UserService ERROR: Failed to delete account: $e');
       rethrow;
     }
   }
