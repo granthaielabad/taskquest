@@ -11,12 +11,13 @@ class AppearanceScreen extends ConsumerStatefulWidget {
 }
 
 class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
-  bool reduceMotion = false;
+  bool _testAlignment = false;
 
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     final textScale = ref.watch(textScaleProvider);
+    final reduceMotion = ref.watch(reduceMotionProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -120,7 +121,9 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                             label: 'Reduce Motion',
                             desc: 'Minimize UI animations',
                             value: reduceMotion,
-                            onChanged: (v) => setState(() => reduceMotion = v),
+                            onChanged: (v) {
+                              ref.read(reduceMotionProvider.notifier).setReduceMotion(v);
+                            },
                           ),
                           Divider(color: colorScheme.outline, height: 1),
                           Padding(
@@ -174,6 +177,47 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    const _SectionLabel(label: 'ANIMATION PREVIEW'),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () => setState(() => _testAlignment = !_testAlignment),
+                      child: Container(
+                        height: 80,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          border: Border.all(color: colorScheme.outline),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Stack(
+                          children: [
+                            AnimatedAlign(
+                              duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 600),
+                              curve: Curves.easeInOutCubic,
+                              alignment: _testAlignment ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 20),
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.bolt, color: colorScheme.onPrimary),
+                              ),
+                            ),
+                            const Center(
+                              child: Text(
+                                'TAP TO TEST MOTION',
+                                style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.0, color: AppTheme.muted),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 40),

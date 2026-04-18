@@ -26,3 +26,16 @@ class TextScaleNotifier extends Notifier<double> {
 final textScaleProvider = NotifierProvider<TextScaleNotifier, double>(() {
   return TextScaleNotifier();
 });
+
+class ReduceMotionNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setReduceMotion(bool value) {
+    state = value;
+  }
+}
+
+final reduceMotionProvider = NotifierProvider<ReduceMotionNotifier, bool>(() {
+  return ReduceMotionNotifier();
+});
