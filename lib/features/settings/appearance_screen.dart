@@ -1,34 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:taskquest/core/providers/theme_provider.dart';
 
-class AppearanceScreen extends StatefulWidget {
+class AppearanceScreen extends ConsumerStatefulWidget {
   const AppearanceScreen({super.key});
 
   @override
-  State<AppearanceScreen> createState() => _AppearanceScreenState();
+  ConsumerState<AppearanceScreen> createState() => _AppearanceScreenState();
 }
 
-class _AppearanceScreenState extends State<AppearanceScreen> {
-  String selectedTheme = 'Light';
-  bool syncWithSystem = false;
+class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
   bool reduceMotion = false;
   double textSize = 0.5;
-  int selectedAccent = 0;
-
-  final List<Color> accentColors = [
-    Colors.black,
-    const Color(0xFF4A8BFF),
-    const Color(0xFF00C853),
-    const Color(0xFFFFAB00),
-    const Color(0xFFFF5252),
-    const Color(0xFF7C4DFF),
-    Colors.white,
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -43,28 +36,31 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.chevron_left_rounded, color: AppTheme.black),
+                      child: Icon(
+                        Icons.chevron_left_rounded,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Text(
+                  Text(
                     'Appearance',
                     style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w800,
                       fontSize: 24,
                       letterSpacing: -0.5,
-                      color: AppTheme.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppTheme.border, height: 1),
+            Divider(color: colorScheme.outline, height: 1),
 
             Expanded(
               child: SingleChildScrollView(
@@ -73,125 +69,104 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 24),
-                    const _SectionLabel(label: 'THEME'),
+                    const _SectionLabel(label: 'THEME MODE'),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _ThemeOption(
                           label: 'Light',
-                          isSelected: selectedTheme == 'Light',
-                          onTap: () => setState(() => selectedTheme = 'Light'),
-                          child: _ThemePreview(isDark: false),
+                          isSelected: themeMode == ThemeMode.light,
+                          onTap: () => ref
+                              .read(themeProvider.notifier)
+                              .setThemeMode(ThemeMode.light),
+                          child: const _ThemePreview(isDark: false),
                         ),
                         _ThemeOption(
                           label: 'Dark',
-                          isSelected: selectedTheme == 'Dark',
-                          onTap: () => setState(() => selectedTheme = 'Dark'),
-                          child: _ThemePreview(isDark: true),
+                          isSelected: themeMode == ThemeMode.dark,
+                          onTap: () => ref
+                              .read(themeProvider.notifier)
+                              .setThemeMode(ThemeMode.dark),
+                          child: const _ThemePreview(isDark: true),
                         ),
                         _ThemeOption(
                           label: 'System',
-                          isSelected: selectedTheme == 'System',
-                          onTap: () => setState(() => selectedTheme = 'System'),
-                          child: _ThemePreview(isSystem: true),
+                          isSelected: themeMode == ThemeMode.system,
+                          onTap: () => ref
+                              .read(themeProvider.notifier)
+                              .setThemeMode(ThemeMode.system),
+                          child: const _ThemePreview(isSystem: true),
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 32),
-                    _SettingsGroup(
-                      children: [
-                        _SwitchTile(
-                          title: 'Sync with System',
-                          subtitle: 'Auto-switch with device dark mode',
-                          value: syncWithSystem,
-                          onChanged: (v) => setState(() => syncWithSystem = v),
-                        ),
-                        const Divider(color: AppTheme.border, height: 1),
-                        _SwitchTile(
-                          title: 'Reduce Motion',
-                          subtitle: 'Minimize animations and transitions',
-                          value: reduceMotion,
-                          onChanged: (v) => setState(() => reduceMotion = v),
-                          isLast: true,
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 32),
-                    const _SectionLabel(label: 'TEXT SIZE'),
+                    const _SectionLabel(label: 'DISPLAY SETTINGS'),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
-                        borderRadius: BorderRadius.circular(20),
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text('A', style: TextStyle(fontSize: 12, color: AppTheme.dimmed)),
-                              Text('A', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.black)),
-                            ],
+                          _DisplayToggle(
+                            label: 'Reduce Motion',
+                            desc: 'Minimize UI animations',
+                            value: reduceMotion,
+                            onChanged: (v) => setState(() => reduceMotion = v),
                           ),
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: AppTheme.black,
-                              inactiveTrackColor: AppTheme.border,
-                              thumbColor: AppTheme.black,
-                              overlayColor: AppTheme.black.withOpacity(0.1),
-                              trackHeight: 4,
+                          Divider(color: colorScheme.outline, height: 1),
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Text Size',
+                                      style: TextStyle(
+                                        fontFamily: 'Syne',
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Default',
+                                      style: TextStyle(
+                                        fontFamily: 'DM Mono',
+                                        fontSize: 10,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                SliderTheme(
+                                  data: SliderThemeData(
+                                    activeTrackColor: colorScheme.primary,
+                                    inactiveTrackColor: colorScheme.outline,
+                                    thumbColor: colorScheme.primary,
+                                    overlayColor: colorScheme.primary
+                                        .withValues(alpha: 0.1),
+                                    trackHeight: 4,
+                                  ),
+                                  child: Slider(
+                                    value: textSize,
+                                    onChanged: (v) =>
+                                        setState(() => textSize = v),
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: Slider(
-                              value: textSize,
-                              onChanged: (v) => setState(() => textSize = v),
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text('Small', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
-                              Text('Medium', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.black, fontWeight: FontWeight.bold)),
-                              Text('Large', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
-                            ],
                           ),
                         ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-                    const _SectionLabel(label: 'ACCENT COLOUR'),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(accentColors.length, (i) {
-                          return GestureDetector(
-                            onTap: () => setState(() => selectedAccent = i),
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: accentColors[i],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: selectedAccent == i ? AppTheme.black : AppTheme.border,
-                                  width: selectedAccent == i ? 2 : 1,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
                       ),
                     ),
                     const SizedBox(height: 40),
@@ -214,71 +189,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'DM Mono',
         fontSize: 10,
         letterSpacing: 1.2,
-        color: AppTheme.muted,
-      ),
-    );
-  }
-}
-
-class _SettingsGroup extends StatelessWidget {
-  final List<Widget> children;
-  const _SettingsGroup({required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        border: Border.all(color: AppTheme.border),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
-class _SwitchTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final bool isLast;
-
-  const _SwitchTile({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: AppTheme.muted)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: Colors.white,
-            activeTrackColor: AppTheme.black,
-          ),
-        ],
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -286,54 +201,54 @@ class _SwitchTile extends StatelessWidget {
 
 class _ThemeOption extends StatelessWidget {
   final String label;
+  final Widget child;
   final bool isSelected;
   final VoidCallback onTap;
-  final Widget child;
 
   const _ThemeOption({
     required this.label,
+    required this.child,
     required this.isSelected,
     required this.onTap,
-    required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Column(
         children: [
           Container(
-            width: 100,
+            width: (MediaQuery.of(context).size.width - 64) / 3,
             height: 120,
             decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
               border: Border.all(
-                color: isSelected ? AppTheme.black : AppTheme.border,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: child,
-                ),
-                if (isSelected)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(color: AppTheme.black, shape: BoxShape.circle),
-                      child: const Icon(Icons.check, color: Colors.white, size: 10),
-                    ),
-                  ),
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: child,
             ),
           ),
           const SizedBox(height: 8),
-          Text(label, style: TextStyle(fontFamily: 'Syne', fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, fontSize: 13, color: AppTheme.black)),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 10,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+              color: isSelected
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -343,6 +258,7 @@ class _ThemeOption extends StatelessWidget {
 class _ThemePreview extends StatelessWidget {
   final bool isDark;
   final bool isSystem;
+
   const _ThemePreview({this.isDark = false, this.isSystem = false});
 
   @override
@@ -350,27 +266,67 @@ class _ThemePreview extends StatelessWidget {
     if (isSystem) {
       return Row(
         children: [
-          Expanded(child: Container(color: const Color(0xFFF7F6F2))),
-          Expanded(child: Container(color: const Color(0xFF262626))),
+          Expanded(child: Container(color: AppTheme.backgroundLight)),
+          Expanded(child: Container(color: AppTheme.backgroundDark)),
         ],
       );
     }
     return Container(
-      color: isDark ? const Color(0xFF262626) : const Color(0xFFF7F6F2),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      color: isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight,
+    );
+  }
+}
+
+class _DisplayToggle extends StatelessWidget {
+  final String label;
+  final String desc;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _DisplayToggle({
+    required this.label,
+    required this.desc,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
         children: [
-          Container(width: 40, height: 6, decoration: BoxDecoration(color: isDark ? Colors.white24 : Colors.black12, borderRadius: BorderRadius.circular(3))),
-          const SizedBox(height: 8),
-          Container(width: double.infinity, height: 20, decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.white, borderRadius: BorderRadius.circular(4))),
-          const Spacer(),
-          Row(
-            children: [
-              Container(width: 30, height: 16, decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.white, borderRadius: BorderRadius.circular(4))),
-              const SizedBox(width: 8),
-              Container(width: 30, height: 16, decoration: BoxDecoration(color: isDark ? Colors.white24 : Colors.black, borderRadius: BorderRadius.circular(4))),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeTrackColor: theme.colorScheme.primary.withValues(alpha: 0.5),
+            activeThumbColor: theme.colorScheme.primary,
           ),
         ],
       ),

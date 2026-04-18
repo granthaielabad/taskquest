@@ -16,7 +16,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: Column(
           children: [
@@ -32,14 +32,17 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                       height: 42,
                       decoration: BoxDecoration(
                         color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        border: Border.all(color: AppTheme.borderLight),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.chevron_left_rounded, color: AppTheme.black),
+                      child: const Icon(
+                        Icons.chevron_left_rounded,
+                        color: AppTheme.black,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Expanded( // Added Expanded to prevent overflow
+                  const Expanded(
                     child: Text(
                       'Privacy & Data',
                       overflow: TextOverflow.ellipsis,
@@ -55,7 +58,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                 ],
               ),
             ),
-            const Divider(color: AppTheme.border, height: 1),
+            const Divider(color: AppTheme.borderLight, height: 1),
 
             Expanded(
               child: SingleChildScrollView(
@@ -64,7 +67,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 24),
-                    
+
                     // Privacy Hero Card
                     Container(
                       padding: const EdgeInsets.all(24),
@@ -81,7 +84,11 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                               color: const Color(0xFF262626),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.shield_outlined, color: Colors.white, size: 20),
+                            child: const Icon(
+                              Icons.shield_outlined,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(height: 20),
                           const Text(
@@ -101,7 +108,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                               fontFamily: 'DM Mono',
                               fontSize: 12,
                               height: 1.6,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -180,7 +187,11 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+                          Icon(
+                            Icons.delete_outline_rounded,
+                            color: Colors.red,
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Delete All My Data',
@@ -233,7 +244,7 @@ class _SettingsGroup extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.white,
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(children: children),
@@ -284,11 +295,24 @@ class _ControlTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppTheme.black,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(subtitle,
-                        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        color: AppTheme.muted,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -301,7 +325,8 @@ class _ControlTile extends StatelessWidget {
             ],
           ),
         ),
-        if (!isLast) const Divider(color: AppTheme.border, height: 1, indent: 72),
+        if (!isLast)
+          const Divider(color: AppTheme.borderLight, height: 1, indent: 72),
       ],
     );
   }
@@ -334,19 +359,37 @@ class _ManagementTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppTheme.black,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(subtitle,
-                        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: AppTheme.muted)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        color: AppTheme.muted,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppTheme.border, size: 20),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppTheme.borderLight,
+                size: 20,
+              ),
             ],
           ),
         ),
-        if (!isLast) const Divider(color: AppTheme.border, height: 1, indent: 40),
+        if (!isLast)
+          const Divider(color: AppTheme.borderLight, height: 1, indent: 40),
       ],
     );
   }

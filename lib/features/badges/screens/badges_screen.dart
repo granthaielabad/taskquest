@@ -1,495 +1,257 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:taskquest/features/badges/providers/badge_provider.dart';
 
-class Badge {
-  final String title;
-  final String description;
-  final String xp;
-  final IconData icon;
-  final bool isEarned;
-
-  const Badge({
-    required this.title,
-    required this.description,
-    required this.xp,
-    required this.icon,
-    required this.isEarned,
-  });
-}
-
-class BadgesScreen extends StatelessWidget {
+class BadgesScreen extends ConsumerWidget {
   const BadgesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const earnedBadges = [
-      Badge(
-        title: 'First Quest',
-        description: 'Complete your\nfirst challenge',
-        xp: '+50 XP',
-        icon: Icons.star_rounded,
-        isEarned: true,
-      ),
-      Badge(
-        title: 'Code Cracker',
-        description: 'Finish 5 Code\nBlock sessions',
-        xp: '+120 XP',
-        icon: Icons.task_alt_rounded,
-        isEarned: true,
-      ),
-      Badge(
-        title: 'Flashmaster',
-        description: 'Review 50+\nflashcards',
-        xp: '+100 XP',
-        icon: Icons.style_rounded,
-        isEarned: true,
-      ),
-      Badge(
-        title: 'Speed Demon',
-        description: 'Finish timed\ntask under 30s',
-        xp: '+80 XP',
-        icon: Icons.timer_rounded,
-        isEarned: true,
-      ),
-      Badge(
-        title: 'Logic Lord',
-        description: 'Solve 3\nalgorithm\nchallenges',
-        xp: '+150 XP',
-        icon: Icons.auto_graph_rounded,
-        isEarned: true,
-      ),
-      Badge(
-        title: 'SDLC Pro',
-        description: 'Complete all\nSDLC levels',
-        xp: '+90 XP',
-        icon: Icons.home_repair_service_rounded,
-        isEarned: true,
-      ),
-    ];
-
-    const lockedBadges = [
-      Badge(
-        title: 'Algorithm Pro',
-        description: 'Solve 10\nalgorithm\nproblems',
-        xp: '+200 XP',
-        icon: Icons.functions_rounded,
-        isEarned: false,
-      ),
-      Badge(
-        title: 'Polyglot',
-        description: 'Identify 10\nlanguages\ncorrectly',
-        xp: '+180 XP',
-        icon: Icons.language_rounded,
-        isEarned: false,
-      ),
-      Badge(
-        title: 'Streak King',
-        description: 'Maintain a 30-\nday streak',
-        xp: '+500 XP',
-        icon: Icons.local_fire_department_rounded,
-        isEarned: false,
-      ),
-      Badge(
-        title: 'AI Scholar',
-        description: 'Generate 5 AI\nflashcard decks',
-        xp: '+160 XP',
-        icon: Icons.psychology_rounded,
-        isEarned: false,
-      ),
-      Badge(
-        title: 'Explorer',
-        description: 'Read 20\nMultimedia\narticles',
-        xp: '+140 XP',
-        icon: Icons.explore_rounded,
-        isEarned: false,
-      ),
-      Badge(
-        title: 'Top Quester',
-        description: 'Reach #1 on\nleaderboard',
-        xp: '+1000 XP',
-        icon: Icons.emoji_events_rounded,
-        isEarned: false,
-      ),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final badgesAsync = ref.watch(userBadgesProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          children: [
-            // Page header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 12, 28, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Badges',
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 26,
-                      letterSpacing: -0.78,
-                      color: AppTheme.black,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Earn them by completing challenges',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 10,
-                      letterSpacing: 1.0,
-                      color: AppTheme.muted,
-                    ),
-                  ),
-                ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+
+              // ── Header ──────────────────────────────────────────────
+              Text(
+                'Hall of\nAchievements',
+                style: AppTheme.headingXL.copyWith(
+                  fontSize: 32,
+                  height: 0.9,
+                  letterSpacing: -1.2,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Hero: Latest Earned 
-            _buildHeroCard(),
-            const SizedBox(height: 28),
-
-            // Filter Tabs
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _buildFilterTab('All', active: true),
-                  _buildFilterTab('Earned'),
-                  _buildFilterTab('Locked'),
-                  _buildFilterTab('Rare'),
-                ],
+              const SizedBox(height: 12),
+              const Text(
+                'Every quest completed is a step to mastery',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 10,
+                  letterSpacing: 0.5,
+                  color: AppTheme.muted,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
-            // Earned Badges Section
-            _buildSectionHeader('Earned Badges'),
-            _buildBadgeGrid(earnedBadges),
-            const SizedBox(height: 32),
+              badgesAsync.when(
+                data: (badges) {
+                  final unlockedCount = badges
+                      .where((b) => b.isUnlocked)
+                      .length;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSummaryCard(unlockedCount, badges.length),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'ALL BADGES',
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 10,
+                          letterSpacing: 1.8,
+                          color: AppTheme.muted,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.75,
+                            ),
+                        itemCount: badges.length,
+                        itemBuilder: (context, index) =>
+                            _BadgeCard(badge: badges[index]),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, s) => Text('Error: $e'),
+              ),
 
-            // Locked Badges Section
-            _buildSectionHeader('Locked Badges'),
-            _buildBadgeGrid(lockedBadges),
-            const SizedBox(height: 32),
-
-            // Next Up Progress
-            _buildSectionHeader('Next Up'),
-            _buildProgressCard(),
-            const SizedBox(height: 32),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeroCard() {
+  Widget _buildSummaryCard(int unlocked, int total) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.black,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
         children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.star_rounded, color: Colors.white, size: 32),
-          ),
-          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'LATEST EARNED',
+                  'TOTAL PROGRESS',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 1.44,
-                    color: Color(0x66FFFFFF),
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: Color(0xFF777777),
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Code Cracker',
-                  style: TextStyle(
+                const SizedBox(height: 8),
+                Text(
+                  '$unlocked / $total Badges',
+                  style: const TextStyle(
                     fontFamily: 'Syne',
                     fontWeight: FontWeight.w800,
                     fontSize: 20,
-                    letterSpacing: -0.4,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    _buildHeroStat('8', 'Earned'),
-                    const SizedBox(width: 14),
-                    _buildHeroStat('14', 'Total'),
-                    const SizedBox(width: 14),
-                    _buildHeroStat('57%', 'Complete'),
-                  ],
-                ),
               ],
             ),
+          ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: CircularProgressIndicator(
+                  value: total > 0 ? unlocked / total : 0,
+                  strokeWidth: 6,
+                  backgroundColor: const Color(0xFF222222),
+                  valueColor: const AlwaysStoppedAnimation(Colors.white),
+                ),
+              ),
+              Text(
+                '${(total > 0 ? (unlocked / total) * 100 : 0).round()}%',
+                style: const TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHeroStat(String value, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'Syne',
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
-            letterSpacing: -0.32,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(
-            fontFamily: 'DM Mono',
-            fontSize: 8,
-            letterSpacing: 0.8,
-            color: Color(0x59FFFFFF),
-          ),
-        ),
-      ],
+class _BadgeCard extends StatelessWidget {
+  final BadgeModel badge;
+  const _BadgeCard({required this.badge});
+
+  void _shareBadge() {
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
+        subject: 'TaskQuest Achievement!',
+      ),
     );
   }
 
-  Widget _buildFilterTab(String label, {bool active = false}) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: active ? AppTheme.black : Colors.white,
-        border: Border.all(color: active ? AppTheme.black : AppTheme.border),
+        color: badge.isUnlocked
+            ? AppTheme.white
+            : AppTheme.white.withValues(alpha: 0.5),
+        border: Border.all(
+          color: badge.isUnlocked
+              ? AppTheme.black.withValues(alpha: 0.1)
+              : AppTheme.borderLight,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 10,
-          letterSpacing: 1.0,
-          color: active ? Colors.white : AppTheme.muted,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 0, 28, 12),
-      child: Text(
-        title.toUpperCase(),
-        style: const TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 10,
-          letterSpacing: 1.8,
-          color: AppTheme.muted,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadgeGrid(List<Badge> badges) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 100 / 144,
-      ),
-      itemCount: badges.length,
-      itemBuilder: (context, index) {
-        final badge = badges[index];
-        return _buildBadgeCard(badge);
-      },
-    );
-  }
-
-  Widget _buildBadgeCard(Badge badge) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(11, 17, 11, 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: badge.isEarned ? AppTheme.black : AppTheme.border),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Opacity(
-        opacity: badge.isEarned ? 1.0 : 0.45,
-        child: Column(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: badge.isEarned ? AppTheme.black : AppTheme.border,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    badge.icon,
-                    color: badge.isEarned ? Colors.white : AppTheme.muted,
-                    size: 26,
-                  ),
-                ),
-                if (badge.isEarned)
-                  Positioned(
-                    top: -3,
-                    right: -3,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.black,
-                        border: Border.all(color: Colors.white, width: 2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Icon(Icons.check, color: Colors.white, size: 8),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              badge.title,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: 'Syne',
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-                letterSpacing: -0.11,
-                color: AppTheme.black,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Expanded(
-              child: Text(
-                badge.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 9,
-                  height: 1.4,
-                  color: AppTheme.muted,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              badge.xp,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontWeight: FontWeight.w500,
-                fontSize: 9,
-                letterSpacing: 0.54,
-                color: badge.isEarned ? AppTheme.black : const Color(0xFFCCCAC4),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppTheme.border),
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
-                'Algorithm Pro',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                  letterSpacing: -0.13,
-                  color: AppTheme.black,
-                ),
-              ),
-              Text(
-                '3 / 10',
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                  color: AppTheme.muted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Solve 7 more algorithm challenges to unlock this badge and earn +200 XP.',
-            style: TextStyle(
-              fontFamily: 'DM Mono',
-              fontSize: 10,
-              height: 1.55,
-              color: AppTheme.muted,
-            ),
-          ),
-          const SizedBox(height: 16),
           Stack(
+            alignment: Alignment.topRight,
             children: [
               Container(
-                height: 5,
-                width: double.infinity,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.border,
-                  borderRadius: BorderRadius.circular(3),
+                  color: badge.isUnlocked
+                      ? AppTheme.black
+                      : AppTheme.backgroundLight,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  badge.isUnlocked
+                      ? Icons.verified_rounded
+                      : Icons.lock_outline_rounded,
+                  color: badge.isUnlocked ? Colors.white : AppTheme.borderLight,
+                  size: 24,
                 ),
               ),
-              FractionallySizedBox(
-                widthFactor: 0.3,
-                child: Container(
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppTheme.black,
-                    borderRadius: BorderRadius.circular(3),
+              if (badge.isUnlocked)
+                Transform.translate(
+                  offset: const Offset(10, -10),
+                  child: GestureDetector(
+                    onTap: _shareBadge,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.black,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.share_rounded,
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                    ),
                   ),
                 ),
-              ),
             ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            badge.title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+              color: badge.isUnlocked ? AppTheme.black : AppTheme.muted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            badge.description,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 8,
+              height: 1.4,
+              color: AppTheme.muted,
+            ),
           ),
         ],
       ),

@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:flutter/services.dart';
 
-// Shared field label 
+// Shared field label
 class FieldLabel extends StatelessWidget {
   final String text;
   const FieldLabel(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Text(
       text.toUpperCase(),
-      style: AppTheme.labelMono,
+      style: TextStyle(
+        fontFamily: 'DM Mono',
+        fontWeight: FontWeight.w400,
+        fontSize: 10,
+        letterSpacing: 1.4,
+        color: colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }
 
-// Shared input field
 class TQInputField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -24,6 +30,8 @@ class TQInputField extends StatelessWidget {
   final TextInputType keyboardType;
   final TextCapitalization textCapitalization;
   final Widget? suffixIcon;
+  final int maxLines;
+  final bool hasError;
 
   const TQInputField({
     super.key,
@@ -34,18 +42,24 @@ class TQInputField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.textCapitalization = TextCapitalization.none,
     this.suffixIcon,
+    this.maxLines = 1,
+    this.hasError = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isFocused = focusNode.hasFocus;
+
     return Container(
-      height: 52,
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: colorScheme.surface,
         border: Border.all(
-          color: isFocused ? AppTheme.black : AppTheme.border,
-          width: isFocused ? 1.5 : 1.0,
+          color: hasError
+              ? colorScheme.error
+              : (isFocused ? colorScheme.onSurface : colorScheme.outline),
+          width: (isFocused || hasError) ? 1.5 : 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -55,10 +69,19 @@ class TQInputField extends StatelessWidget {
         obscureText: obscureText,
         keyboardType: keyboardType,
         textCapitalization: textCapitalization,
-        style: AppTheme.bodyMono.copyWith(color: AppTheme.black, fontSize: 13),
+        maxLines: maxLines,
+        style: TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 13,
+          color: colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: AppTheme.bodyMono.copyWith(color: AppTheme.dimmed, fontSize: 13),
+          hintStyle: TextStyle(
+            fontFamily: 'DM Mono',
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+            fontSize: 13,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -70,8 +93,10 @@ class TQInputField extends StatelessWidget {
                   child: suffixIcon,
                 )
               : null,
-          suffixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
         ),
       ),
     );
@@ -82,36 +107,44 @@ class TQInputField extends StatelessWidget {
 class TQButton extends StatelessWidget {
   final String label;
   final bool isLoading;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const TQButton({
     super.key,
     required this.label,
     required this.isLoading,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: isLoading ? null : onTap,
+        onPressed: (isLoading || onTap == null)
+            ? null
+            : () {
+                HapticFeedback.lightImpact();
+                onTap!();
+              },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.black,
-          disabledBackgroundColor: AppTheme.black.withValues(alpha: 0.6),
+          backgroundColor: colorScheme.onSurface,
+          disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           elevation: 0,
         ),
         child: isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   strokeWidth: 2,
                 ),
               )
@@ -120,12 +153,18 @@ class TQButton extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: AppTheme.headingM.copyWith(color: Colors.white),
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      letterSpacing: -0.3,
+                      color: colorScheme.surface,
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_rounded,
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     size: 16,
                   ),
                 ],
@@ -142,17 +181,24 @@ class OrDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppTheme.border)),
+        Expanded(child: Divider(color: colorScheme.outline)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             label,
-            style: AppTheme.labelMono.copyWith(fontSize: 9, color: AppTheme.dimmed),
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontWeight: FontWeight.w400,
+              fontSize: 9,
+              letterSpacing: 1.4,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
           ),
         ),
-        const Expanded(child: Divider(color: AppTheme.border)),
+        Expanded(child: Divider(color: colorScheme.outline)),
       ],
     );
   }
@@ -162,46 +208,67 @@ class OrDivider extends StatelessWidget {
 class GoogleButton extends StatelessWidget {
   final VoidCallback onTap;
   final String label;
+  final bool isLoading;
+
   const GoogleButton({
-    super.key, 
+    super.key,
     required this.onTap,
     this.label = 'Continue with Google',
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 56,
       child: OutlinedButton(
-        onPressed: onTap,
+        onPressed: isLoading
+            ? null
+            : () {
+                HapticFeedback.lightImpact();
+                onTap();
+              },
         style: OutlinedButton.styleFrom(
-          backgroundColor: AppTheme.white,
-          side: const BorderSide(color: AppTheme.border),
+          backgroundColor: colorScheme.surface,
+          side: BorderSide(color: colorScheme.outline),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           elevation: 0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CustomPaint(painter: GoogleIconPainter()),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: AppTheme.bodyMono.copyWith(
-                fontSize: 12,
-                color: AppTheme.black,
-                letterSpacing: 0.3,
+        child: isLoading
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: colorScheme.onSurface,
+                  strokeWidth: 2,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CustomPaint(painter: GoogleIconPainter()),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -227,15 +294,18 @@ class GoogleIconPainter extends CustomPainter {
       ..color = const Color(0xFF4285F4)
       ..strokeWidth = r * 0.28
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(cx, cy),
-      Offset(cx + r * 0.85, cy),
-      barPaint,
-    );
+    canvas.drawLine(Offset(cx, cy), Offset(cx + r * 0.85, cy), barPaint);
   }
 
-  void _drawArc(Canvas canvas, double cx, double cy, double r,
-      double startAngle, double sweepAngle, Color color) {
+  void _drawArc(
+    Canvas canvas,
+    double cx,
+    double cy,
+    double r,
+    double startAngle,
+    double sweepAngle,
+    Color color,
+  ) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;

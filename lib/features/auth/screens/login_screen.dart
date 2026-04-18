@@ -1,219 +1,242 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
+import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/screens/register_screen.dart';
-import 'package:taskquest/features/shared/widgets/main_scaffold.dart';
+import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 
-import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
-
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
-  final _passController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _emailFocus = FocusNode();
-  final _passFocus = FocusNode();
-  bool _obscurePass = true;
+  final _passwordFocus = FocusNode();
+
   bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    // Rebuild on focus change so active border updates
     _emailFocus.addListener(() => setState(() {}));
-    _passFocus.addListener(() => setState(() {}));
+    _passwordFocus.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passController.dispose();
+    _passwordController.dispose();
     _emailFocus.dispose();
-    _passFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      setState(() => _errorMessage = 'Please fill in all fields');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ref.read(authServiceProvider).signInWithEmail(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+    } catch (e) {
+      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
-    // Simulate network delay — replace with real auth later
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() => _isLoading = false);
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (_, animation, _) => const MainScaffold(),
-          transitionsBuilder: (_, animation, _, child) =>
-              FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-      );
+    try {
+      await ref.read(authServiceProvider).signInWithGoogle();
+    } catch (e) {
+      setState(() => _errorMessage = 'Google Sign-In failed');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 48),
-
-              // Logo
+              const SizedBox(height: 20),
+              // Header Logo (Fixed: No border, larger size)
               Row(
                 children: [
                   SvgPicture.asset(
                     'assets/images/logo.svg',
-                    width: 34,
-                    height: 34,
+                    width: 40,
+                    height: 40,
+                    colorFilter: ColorFilter.mode(
+                      colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                  const SizedBox(width: 10),
-                  const Text(
+                  const SizedBox(width: 12),
+                  Text(
                     'TaskQuest',
                     style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                      letterSpacing: -0.36,
-                      color: AppTheme.black,
+                      fontSize: 20,
+                      letterSpacing: -0.5,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 60),
 
               // Heading
               Text(
                 'Welcome\nback.',
-                style: AppTheme.headingXL.copyWith(
-                  fontSize: 34,
-                  height: 1.05,
-                  letterSpacing: -1.0,
+                style: TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 42,
+                  height: 0.9,
+                  letterSpacing: -1.5,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Log in to continue your learning quest.',
-                style: AppTheme.bodyMono,
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
-              const FieldLabel('Email'),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: colorScheme.error, fontFamily: 'DM Mono', fontSize: 11),
+                  ),
+                ),
+
+              // Form
+              const FieldLabel('EMAIL'),
               const SizedBox(height: 6),
               TQInputField(
                 controller: _emailController,
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
-                suffixIcon: const Icon(
-                  Icons.mail_outline_rounded,
-                  size: 16,
-                  color: AppTheme.muted,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              const FieldLabel('Password'),
-              const SizedBox(height: 6),
-              TQInputField(
-                controller: _passController,
-                focusNode: _passFocus,
-                hintText: 'password123',
-                obscureText: _obscurePass,
-                suffixIcon: GestureDetector(
-                  onTap: () => setState(() => _obscurePass = !_obscurePass),
-                  child: Icon(
-                    _obscurePass
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 16,
-                    color: AppTheme.muted,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                    );
-                  },
-                  child: Text(
-                    'Forgot password?',
-                    style: AppTheme.bodyMono.copyWith(
-                      fontSize: 11,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppTheme.muted,
-                    ),
-                  ),
-                ),
+                suffixIcon: Icon(Icons.mail_outline_rounded, size: 16, color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 24),
 
+              const FieldLabel('PASSWORD'),
+              const SizedBox(height: 6),
+              TQInputField(
+                controller: _passwordController,
+                focusNode: _passwordFocus,
+                hintText: 'password123',
+                obscureText: true,
+                suffixIcon: Icon(Icons.visibility_off_outlined, size: 16, color: colorScheme.onSurfaceVariant),
+              ),
+
+              // Forgot Password
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                  ),
+                  child: Text(
+                    'Forgot password?',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 11,
+                      decoration: TextDecoration.underline,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Login Button
               TQButton(
                 label: 'Log In',
                 isLoading: _isLoading,
-                onTap: _login,
+                onTap: _handleLogin,
               ),
-              const SizedBox(height: 20),
 
+              const SizedBox(height: 32),
+
+              // Divider
               const OrDivider(label: 'OR CONTINUE WITH'),
-              const SizedBox(height: 20),
 
-              GoogleButton(onTap: _login),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
+              // Google Login
+              GoogleButton(
+                onTap: _handleGoogleSignIn,
+                isLoading: _isLoading,
+              ),
+
+              const SizedBox(height: 48),
+
+              // Sign Up Link
               Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: AppTheme.bodyMono,
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, animation, _) =>
-                              const RegisterScreen(),
-                          transitionsBuilder:
-                              (_, animation, _, child) =>
-                                  FadeTransition(
-                                      opacity: animation, child: child),
-                          transitionDuration:
-                              const Duration(milliseconds: 300),
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      children: [
+                        const TextSpan(text: "Don't have an account? "),
+                        TextSpan(
+                          text: 'Sign Up',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontFamily: 'Syne',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          color: AppTheme.black,
-                          decoration: TextDecoration.underline,
-                          decorationColor: AppTheme.black,
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
             ],
           ),
         ),

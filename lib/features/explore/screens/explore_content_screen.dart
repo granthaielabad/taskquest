@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 
 class ExploreContentScreen extends StatelessWidget {
   const ExploreContentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           CustomScrollView(
@@ -18,12 +20,14 @@ class ExploreContentScreen extends StatelessWidget {
                   height: 380,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppTheme.black,
+                    color: colorScheme.onSurface,
                     image: DecorationImage(
-                      image: const NetworkImage('https://picsum.photos/seed/turing/800/600'),
+                      image: const NetworkImage(
+                        'https://picsum.photos/seed/turing/800/600',
+                      ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
-                        Colors.black.withValues(alpha: 0.5),
+                        colorScheme.onSurface.withValues(alpha: 0.5),
                         BlendMode.darken,
                       ),
                     ),
@@ -35,10 +39,15 @@ class ExploreContentScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -106,33 +115,36 @@ class ExploreContentScreen extends StatelessWidget {
                 ),
               ),
 
-              // Article Body 
+              // Article Body
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(26, 32, 26, 100),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    const Text(
+                    Text(
                       'Alan Mathison Turing was an English mathematician, computer scientist, and logician. Often regarded as the father of theoretical computer science and artificial intelligence, his contributions reshaped the entire trajectory of modern computing.',
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 13,
                         height: 1.6,
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Pull Quote
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 24,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
-                        border: Border.all(color: AppTheme.border),
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             '"We can only see a short distance ahead, but we can see plenty there that needs to be done."',
                             style: TextStyle(
@@ -140,17 +152,17 @@ class ExploreContentScreen extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                               fontStyle: FontStyle.italic,
-                              color: AppTheme.black,
+                              color: colorScheme.onSurface,
                               height: 1.4,
                             ),
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           Text(
                             '— Alan Turing, 1950',
                             style: TextStyle(
                               fontFamily: 'DM Mono',
                               fontSize: 10,
-                              color: AppTheme.muted,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -158,33 +170,33 @@ class ExploreContentScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
 
-                    const Text(
+                    Text(
                       'Key Contributions',
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 10,
                         letterSpacing: 1.8,
-                        color: AppTheme.muted,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'The Turing Machine',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'In 1936, Turing introduced the concept of a universal machine capable of computing any computable function — the theoretical foundation for all modern computers.',
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 12,
                         height: 1.6,
-                        color: AppTheme.muted,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -194,31 +206,31 @@ class ExploreContentScreen extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _buildFactChip('Born: June 23, 1912'),
-                        _buildFactChip('Nationality: British'),
-                        _buildFactChip('Field: Mathematics, CS'),
-                        _buildFactChip('Turing Test · 1950', isHighlight: true),
+                        _buildFactChip(context, 'Born: June 23, 1912'),
+                        _buildFactChip(context, 'Nationality: British'),
+                        _buildFactChip(context, 'Field: Mathematics, CS'),
+                        _buildFactChip(context, 'Turing Test · 1950', isHighlight: true),
                       ],
                     ),
                     const SizedBox(height: 32),
 
-                    const Text(
+                    Text(
                       'Breaking Enigma',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       "During World War II, Turing led the team at Bletchley Park that cracked Nazi Germany's Enigma code — a breakthrough credited with shortening the war by an estimated two years.",
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 12,
                         height: 1.6,
-                        color: AppTheme.muted,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 40),
@@ -227,7 +239,7 @@ class ExploreContentScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppTheme.black,
+                        color: colorScheme.onSurface,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
@@ -235,24 +247,24 @@ class ExploreContentScreen extends StatelessWidget {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Test your knowledge',
                                   style: TextStyle(
                                     fontFamily: 'DM Mono',
                                     fontSize: 10,
                                     letterSpacing: 1.0,
-                                    color: Color(0x66FFFFFF),
+                                    color: colorScheme.surface.withValues(alpha: 0.6),
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Take the Turing Quiz',
                                   style: TextStyle(
                                     fontFamily: 'Syne',
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
-                                    color: Colors.white,
+                                    color: colorScheme.surface,
                                   ),
                                 ),
                               ],
@@ -262,10 +274,14 @@ class ExploreContentScreen extends StatelessWidget {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: colorScheme.surface.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                            child: Icon(
+                              Icons.arrow_forward_rounded,
+                              color: colorScheme.surface,
+                              size: 18,
+                            ),
                           ),
                         ],
                       ),
@@ -286,15 +302,24 @@ class ExploreContentScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 12),
+                          Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Multimedia',
@@ -317,7 +342,11 @@ class ExploreContentScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
-                    child: const Icon(Icons.share_rounded, color: Colors.white, size: 16),
+                    child: const Icon(
+                      Icons.share_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ],
               ),
@@ -328,12 +357,15 @@ class ExploreContentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFactChip(String text, {bool isHighlight = false}) {
+  Widget _buildFactChip(BuildContext context, String text, {bool isHighlight = false}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isHighlight ? AppTheme.black : Colors.transparent,
-        border: Border.all(color: isHighlight ? AppTheme.black : AppTheme.border),
+        color: isHighlight ? colorScheme.onSurface : Colors.transparent,
+        border: Border.all(
+          color: isHighlight ? colorScheme.onSurface : colorScheme.outline,
+        ),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -341,7 +373,7 @@ class ExploreContentScreen extends StatelessWidget {
         style: TextStyle(
           fontFamily: 'DM Mono',
           fontSize: 10,
-          color: isHighlight ? Colors.white : AppTheme.muted,
+          color: isHighlight ? colorScheme.surface : colorScheme.onSurfaceVariant,
         ),
       ),
     );

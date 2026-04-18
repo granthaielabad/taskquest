@@ -12,9 +12,9 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  firebase_core: ^4.5.0
-  firebase_auth: ^6.2.0
-  cloud_firestore: ^6.1.3
+  firebase_core: ^4.6.0
+  firebase_auth: ^6.3.0
+  cloud_firestore: ^6.2.0
   firebase_analytics: ^12.1.3
   firebase_crashlytics: ^5.0.8
   firebase_messaging: ^16.1.2
@@ -24,11 +24,26 @@ dependencies:
   shared_preferences: ^2.5.4
   cached_network_image: ^3.4.1
   flutter_svg: ^2.0.10+1
+  file_picker: ^10.3.10
+  firebase_vertexai: ^2.2.0
+  syncfusion_flutter_pdf: ^33.1.46
+  firebase_ai: ^3.10.0
+  confetti: ^0.8.0
+  audioplayers: ^6.6.0
+  share_plus: ^12.0.2
+  rxdart: ^0.28.0
+  uuid: ^4.5.3
+  google_generative_ai: ^0.4.7
+  http: ^1.6.0
+  url_launcher: ^6.3.2
+  flutter_markdown: ^0.7.7+1
+  markdown: ^7.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -36,6 +51,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/images/
+    - assets/sounds/
 
   fonts:
     - family: Syne
@@ -54,3 +70,10 @@ flutter:
           weight: 400
         - asset: assets/fonts/DMMono-Medium.ttf
           weight: 500
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo.png"

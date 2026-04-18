@@ -1,5 +1,9 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -26,10 +30,23 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            // Usually configured via properties, but we'll use debug for now as a fallback
+            // if you have a real keystore, configure it here.
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storePassword = "android"
+        }
+    }
+
     buildTypes {
-        release {
+        getByName("debug") {
             signingConfig = signingConfigs.getByName("debug")
-            // ✅ Kotlin DSL syntax — isX not xEnabled
+        }
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("debug") // Using debug for now per your previous config
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
