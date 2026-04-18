@@ -12,13 +12,18 @@ class AppearanceScreen extends ConsumerStatefulWidget {
 
 class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
   bool reduceMotion = false;
-  double textSize = 0.5;
 
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
+    final textScale = ref.watch(textScaleProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    String scaleLabel = 'Default';
+    if (textScale < 0.95) scaleLabel = 'Small';
+    if (textScale > 1.05) scaleLabel = 'Large';
+    if (textScale > 1.25) scaleLabel = 'Huge';
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -47,14 +52,13 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Text(
+                  const Text(
                     'Appearance',
                     style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w800,
                       fontSize: 24,
                       letterSpacing: -0.5,
-                      color: colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -138,7 +142,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                                       ),
                                     ),
                                     Text(
-                                      'Default',
+                                      scaleLabel,
                                       style: TextStyle(
                                         fontFamily: 'DM Mono',
                                         fontSize: 10,
@@ -158,9 +162,12 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                                     trackHeight: 4,
                                   ),
                                   child: Slider(
-                                    value: textSize,
-                                    onChanged: (v) =>
-                                        setState(() => textSize = v),
+                                    value: textScale,
+                                    min: 0.8,
+                                    max: 1.4,
+                                    onChanged: (v) {
+                                      ref.read(textScaleProvider.notifier).setTextScale(v);
+                                    },
                                   ),
                                 ),
                               ],

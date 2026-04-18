@@ -13,3 +13,16 @@ class ThemeNotifier extends Notifier<ThemeMode> {
 final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(() {
   return ThemeNotifier();
 });
+
+class TextScaleNotifier extends Notifier<double> {
+  @override
+  double build() => 1.0;
+
+  void setTextScale(double scale) {
+    state = scale;
+  }
+}
+
+final textScaleProvider = NotifierProvider<TextScaleNotifier, double>(() {
+  return TextScaleNotifier();
+});

@@ -16,9 +16,7 @@ void main() async {
 
   // Safely initialize Google Sign-In for Web compatibility
   try {
-    await GoogleSignIn.instance.initialize(
-      // clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-    );
+    await GoogleSignIn.instance.initialize();
   } catch (e) {
     debugPrint('Google Sign-In initialization note: $e');
   }
@@ -34,6 +32,7 @@ class TaskQuestApp extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final isTransitioning = ref.watch(authTransitionProvider);
     final themeMode = ref.watch(themeProvider);
+    final textScale = ref.watch(textScaleProvider);
 
     return MaterialApp(
       key: ValueKey(authState.value?.uid ?? 'unauthenticated'),
@@ -42,13 +41,20 @@ class TaskQuestApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(textScale),
+          ),
+          child: child!,
+        );
+      },
       home: authState.when(
         data: (user) {
           if (user != null) {
             if (isTransitioning) return const AuthSuccessScreen();
             return const MainScaffold();
           }
-          // If no user, we start with the Splash which then shows Onboarding
           return const SplashScreen();
         },
         loading: () => const SplashScreen(),
