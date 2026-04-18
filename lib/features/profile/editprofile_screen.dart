@@ -1,12 +1,10 @@
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
-import 'package:taskquest/features/shared/services/storage_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
-final storageServiceProvider = Provider<StorageService>((ref) => StorageService());
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -27,7 +25,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool _hasChanges = false;
   
   // Local states for instant preview
-  String? _uploadedPhotoUrl; 
+  String? _currentPhotoUrl; 
   Uint8List? _previewImageBytes;
   String _selectedBackground = '#111111';
 
@@ -51,7 +49,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _schoolController = TextEditingController(text: user?.school ?? '');
     _courseController = TextEditingController(text: user?.course ?? '');
     _yearLevelController = TextEditingController(text: user?.yearLevel ?? '');
-    _uploadedPhotoUrl = user?.photoUrl;
+    _currentPhotoUrl = user?.photoUrl;
     _selectedBackground = user?.photoBackground ?? '#111111';
 
     _displayNameController.addListener(_onChanged);
@@ -78,17 +76,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    final user = ref.read(userProfileProvider).value;
-    if (user == null) return;
-
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       withData: true,
     );
 
     if (result != null && result.files.single.bytes != null) {
+      final bytes = result.files.single.bytes!;
+      
+      // Firestore limit check (1MB)
+      if (bytes.length > 800000) { // Using 800kb as a safe margin for base64 overhead
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image is too large! Please pick a smaller photo (under 800KB).')),
+          );
+        }
+        return;
+      }
+
       setState(() {
-        _previewImageBytes = result.files.single.bytes;
+        _previewImageBytes = bytes;
         _hasChanges = true;
       });
     }
@@ -101,15 +108,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      String? photoUrl = _uploadedPhotoUrl;
+      String photoUrlToSave = _currentPhotoUrl ?? '';
 
-      // Only upload if we have new bytes to upload
+      // If we have new bytes, convert to Base64 since Storage is unavailable
       if (_previewImageBytes != null) {
-        final newUrl = await ref.read(storageServiceProvider).uploadProfileImage(
-          user.uid,
-          _previewImageBytes!,
-        );
-        if (newUrl != null) photoUrl = newUrl;
+        final base64String = base64Encode(_previewImageBytes!);
+        photoUrlToSave = 'data:image/jpeg;base64,$base64String';
       }
 
       final Map<String, dynamic> updates = {
@@ -119,13 +123,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'school': _schoolController.text.trim(),
         'course': _courseController.text.trim(),
         'yearLevel': _yearLevelController.text.trim(),
-        'photoUrl': photoUrl ?? '',
+        'photoUrl': photoUrlToSave,
         'photoBackground': _selectedBackground,
       };
 
       await ref.read(userServiceProvider).updateFullProfile(user.uid, updates);
 
       if (mounted) {
+        setState(() {
+          _currentPhotoUrl = photoUrlToSave;
+          _previewImageBytes = null;
+          _hasChanges = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully!')),
         );
@@ -139,45 +148,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _deleteAccount() async {
-    final user = ref.read(userProfileProvider).value;
-    if (user == null) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Delete Account?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold)),
-        content: const Text('This will permanently delete your profile and all your data. This action cannot be undone.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('CANCEL', style: TextStyle(fontFamily: 'DM Mono', color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('DELETE', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
-      try {
-        await ref.read(userServiceProvider).deleteUserAccount(user.uid);
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
-          setState(() => _isLoading = false);
-        }
-      }
     }
   }
 
@@ -208,6 +178,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final initials = user?.displayName.isNotEmpty == true
         ? user!.displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
         : 'S';
+
+    final displayPhotoUrl = _currentPhotoUrl ?? '';
 
     return PopScope(
       canPop: false,
@@ -282,13 +254,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                     borderRadius: BorderRadius.circular(20),
                                     child: _previewImageBytes != null
                                         ? Image.memory(_previewImageBytes!, fit: BoxFit.cover)
-                                        : _uploadedPhotoUrl != null && _uploadedPhotoUrl!.isNotEmpty
-                                            ? CachedNetworkImage(
-                                                imageUrl: _uploadedPhotoUrl!,
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                                errorWidget: (context, url, error) => Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
-                                              )
+                                        : displayPhotoUrl.isNotEmpty
+                                            ? (displayPhotoUrl.startsWith('data:image') 
+                                                ? Image.memory(base64Decode(displayPhotoUrl.split(',').last), fit: BoxFit.cover)
+                                                : CachedNetworkImage(
+                                                    imageUrl: displayPhotoUrl,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                                    errorWidget: (context, url, error) => Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
+                                                  ))
                                             : Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
                                   ),
                                 ),
@@ -386,24 +360,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               Icon(Icons.check, color: colorScheme.surface, size: 20),
                               const SizedBox(width: 8),
                               Text(_isLoading ? 'Saving...' : 'Save Changes', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 16, color: colorScheme.surface)),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      const _SectionLabel(label: 'DANGER ZONE'),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: _deleteAccount,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(color: Colors.red.withOpacity(0.05), border: Border.all(color: Colors.red.withOpacity(0.1)), borderRadius: BorderRadius.circular(16)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text('Delete Account', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.red)),
-                              Icon(Icons.chevron_right_rounded, color: Colors.red, size: 20),
                             ],
                           ),
                         ),
