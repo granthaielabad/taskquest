@@ -151,6 +151,45 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  Future<void> _deleteAccount() async {
+    final user = ref.read(userProfileProvider).value;
+    if (user == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Delete Account?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold)),
+        content: const Text('This will permanently delete your profile and all your data. This action cannot be undone.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('CANCEL', style: TextStyle(fontFamily: 'DM Mono', color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('DELETE', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        await ref.read(userServiceProvider).deleteUserAccount(user.uid);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
   Future<bool> _confirmDiscard() async {
     if (!_hasChanges) return true;
     final result = await showDialog<bool>(
@@ -360,6 +399,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               Icon(Icons.check, color: colorScheme.surface, size: 20),
                               const SizedBox(width: 8),
                               Text(_isLoading ? 'Saving...' : 'Save Changes', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 16, color: colorScheme.surface)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      const _SectionLabel(label: 'DANGER ZONE'),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: _deleteAccount,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          decoration: BoxDecoration(color: Colors.red.withOpacity(0.05), border: Border.all(color: Colors.red.withOpacity(0.1)), borderRadius: BorderRadius.circular(16)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: const [
+                              Text('Delete Account', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.red)),
+                              Icon(Icons.chevron_right_rounded, color: Colors.red, size: 20),
                             ],
                           ),
                         ),
