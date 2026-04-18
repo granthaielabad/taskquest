@@ -25,7 +25,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   bool _isLoading = false;
   bool _hasChanges = false;
-  String? _uploadedPhotoUrl;
+  
+  // Local states for instant preview
+  String? _uploadedPhotoUrl; 
+  Uint8List? _previewImageBytes;
   String _selectedBackground = '#111111';
 
   final List<String> _backgroundOptions = [
@@ -84,21 +87,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
 
     if (result != null && result.files.single.bytes != null) {
-      setState(() => _isLoading = true);
-      try {
-        final url = await ref.read(storageServiceProvider).uploadProfileImage(
-          user.uid,
-          result.files.single.bytes!,
-        );
-        if (url != null) {
-          setState(() {
-            _uploadedPhotoUrl = url;
-            _hasChanges = true;
-          });
-        }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
-      }
+      setState(() {
+        _previewImageBytes = result.files.single.bytes;
+        _hasChanges = true;
+      });
     }
   }
 
@@ -109,6 +101,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
+      String? photoUrl = _uploadedPhotoUrl;
+
+      // Only upload if we have new bytes to upload
+      if (_previewImageBytes != null) {
+        final newUrl = await ref.read(storageServiceProvider).uploadProfileImage(
+          user.uid,
+          _previewImageBytes!,
+        );
+        if (newUrl != null) photoUrl = newUrl;
+      }
+
       final Map<String, dynamic> updates = {
         'displayName': _displayNameController.text.trim(),
         'username': _usernameController.text.trim(),
@@ -116,7 +119,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'school': _schoolController.text.trim(),
         'course': _courseController.text.trim(),
         'yearLevel': _yearLevelController.text.trim(),
-        'photoUrl': _uploadedPhotoUrl ?? '',
+        'photoUrl': photoUrl ?? '',
         'photoBackground': _selectedBackground,
       };
 
@@ -277,14 +280,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20),
-                                    child: _uploadedPhotoUrl != null && _uploadedPhotoUrl!.isNotEmpty
-                                        ? CachedNetworkImage(
-                                            imageUrl: _uploadedPhotoUrl!,
-                                            fit: BoxFit.cover,
-                                            placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                            errorWidget: (context, url, error) => Center(child: Text(initials, style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
-                                          )
-                                        : Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
+                                    child: _previewImageBytes != null
+                                        ? Image.memory(_previewImageBytes!, fit: BoxFit.cover)
+                                        : _uploadedPhotoUrl != null && _uploadedPhotoUrl!.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: _uploadedPhotoUrl!,
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                                errorWidget: (context, url, error) => Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
+                                              )
+                                            : Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
                                   ),
                                 ),
                                 Positioned(
