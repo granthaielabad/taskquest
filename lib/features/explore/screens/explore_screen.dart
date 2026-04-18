@@ -65,28 +65,36 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               // ── Header ──────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      'Learning\nExplorer',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 32,
-                        height: 0.9,
-                        letterSpacing: -1.2,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Discover new concepts and expand your knowledge',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 10,
-                        letterSpacing: 0.5,
-                        color: colorScheme.onSurfaceVariant,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Learning\nExplorer',
+                            style: TextStyle(
+                              fontFamily: 'Syne',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 32,
+                              height: 0.9,
+                              letterSpacing: -1.2,
+                              color: colorScheme.onSurface,
+                            ),
+                            softWrap: true,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Discover new concepts and expand your knowledge',
+                            style: TextStyle(
+                              fontFamily: 'DM Mono',
+                              fontSize: 10,
+                              letterSpacing: 0.5,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            softWrap: true,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -119,25 +127,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.trending_up_rounded,
-                            size: 14,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'TRENDING IN TECH',
-                            style: TextStyle(
-                              fontFamily: 'DM Mono',
-                              fontSize: 10,
-                              letterSpacing: 1.8,
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.trending_up_rounded,
+                              size: 14,
                               color: colorScheme.onSurfaceVariant,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            const Flexible(
+                              child: Text(
+                                'TRENDING IN TECH',
+                                style: TextStyle(
+                                  fontFamily: 'DM Mono',
+                                  fontSize: 10,
+                                  letterSpacing: 1.8,
+                                ),
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -174,25 +188,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.history_edu_rounded,
-                            size: 14,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'TECH PIONEERS & HISTORY',
-                            style: TextStyle(
-                              fontFamily: 'DM Mono',
-                              fontSize: 10,
-                              letterSpacing: 1.8,
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.history_edu_rounded,
+                              size: 14,
                               color: colorScheme.onSurfaceVariant,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            const Flexible(
+                              child: Text(
+                                'TECH PIONEERS & HISTORY',
+                                style: TextStyle(
+                                  fontFamily: 'DM Mono',
+                                  fontSize: 10,
+                                  letterSpacing: 1.8,
+                                ),
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -385,6 +405,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   fontSize: 20,
                   color: colorScheme.surface,
                 ),
+                softWrap: true,
               ),
               const SizedBox(height: 8),
               Text(
@@ -395,6 +416,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   height: 1.5,
                   color: colorScheme.surface.withValues(alpha: 0.8),
                 ),
+                softWrap: true,
               ),
             ],
           ),
@@ -480,7 +502,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           );
         }
         return SizedBox(
-          height: 240,
+          height: 280, // Increased height for large text
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -553,37 +575,40 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ),
             // Text
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    article.tags.isNotEmpty
-                        ? article.tags.first.toUpperCase()
-                        : 'TECH',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                      color: colorScheme.onSurfaceVariant,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      article.tags.isNotEmpty
+                          ? article.tags.first.toUpperCase()
+                          : 'TECH',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    article.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      height: 1.2,
-                      color: colorScheme.onSurface,
+                    const SizedBox(height: 8),
+                    Text(
+                      article.title,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        height: 1.2,
+                        color: colorScheme.onSurface,
+                      ),
+                      softWrap: true,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -597,7 +622,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     return pioneersAsync.when(
       data: (state) => SizedBox(
-        height: 180,
+        height: 200, // Increased height for large text
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -611,11 +636,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
       ),
       loading: () => const SizedBox(
-        height: 180,
+        height: 190,
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (e, s) => const SizedBox(
-        height: 180,
+        height: 190,
         child: Center(
           child: Text(
             'Error loading pioneers',
@@ -631,7 +656,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final colorScheme = theme.colorScheme;
 
     return SizedBox(
-      height: 180,
+      height: 200, // Increased height for large text
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -701,7 +726,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         children: [
                           Text(
                             b.title,
-                            maxLines: 2,
+                            maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
@@ -710,6 +735,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               fontSize: 11,
                               height: 1.1,
                             ),
+                            softWrap: true,
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -863,6 +889,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       fontSize: 14,
                       color: colorScheme.onSurface,
                     ),
+                    softWrap: true,
                   ),
                 ],
               ),
@@ -883,7 +910,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     return timelineAsync.when(
       data: (items) => SizedBox(
-        height: 180,
+        height: 200,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -894,11 +921,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
       ),
       loading: () => const SizedBox(
-        height: 180,
+        height: 200,
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (e, s) => const SizedBox(
-        height: 180,
+        height: 200,
         child: Center(
           child: Text(
             'Failed to load timeline',
@@ -974,7 +1001,7 @@ class _TimelineCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               item.title,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: 'Syne',
@@ -983,13 +1010,14 @@ class _TimelineCard extends StatelessWidget {
                 height: 1.1,
                 color: colorScheme.onSurface,
               ),
+              softWrap: true,
             ),
             const SizedBox(height: 6),
             if (item.description != null)
               Expanded(
                 child: Text(
                   item.description!,
-                  maxLines: 3,
+                  maxLines: 4,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: 'DM Mono',
@@ -997,6 +1025,7 @@ class _TimelineCard extends StatelessWidget {
                     height: 1.3,
                     color: colorScheme.onSurfaceVariant,
                   ),
+                  softWrap: true,
                 ),
               ),
             const SizedBox(height: 8),
@@ -1079,7 +1108,7 @@ class _WikiPioneerCard extends ConsumerWidget {
                   child: Text(
                     title,
                     textAlign: TextAlign.center,
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'Syne',
@@ -1088,6 +1117,7 @@ class _WikiPioneerCard extends ConsumerWidget {
                       height: 1.1,
                       color: colorScheme.onSurface,
                     ),
+                    softWrap: true,
                   ),
                 ),
                 const SizedBox(height: 8),

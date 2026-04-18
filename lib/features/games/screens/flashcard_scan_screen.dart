@@ -155,29 +155,34 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AI\nFlashcards',
-                    style: AppTheme.headingXL.copyWith(
-                      fontSize: 32,
-                      height: 0.9,
-                      letterSpacing: -1.2,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI\nFlashcards',
+                      style: AppTheme.headingXL.copyWith(
+                        fontSize: 32,
+                        height: 0.9,
+                        letterSpacing: -1.2,
+                      ),
+                      softWrap: true,
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Scan a doc, get a full deck instantly',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 10,
-                      letterSpacing: 0.5,
-                      color: AppTheme.muted,
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Scan a doc, get a full deck instantly',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                        color: AppTheme.muted,
+                      ),
+                      softWrap: true,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 12),
               _buildAIBadge(),
             ],
           ),
@@ -552,6 +557,8 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 fontWeight: FontWeight.w800,
                 fontSize: 20,
               ),
+              softWrap: true,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             const Text(
@@ -563,6 +570,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 height: 1.5,
                 color: AppTheme.muted,
               ),
+              softWrap: true,
             ),
             const SizedBox(height: 12),
             Container(
@@ -577,12 +585,15 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 children: const [
                   Icon(Icons.info_outline, size: 14, color: Colors.orange),
                   SizedBox(width: 8),
-                  Text(
-                    'Limit: 5 Scans/Day (Generates 10 cards each)',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 9,
-                      color: Colors.orange,
+                  Flexible(
+                    child: Text(
+                      'Limit: 5 Scans/Day (Generates 10 cards each)',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        color: Colors.orange,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ],

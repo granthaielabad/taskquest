@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/core/providers/theme_provider.dart';
 import 'flashcard_scan_screen.dart';
 import 'game_lobby_screen.dart';
 import 'code_blocks_gameplay_screen.dart';
@@ -24,6 +25,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final userAsync = ref.watch(userProfileProvider);
+    final textScale = ref.watch(textScaleProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -38,31 +40,35 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Game\nModes',
-                        style: TextStyle(
-                          fontFamily: 'Syne',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 32,
-                          height: 0.9,
-                          letterSpacing: -1.2,
-                          color: colorScheme.onSurface,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Game\nModes',
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 32,
+                            height: 0.9,
+                            letterSpacing: -1.2,
+                            color: colorScheme.onSurface,
+                          ),
+                          softWrap: true,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '5 ways to level up your CS skills',
-                        style: TextStyle(
-                          fontFamily: 'DM Mono',
-                          fontSize: 10,
-                          letterSpacing: 0.5,
-                          color: colorScheme.onSurfaceVariant,
+                        const SizedBox(height: 12),
+                        Text(
+                          '5 ways to level up your CS skills',
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 10,
+                            letterSpacing: 0.5,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          softWrap: true,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   userAsync.when(
                     data: (user) => Container(
@@ -72,6 +78,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.star_rounded, color: colorScheme.surface, size: 14),
                           const SizedBox(width: 6),
@@ -151,14 +158,14 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Grid of Other Modes
+              // Grid of Other Modes - Dynamic aspect ratio based on text scale
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.85,
+                childAspectRatio: 0.85 / textScale.clamp(1.0, 1.4),
                 children: [
                   _buildGameCard(
                     context,
@@ -322,6 +329,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               fontSize: 32,
               color: colorScheme.surface,
             ),
+            softWrap: true,
           ),
           const SizedBox(height: 12),
           Text(
@@ -332,20 +340,27 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               height: 1.5,
               color: colorScheme.surface.withValues(alpha: 0.5),
             ),
+            softWrap: true,
           ),
           const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  _buildStat('48', 'CARDS DONE'),
-                  const SizedBox(width: 24),
-                  _buildStat('+120', 'AVG XP'),
-                  const SizedBox(width: 24),
-                  _buildStat('85%', 'ACCURACY'),
-                ],
+              Flexible(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildStat('48', 'CARDS DONE'),
+                      const SizedBox(width: 24),
+                      _buildStat('+120', 'AVG XP'),
+                      const SizedBox(width: 24),
+                      _buildStat('85%', 'ACCURACY'),
+                    ],
+                  ),
+                ),
               ),
+              const SizedBox(width: 12),
               GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FlashcardScanScreen())),
                 child: Container(
@@ -432,80 +447,94 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
           border: Border.all(color: colorScheme.outline),
           borderRadius: BorderRadius.circular(24),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSurface.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: colorScheme.onSurface, size: 18),
-                ),
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: colorScheme.onSurface, width: 1.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      points,
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 10,
-                        color: colorScheme.onSurface,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: colorScheme.onSurface.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: Icon(icon, color: colorScheme.onSurface, size: 18),
+                    ),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colorScheme.onSurface, width: 1.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          points,
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 10,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(), // Only scroll if absolutely necessary
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          desc,
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 9,
+                            height: 1.2,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              title,
-              style: TextStyle(
-                fontFamily: 'Syne',
-                fontWeight: FontWeight.w800,
-                fontSize: 15,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              desc,
-              maxLines: 2,
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 9,
-                height: 1.3,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildTag(context, tag),
-                Text(
-                  xp,
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(child: _buildTag(context, tag)),
+                    const SizedBox(width: 4),
+                    Text(
+                      xp,
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

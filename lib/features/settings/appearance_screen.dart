@@ -53,13 +53,16 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Text(
-                    'Appearance',
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 24,
-                      letterSpacing: -0.5,
+                  const Expanded(
+                    child: Text(
+                      'Appearance',
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 24,
+                        letterSpacing: -0.5,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ],

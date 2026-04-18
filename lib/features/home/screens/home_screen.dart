@@ -124,31 +124,36 @@ class HomeScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    greeting,
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 10,
-                      letterSpacing: 1.2,
-                      color: colorScheme.onSurfaceVariant,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      greeting,
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 10,
+                        letterSpacing: 1.2,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      softWrap: true,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    displayName.toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 28,
-                      letterSpacing: -0.84,
-                      color: colorScheme.onSurface,
+                    const SizedBox(height: 4),
+                    Text(
+                      displayName.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 28,
+                        letterSpacing: -0.84,
+                        color: colorScheme.onSurface,
+                      ),
+                      softWrap: true,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 12),
               IconButton(
                 icon: Icon(Icons.notifications_none_rounded, color: colorScheme.onSurface),
                 onPressed: () {
@@ -321,117 +326,127 @@ class HomeScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'CURRENT STREAK',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 1.44,
-                    color: colorScheme.surface.withValues(alpha: 0.6),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'CURRENT STREAK',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      letterSpacing: 1.44,
+                      color: colorScheme.surface.withValues(alpha: 0.6),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      '$streak',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 26,
-                        color: colorScheme.surface,
-                        letterSpacing: -0.78,
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '$streak',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 26,
+                          color: colorScheme.surface,
+                          letterSpacing: -0.78,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'days',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: colorScheme.surface.withValues(alpha: 0.6),
+                      const SizedBox(width: 4),
+                      Text(
+                        'days',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: colorScheme.surface.withValues(alpha: 0.6),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                      .asMap()
-                      .entries
-                      .map((e) {
-                        final isToday = e.key == DateTime.now().weekday - 1;
-                        return Container(
-                          width: 26,
-                          height: 26,
-                          margin: const EdgeInsets.only(right: 5),
-                          decoration: BoxDecoration(
-                            color: isToday
-                                ? colorScheme.surface
-                                : colorScheme.surface.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(7),
-                          ),
-                          child: Center(
-                            child: Text(
-                              e.value,
-                              style: TextStyle(
-                                fontFamily: 'DM Mono',
-                                fontSize: 9,
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                          .asMap()
+                          .entries
+                          .map((e) {
+                            final isToday = e.key == DateTime.now().weekday - 1;
+                            return Container(
+                              width: 26,
+                              height: 26,
+                              margin: const EdgeInsets.only(right: 5),
+                              decoration: BoxDecoration(
                                 color: isToday
-                                    ? colorScheme.onSurface
-                                    : colorScheme.surface.withValues(alpha: 0.8),
+                                    ? colorScheme.surface
+                                    : colorScheme.surface.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(7),
                               ),
-                            ),
-                          ),
-                        );
-                      })
-                      .toList(),
-                ),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Lvl $level',
-                  style: TextStyle(
-                    fontFamily: 'Syne',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: colorScheme.surface,
-                    letterSpacing: -0.32,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$xp XP',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 0.9,
-                    color: colorScheme.surface.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 80,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 3,
-                      backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
-                      valueColor: AlwaysStoppedAnimation(colorScheme.surface),
+                              child: Center(
+                                child: Text(
+                                  e.value,
+                                  style: TextStyle(
+                                    fontFamily: 'DM Mono',
+                                    fontSize: 9,
+                                    color: isToday
+                                        ? colorScheme.onSurface
+                                        : colorScheme.surface.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                              ),
+                            );
+                          })
+                          .toList(),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Lvl $level',
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: colorScheme.surface,
+                      letterSpacing: -0.32,
+                    ),
+                    softWrap: false,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$xp XP',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      letterSpacing: 0.9,
+                      color: colorScheme.surface.withValues(alpha: 0.5),
+                    ),
+                    softWrap: false,
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 80,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 3,
+                        backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
+                        valueColor: AlwaysStoppedAnimation(colorScheme.surface),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
