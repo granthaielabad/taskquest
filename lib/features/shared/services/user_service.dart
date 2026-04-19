@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
+import 'package:taskquest/features/settings/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -40,10 +43,57 @@ class UserService {
     final user = await getUserProfile(uid);
     if (user == null) return;
 
+    final oldLevel = user.level;
     final newTotalXp = user.xp + xpToAdd;
-    final newLevel = XpUtils.calculateLevel(newTotalXp);
+    final levelData = XpUtils.getLevelProgress(newTotalXp);
+    final newLevel = levelData['level'] as int;
+    final nextThreshold = levelData['nextLevelXpThreshold'] as int;
 
     await updateXp(uid, newTotalXp, newLevel);
+
+    // ── TRIGGER NOTIFICATIONS ───────────────────────────────────
+    final prefs = await SharedPreferences.getInstance();
+    // We check for all versions of settings keys used
+    final settings = prefs.getStringList('notification_settings_v4') ?? 
+                     prefs.getStringList('notification_settings_v3') ?? [];
+    
+    bool isAllOn = true;
+    bool isXpOn = false;
+    bool isQuestOn = true;
+
+    for (var s in settings) {
+      if (s == 'all:false') isAllOn = false;
+      if (s == 'xp:true') isXpOn = true;
+      if (s == 'quest:true') isQuestOn = true;
+    }
+
+    if (isAllOn) {
+      // 1. XP Milestones & Level Up
+      if (isXpOn) {
+        if (newLevel > oldLevel) {
+          NotificationService().showNotification(
+            id: 7,
+            title: 'Level Up! 🎉',
+            body: 'Congratulations! You\'ve reached Level $newLevel.',
+          );
+        } else if (nextThreshold - newTotalXp <= 50) {
+          NotificationService().showNotification(
+            id: 4,
+            title: 'Level Up Imminent! ⚡',
+            body: 'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!',
+          );
+        }
+      }
+
+      // 2. Quest Complete
+      if (isQuestOn) {
+        NotificationService().showNotification(
+          id: 3,
+          title: 'Quest Completed! ✅',
+          body: 'Great job! You earned $xpToAdd XP and moved closer to your goal.',
+        );
+      }
+    }
   }
 
   Future<void> checkAndCreateProfile(
@@ -51,22 +101,18 @@ class UserService {
     String email,
     String displayName,
   ) async {
-    debugPrint('UserService: Starting handshake for $uid (Name: $displayName)');
-
     try {
       final user = await getUserProfile(uid);
       final now = DateTime.now();
       final bool isNewNameGeneric =
           displayName.isEmpty || displayName == 'Scholar';
 
-      // Predefine username based on display name
       String generatedUsername = '';
       if (!isNewNameGeneric) {
         generatedUsername = displayName.toLowerCase().replaceAll(' ', '_');
       }
 
       if (user == null) {
-        debugPrint('UserService: No profile found. Creating new one...');
         final newUser = UserModel(
           uid: uid,
           email: email,
@@ -77,36 +123,20 @@ class UserService {
         );
         await createUserProfile(newUser);
       } else {
-        debugPrint(
-          'UserService: Existing profile found. Checking for updates...',
-        );
         final Map<String, dynamic> updates = {'email': email};
-
         final bool currentIsGeneric =
             user.displayName.isEmpty || user.displayName == 'Scholar';
 
         if (currentIsGeneric && !isNewNameGeneric) {
-          debugPrint(
-            'UserService: Updating generic name "Scholar" to "$displayName"',
-          );
           updates['displayName'] = displayName;
           if (user.username.isEmpty) {
             updates['username'] = generatedUsername;
           }
         } else if (!isNewNameGeneric && displayName != user.displayName) {
-          debugPrint('UserService: Syncing name change to "$displayName"');
           updates['displayName'] = displayName;
         }
 
-        // We use set with merge:true to be safer than update
-        await _db
-            .collection('users')
-            .doc(uid)
-            .set(updates, SetOptions(merge: true));
-        debugPrint(
-          'UserService: Handshake complete (updates applied: ${updates.keys.toList()})',
-        );
-
+        await _db.collection('users').doc(uid).set(updates, SetOptions(merge: true));
         await updateStreak(uid);
       }
     } catch (e) {
@@ -121,14 +151,8 @@ class UserService {
 
       final lastLogin = user.lastLogin;
       final now = DateTime.now();
-
-      final lastLoginDate = DateTime(
-        lastLogin.year,
-        lastLogin.month,
-        lastLogin.day,
-      );
+      final lastLoginDate = DateTime(lastLogin.year, lastLogin.month, lastLogin.day);
       final todayDate = DateTime(now.year, now.month, now.day);
-
       final difference = todayDate.difference(lastLoginDate).inDays;
 
       if (difference == 0) return;
@@ -159,9 +183,21 @@ class UserService {
   ) async {
     try {
       await _db.collection('users').doc(uid).update(profileData);
-      debugPrint('UserService: Profile updated successfully for $uid');
     } catch (e) {
       debugPrint('UserService ERROR: Failed to update full profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteUserAccount(String uid) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.uid == uid) {
+        await user.delete();
+      }
+      await _db.collection('users').doc(uid).delete();
+    } catch (e) {
+      debugPrint('UserService ERROR: Failed to delete account: $e');
       rethrow;
     }
   }

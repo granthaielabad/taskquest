@@ -16,6 +16,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -32,8 +33,6 @@ android {
 
     signingConfigs {
         create("release") {
-            // Usually configured via properties, but we'll use debug for now as a fallback
-            // if you have a real keystore, configure it here.
             keyAlias = "androiddebugkey"
             keyPassword = "android"
             storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
@@ -46,7 +45,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
         getByName("release") {
-            signingConfig = signingConfigs.getByName("debug") // Using debug for now per your previous config
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -55,6 +54,10 @@ android {
             )
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
 
 flutter {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
@@ -5,8 +6,9 @@ import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/profile/editprofile_screen.dart';
-import 'package:taskquest/features/settings/appearance_screen.dart';
-import 'package:taskquest/features/settings/notifications_screen.dart';
+import 'package:taskquest/features/settings/screens/appearance_screen.dart';
+import 'package:taskquest/features/settings/screens/notifications_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -131,6 +133,9 @@ class ProfileScreen extends ConsumerWidget {
         ? user.displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
         : 'S';
 
+    final bgHex = user.photoBackground.replaceFirst('#', '0xFF');
+    final avatarColor = Color(int.parse(bgHex));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -145,26 +150,19 @@ class ProfileScreen extends ConsumerWidget {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    shape: BoxShape.circle,
+                    color: avatarColor,
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        color: avatarColor.withValues(alpha: 0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Text(
-                      initials,
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 32,
-                        color: colorScheme.onPrimary,
-                      ),
-                    ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: _buildAvatarImage(user, initials),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -321,6 +319,37 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 60),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarImage(UserModel user, String initials) {
+    if (user.photoUrl.isEmpty) {
+      return _buildInitials(initials);
+    }
+
+    if (user.photoUrl.startsWith('data:image')) {
+      try {
+        final base64Part = user.photoUrl.split(',').last;
+        return Image.memory(base64Decode(base64Part), fit: BoxFit.cover);
+      } catch (e) {
+        return _buildInitials(initials);
+      }
+    }
+
+    return CachedNetworkImage(
+      imageUrl: user.photoUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+      errorWidget: (context, url, error) => _buildInitials(initials),
+    );
+  }
+
+  Widget _buildInitials(String initials) {
+    return Center(
+      child: Text(
+        initials,
+        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 32, color: Colors.white),
       ),
     );
   }
