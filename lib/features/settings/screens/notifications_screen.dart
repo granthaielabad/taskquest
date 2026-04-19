@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taskquest/core/theme/app_theme.dart';
+import '../services/notification_service.dart';
 
-// Use Notifier instead of StateProvider for better compatibility
 class NotificationSettingsNotifier extends Notifier<Map<String, bool>> {
+  static const String _prefKey = 'notification_settings';
+
   @override
   Map<String, bool> build() {
+    _loadSettings();
     return {
       'all': true,
       'daily': true,
@@ -17,8 +22,81 @@ class NotificationSettingsNotifier extends Notifier<Map<String, bool>> {
     };
   }
 
-  void toggle(String key, bool value) {
-    state = {...state, key: value};
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? saved = prefs.getStringList(_prefKey);
+    if (saved != null) {
+      final Map<String, bool> newState = {};
+      for (var item in saved) {
+        final parts = item.split(':');
+        if (parts.length == 2) {
+          newState[parts[0]] = parts[1] == 'true';
+        }
+      }
+      state = newState;
+    }
+  }
+
+  Future<void> toggle(String key, bool value) async {
+    final newState = {...state, key: value};
+    state = newState;
+
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> list = newState.entries.map((e) => '${e.key}:${e.value}').toList();
+    await prefs.setStringList(_prefKey, list);
+
+    final service = NotificationService();
+    
+    if (key == 'all' && value == false) {
+      await service.cancelAll();
+    } else if (newState['all'] == true) {
+      if (value == true && key != 'quiet') {
+        String title = 'Reminder';
+        String body = 'Time to check TaskQuest!';
+        int notificationId = 1;
+
+        switch (key) {
+          case 'daily':
+            title = 'Daily Quest! ⚔️';
+            body = 'Your daily challenges are waiting.';
+            notificationId = 1;
+            break;
+          case 'streak':
+            title = 'Streak at Risk! 🔥';
+            body = 'Open the app now to keep your streak alive.';
+            notificationId = 2;
+            break;
+          case 'quest':
+            title = 'Quest Completed! ✅';
+            body = 'Well done! Check your rewards.';
+            notificationId = 3;
+            break;
+          case 'xp':
+            title = 'XP Milestone! ⚡';
+            body = 'You are close to a new level-up.';
+            notificationId = 4;
+            break;
+          case 'social':
+            title = 'Friend Activity! 👥';
+            body = 'See what your friends are up to.';
+            notificationId = 5;
+            break;
+          case 'announcements':
+            title = 'New Announcement! 📢';
+            body = 'Check out the latest updates.';
+            notificationId = 6;
+            break;
+        }
+
+        // Use the dedicated TEST method with 30 seconds
+        await service.scheduleTestNotification(
+          30, 
+          id: notificationId,
+          title: title,
+          body: body,
+        );
+      }
+    }
   }
 }
 
@@ -34,10 +112,11 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(notificationSettingsProvider);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -56,23 +135,27 @@ class NotificationsScreen extends ConsumerWidget {
                         border: Border.all(color: colorScheme.outline),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        Icons.chevron_left_rounded,
-                        color: colorScheme.onSurface,
-                      ),
+                      child: Icon(Icons.chevron_left_rounded, color: colorScheme.onSurface),
                     ),
                   ),
                   const SizedBox(width: 20),
                   Expanded(
-                    child: Text(
-                      'Notifications',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22,
-                        letterSpacing: -0.5,
-                        color: colorScheme.onSurface,
+                    child: GestureDetector(
+                      onTap: () {
+                        NotificationService().showNotification(
+                          id: 99,
+                          title: 'Notifications Working! 🚀',
+                          body: 'Test successful. Your alerts are now active.',
+                        );
+                      },
+                      child: const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                     ),
                   ),
@@ -87,16 +170,12 @@ class NotificationsScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 24),
-
-                    // Master Switch Card
+                    const SizedBox(height: 20),
+                    
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
-                        color: colorScheme.onSurface,
+                        color: isDark ? colorScheme.onSurface.withOpacity(0.1) : Colors.black,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -104,36 +183,36 @@ class NotificationsScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: colorScheme.surface.withValues(alpha: 0.1),
+                              color: isDark ? colorScheme.surface : const Color(0xFF262626),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(
-                              Icons.notifications_none_rounded,
-                              color: colorScheme.surface,
-                              size: 20,
-                            ),
+                            child: Icon(Icons.notifications_none_rounded, color: isDark ? colorScheme.onSurface : Colors.white, size: 20),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'All Notifications',
-                                  style: TextStyle(
-                                    fontFamily: 'Syne',
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                    color: colorScheme.surface,
-                                  ),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('All Notifications',
+                                      style: TextStyle(
+                                        fontFamily: 'Syne', 
+                                        fontWeight: FontWeight.w800, 
+                                        fontSize: 16, 
+                                        color: isDark ? colorScheme.onSurface : Colors.white
+                                      )),
                                 ),
-                                Text(
-                                  'Master switch for all alerts',
-                                  style: TextStyle(
-                                    fontFamily: 'DM Mono',
-                                    fontSize: 10,
-                                    color: colorScheme.surface.withValues(alpha: 0.5),
-                                  ),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('Master switch for all alerts',
+                                      style: TextStyle(
+                                        fontFamily: 'DM Mono', 
+                                        fontSize: 10, 
+                                        color: isDark ? colorScheme.onSurface.withOpacity(0.6) : Colors.white.withOpacity(0.4)
+                                      )),
                                 ),
                               ],
                             ),
@@ -141,10 +220,9 @@ class NotificationsScreen extends ConsumerWidget {
                           const SizedBox(width: 12),
                           Switch(
                             value: settings['all'] ?? true,
-                            onChanged: (v) => ref
-                                .read(notificationSettingsProvider.notifier)
-                                .toggle('all', v),
-                            activeThumbColor: colorScheme.surface,
+                            onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('all', v),
+                            activeColor: isDark ? colorScheme.primary : Colors.white,
+                            activeTrackColor: isDark ? colorScheme.primary.withOpacity(0.3) : const Color(0xFF404040),
                           ),
                         ],
                       ),
@@ -162,9 +240,7 @@ class NotificationsScreen extends ConsumerWidget {
                           title: 'Daily Reminder',
                           subtitle: 'Nudge to complete daily quest',
                           value: settings['daily'] ?? true,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('daily', v),
+                          onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('daily', v),
                         ),
                         _NotificationTile(
                           icon: Icons.star_outline_rounded,
@@ -173,9 +249,7 @@ class NotificationsScreen extends ConsumerWidget {
                           title: 'Streak Alert',
                           subtitle: 'Remind before streak breaks',
                           value: settings['streak'] ?? true,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('streak', v),
+                          onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('streak', v),
                         ),
                         _NotificationTile(
                           icon: Icons.check_box_outlined,
@@ -184,20 +258,16 @@ class NotificationsScreen extends ConsumerWidget {
                           title: 'Quest Complete',
                           subtitle: 'When you finish a daily quest',
                           value: settings['quest'] ?? true,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('quest', v),
+                          onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('quest', v),
                         ),
                         _NotificationTile(
                           icon: Icons.timeline_rounded,
-                          iconBg: colorScheme.outline.withValues(alpha: 0.2),
-                          iconColor: colorScheme.onSurfaceVariant,
+                          iconBg: isDark ? colorScheme.onSurface.withOpacity(0.05) : const Color(0xFFF5F5F5),
+                          iconColor: isDark ? colorScheme.onSurface.withOpacity(0.4) : const Color(0xFF9E9E9E),
                           title: 'XP Milestones',
                           subtitle: 'Level-up and XP threshold alerts',
                           value: settings['xp'] ?? false,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('xp', v),
+                          onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('xp', v),
                           isLast: true,
                         ),
                       ],
@@ -210,25 +280,21 @@ class NotificationsScreen extends ConsumerWidget {
                       children: [
                         _NotificationTile(
                           icon: Icons.people_outline_rounded,
-                          iconBg: colorScheme.outline.withValues(alpha: 0.2),
-                          iconColor: colorScheme.onSurfaceVariant,
+                          iconBg: isDark ? colorScheme.onSurface.withOpacity(0.05) : const Color(0xFFF5F5F5),
+                          iconColor: isDark ? colorScheme.onSurface.withOpacity(0.4) : const Color(0xFF9E9E9E),
                           title: 'Friend Activity',
                           subtitle: 'When friends earn badges or level up',
                           value: settings['social'] ?? false,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('social', v),
+                          onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('social', v),
                         ),
                         _NotificationTile(
                           icon: Icons.branding_watermark_outlined,
-                          iconBg: colorScheme.outline.withValues(alpha: 0.2),
-                          iconColor: colorScheme.onSurfaceVariant,
+                          iconBg: isDark ? colorScheme.onSurface.withOpacity(0.05) : const Color(0xFFF5F5F5),
+                          iconColor: isDark ? colorScheme.onSurface.withOpacity(0.4) : const Color(0xFF9E9E9E),
                           title: 'App Announcements',
                           subtitle: 'New content and feature updates',
                           value: settings['announcements'] ?? true,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('announcements', v),
+                          onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('announcements', v),
                           isLast: true,
                         ),
                       ],
@@ -247,74 +313,40 @@ class NotificationsScreen extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Enable Quiet Hours',
-                                      style: TextStyle(
-                                        fontFamily: 'Syne',
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    ),
+                                    const Text('Enable Quiet Hours',
+                                        style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14)),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      'Silence all alerts during set times',
-                                      style: TextStyle(
-                                        fontFamily: 'DM Mono',
-                                        fontSize: 10,
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
+                                    const Text('Silence all alerts during set times',
+                                        style: TextStyle(fontFamily: 'DM Mono', fontSize: 10)),
                                   ],
                                 ),
                               ),
                               Switch(
                                 value: settings['quiet'] ?? true,
-                                onChanged: (v) => ref
-                                    .read(notificationSettingsProvider.notifier)
-                                    .toggle('quiet', v),
-                                activeThumbColor: colorScheme.onSurface,
+                                onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('quiet', v),
+                                activeColor: isDark ? colorScheme.onSurface : Colors.white,
+                                activeTrackColor: isDark ? colorScheme.primary : AppTheme.black,
                               ),
                             ],
                           ),
                         ),
                         Divider(color: colorScheme.outline, height: 1),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'START',
-                                    style: TextStyle(
-                                      fontFamily: 'DM Mono',
-                                      fontSize: 9,
-                                      color: colorScheme.onSurfaceVariant
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                  ),
+                                  Text('START',
+                                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: colorScheme.onSurfaceVariant.withOpacity(0.5))),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    '10:00 PM',
-                                    style: TextStyle(
-                                      fontFamily: 'Syne',
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 18,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
+                                  const Text('10:00 PM',
+                                      style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18)),
                                 ],
                               ),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                color: colorScheme.outline,
-                              ),
+                              const Icon(Icons.chevron_right_rounded),
                             ],
                           ),
                         ),
@@ -356,11 +388,11 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline),
+        color: colorScheme.surface,
+        border: Border.all(color: colorScheme.outline),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(children: children),
@@ -391,9 +423,7 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Padding(
@@ -417,28 +447,15 @@ class _NotificationTile extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontFamily: 'Syne',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
+                      child: Text(title,
+                          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14)),
                     ),
                     const SizedBox(height: 2),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontFamily: 'DM Mono',
-                          fontSize: 9,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                      child: Text(subtitle,
+                          style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9)),
                     ),
                   ],
                 ),
@@ -447,7 +464,8 @@ class _NotificationTile extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: iconColor,
+                activeColor: Colors.white,
+                activeTrackColor: iconColor,
               ),
             ],
           ),
