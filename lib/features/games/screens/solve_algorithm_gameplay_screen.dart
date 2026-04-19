@@ -14,7 +14,7 @@ class SolveAlgorithmGameplayScreen extends ConsumerStatefulWidget {
 
 class _SolveAlgorithmGameplayScreenState extends ConsumerState<SolveAlgorithmGameplayScreen> {
   int _timeLeft = 17;
-  int _totalTime = 30;
+  final int _totalTime = 30;
   Timer? _timer;
   bool _isAnswered = false;
   String? _selectedOption;
@@ -38,8 +38,11 @@ class _SolveAlgorithmGameplayScreenState extends ConsumerState<SolveAlgorithmGam
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_timeLeft > 0) setState(() => _timeLeft--);
-      else _timer?.cancel();
+      if (_timeLeft > 0) {
+        setState(() => _timeLeft--);
+      } else {
+        _timer?.cancel();
+      }
     });
   }
 
@@ -127,7 +130,7 @@ class _SolveAlgorithmGameplayScreenState extends ConsumerState<SolveAlgorithmGam
                   ..._options.asMap().entries.map((e) {
                     final label = String.fromCharCode(65 + e.key);
                     return _buildOption(context, label, e.value);
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

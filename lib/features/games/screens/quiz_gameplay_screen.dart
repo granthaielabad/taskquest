@@ -2,14 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
-import 'package:taskquest/features/auth/providers/auth_provider.dart';
-import 'package:taskquest/features/auth/providers/user_provider.dart';
-import 'package:taskquest/features/home/providers/activity_provider.dart';
-import 'package:taskquest/features/badges/providers/badge_provider.dart';
 import 'package:taskquest/core/services/sound_service.dart';
 import 'package:taskquest/features/games/widgets/game_timer.dart';
-import 'package:taskquest/features/shared/widgets/report_dialog.dart';
 
 class QuizQuestion {
   final String id;
@@ -35,12 +29,12 @@ class QuizGameplayScreen extends ConsumerStatefulWidget {
 }
 
 class _QuizGameplayScreenState extends ConsumerState<QuizGameplayScreen> {
-  int _currentQuestionIndex = 4; // Round 5 according to screenshot logic
+  final int _currentQuestionIndex = 4; // Round 5 according to screenshot logic
   int _score = 4;
   bool _isAnswered = false;
   String? _selectedOption;
   int _timeLeft = 22;
-  int _totalTime = 30;
+  final int _totalTime = 30;
   Timer? _timer;
   final SoundService _soundService = SoundService();
 
@@ -179,7 +173,7 @@ class _QuizGameplayScreenState extends ConsumerState<QuizGameplayScreen> {
                   ...question.options.asMap().entries.map((e) {
                     final label = String.fromCharCode(65 + e.key); // A, B, C...
                     return _buildOption(context, label, e.value, question.correctAnswer);
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

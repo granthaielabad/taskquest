@@ -2,13 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
 import 'package:taskquest/features/games/widgets/game_timer.dart';
-import 'package:taskquest/features/shared/widgets/report_dialog.dart';
 
 class CodeBlocksGameplayScreen extends ConsumerStatefulWidget {
   const CodeBlocksGameplayScreen({super.key});
@@ -38,8 +36,9 @@ class _CodeBlocksGameplayScreenState extends ConsumerState<CodeBlocksGameplayScr
   void _initializeDifficulty() {
     final user = ref.read(userProfileProvider).value;
     final level = user?.level ?? 1;
-    if (level >= 8) _totalTime = 15;
-    else if (level >= 4) _totalTime = 25;
+    if (level >= 8) {
+      _totalTime = 15;
+    } else if (level >= 4) _totalTime = 25;
     else _totalTime = 35;
     _timeLeft = _totalTime;
   }

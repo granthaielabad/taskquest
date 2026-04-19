@@ -19,7 +19,7 @@ class SdlcGameplayScreen extends ConsumerStatefulWidget {
 
 class _SdlcGameplayScreenState extends ConsumerState<SdlcGameplayScreen> {
   int _timeLeft = 33;
-  int _totalTime = 45;
+  final int _totalTime = 45;
   Timer? _timer;
   
   final List<SdlcPhase> _correctOrder = [
@@ -51,8 +51,11 @@ class _SdlcGameplayScreenState extends ConsumerState<SdlcGameplayScreen> {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_timeLeft > 0) setState(() => _timeLeft--);
-      else _timer?.cancel();
+      if (_timeLeft > 0) {
+        setState(() => _timeLeft--);
+      } else {
+        _timer?.cancel();
+      }
     });
   }
 

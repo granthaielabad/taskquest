@@ -11,7 +11,7 @@ import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
-import 'package:taskquest/features/settings/notifications_screen.dart';
+import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 

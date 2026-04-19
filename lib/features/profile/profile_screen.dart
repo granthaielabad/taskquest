@@ -6,8 +6,8 @@ import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/profile/editprofile_screen.dart';
-import 'package:taskquest/features/settings/appearance_screen.dart';
-import 'package:taskquest/features/settings/notifications_screen.dart';
+import 'package:taskquest/features/settings/screens/appearance_screen.dart';
+import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends ConsumerWidget {

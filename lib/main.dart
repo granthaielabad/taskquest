@@ -9,10 +9,14 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/auth_success_screen.dart';
 import 'features/shared/widgets/main_scaffold.dart';
+import 'features/settings/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize Notifications
+  await NotificationService().init();
 
   // Safely initialize Google Sign-In for Web compatibility
   try {

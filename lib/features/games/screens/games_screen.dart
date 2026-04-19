@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/core/providers/theme_provider.dart';
 import 'flashcard_scan_screen.dart';
@@ -95,7 +94,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
                       ),
                     ),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                   ),
                 ],
               ),

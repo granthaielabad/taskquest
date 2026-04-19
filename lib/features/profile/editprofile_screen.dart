@@ -251,7 +251,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         child: Icon(Icons.chevron_left_rounded, color: colorScheme.onSurface),
                       ),
                     ),
-                    const Text('Edit Profile', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -0.5)),
+                    const SizedBox(width: 20),
+                    const Expanded(
+                      child: Text(
+                        'Edit Profile',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                          letterSpacing: -0.5,
+                        ),
+                        softWrap: true,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: _isLoading || !_hasChanges ? null : _saveProfile,
                       child: Container(
@@ -322,22 +335,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(user?.displayName ?? 'Scholar', style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 20)),
-                                Text(user?.username.isNotEmpty == true ? '@${user!.username}' : '@scholar', style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant)),
+                                Text(user?.displayName ?? 'Scholar', style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 20), softWrap: true,),
+                                Text(user?.username.isNotEmpty == true ? '@${user!.username}' : '@scholar', style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant), softWrap: true,),
                                 const SizedBox(height: 12),
-                                Row(
-                                  children: _backgroundOptions.map((hex) => GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedBackground = hex;
-                                        _hasChanges = true;
-                                      });
-                                    },
-                                    child: _ColorOption(
-                                      color: Color(int.parse(hex.replaceFirst('#', '0xFF'))),
-                                      isSelected: _selectedBackground == hex,
-                                    ),
-                                  )).toList(),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: _backgroundOptions.map((hex) => GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedBackground = hex;
+                                          _hasChanges = true;
+                                        });
+                                      },
+                                      child: _ColorOption(
+                                        color: Color(int.parse(hex.replaceFirst('#', '0xFF'))),
+                                        isSelected: _selectedBackground == hex,
+                                      ),
+                                    )).toList(),
+                                  ),
                                 ),
                               ],
                             ),
@@ -362,7 +378,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 children: [
                                   Text('EMAIL ADDRESS', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.0, color: colorScheme.onSurfaceVariant.withOpacity(0.7))),
                                   const SizedBox(height: 4),
-                                  Text(user?.email ?? '', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 15, color: colorScheme.onSurfaceVariant)),
+                                  Text(user?.email ?? '', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 15, color: colorScheme.onSurfaceVariant), softWrap: true,),
                                 ],
                               ),
                             ),
