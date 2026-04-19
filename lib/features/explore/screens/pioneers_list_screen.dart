@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/explore/providers/explore_provider.dart';
@@ -246,7 +247,7 @@ class _PioneerGridCard extends ConsumerWidget {
                 radius: 40,
                 backgroundColor: theme.scaffoldBackgroundColor,
                 backgroundImage: summary?.thumbnailUrl != null
-                    ? NetworkImage(summary!.thumbnailUrl!)
+                    ? CachedNetworkImageProvider(summary!.thumbnailUrl!)
                     : null,
                 child: summary?.thumbnailUrl == null
                     ? Icon(Icons.person_rounded, size: 40, color: colorScheme.outline)

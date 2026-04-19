@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/shared/services/report_service.dart';
+import 'package:taskquest/features/games/providers/game_engine_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:uuid/uuid.dart';
 
@@ -23,11 +24,27 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   final TextEditingController _reasonController = TextEditingController();
   bool _isSubmitting = false;
   String? _attachedFileName;
-  PlatformFile? _attachedFile;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pause game when dialog opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(gameEngineProvider.notifier).pauseGame();
+    });
+  }
 
   @override
   void dispose() {
     _reasonController.dispose();
+    // Resume game when dialog closes
+    // We use a small delay to ensure the dialog is fully gone
+    // and avoid potential race conditions with UI rebuilds
+    Future.microtask(() {
+      if (ref.exists(gameEngineProvider)) {
+        ref.read(gameEngineProvider.notifier).resumeGame();
+      }
+    });
     super.dispose();
   }
 
@@ -39,7 +56,6 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 
     if (result != null) {
       setState(() {
-        _attachedFile = result.files.first;
         _attachedFileName = result.files.first.name;
       });
     }
@@ -59,11 +75,10 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         contentId: widget.contentId,
         reason: _reasonController.text.trim(),
         timestamp: DateTime.now(),
-        // For now, we append the attachment info to the reason 
-        // since we haven't implemented Firebase Storage yet.
         attachmentName: _attachedFileName,
       );
 
+      debugPrint('Submitting report with attachment: ${_attachedFileName ?? "None"}');
       await ref.read(reportServiceProvider).submitReport(report);
     }
 
@@ -168,7 +183,6 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                            _attachedFile = null;
                             _attachedFileName = null;
                           });
                         },

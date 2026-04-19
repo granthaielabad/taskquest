@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- This forces the logo.png to be smaller so it isn't cut off by the mask -->
+    <item
+        android:drawable="@mipmap/launcher_icon"
+        android:width="72dp"
+        android:height="72dp"
+        android:gravity="center" />
+</layer-list>

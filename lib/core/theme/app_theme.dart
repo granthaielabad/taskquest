@@ -62,7 +62,6 @@ class AppTheme {
       primary: isDark ? white : black, // Force black/white primary
       onPrimary: isDark ? black : white,
       surface: isDark ? backgroundDark : backgroundLight,
-      background: isDark ? backgroundDark : backgroundLight,
       onSurface: isDark ? white : black,
       outline: isDark ? borderDark : borderLight,
       surfaceContainerHighest: isDark ? const Color(0xFF1A1A1A) : white,

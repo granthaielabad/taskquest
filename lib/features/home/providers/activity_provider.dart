@@ -50,13 +50,13 @@ class ActivityModel {
 class ActivityService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<List<ActivityModel>> getRecentActivities(String userId) {
+  Stream<List<ActivityModel>> getActivities(String userId, {int limit = 10}) {
     return _db
         .collection('users')
         .doc(userId)
         .collection('activities')
         .orderBy('timestamp', descending: true)
-        .limit(10)
+        .limit(limit)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
@@ -82,5 +82,11 @@ final activityServiceProvider = Provider<ActivityService>((ref) {
 final recentActivitiesProvider = StreamProvider<List<ActivityModel>>((ref) {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return Stream.value([]);
-  return ref.watch(activityServiceProvider).getRecentActivities(user.uid);
+  return ref.watch(activityServiceProvider).getActivities(user.uid, limit: 5);
+});
+
+final allActivitiesProvider = StreamProvider<List<ActivityModel>>((ref) {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return Stream.value([]);
+  return ref.watch(activityServiceProvider).getActivities(user.uid, limit: 50);
 });

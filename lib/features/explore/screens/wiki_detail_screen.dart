@@ -168,8 +168,22 @@ class WikiDetailScreen extends ConsumerWidget {
                                 child: ElevatedButton.icon(
                                   onPressed: () async {
                                     final uri = Uri.parse(summary.contentUrls);
-                                    if (await canLaunchUrl(uri)) {
-                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                    try {
+                                      final launched = await launchUrl(
+                                        uri,
+                                        mode: LaunchMode.externalApplication,
+                                      );
+                                      if (!launched && context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Could not launch Wikipedia.')),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Error launching URL: $e')),
+                                        );
+                                      }
                                     }
                                   },
                                   icon: const Icon(Icons.open_in_new_rounded, size: 16),

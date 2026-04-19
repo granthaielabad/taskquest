@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/explore/providers/search_provider.dart';
@@ -531,17 +532,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(18),
               ),
-              child: Image.network(
-                article.coverImage,
+              child: CachedNetworkImage(
+                imageUrl: article.coverImage,
                 height: 130,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                placeholder: (context, url) => Container(
+                  height: 130,
+                  width: double.infinity,
+                  color: colorScheme.outline.withValues(alpha: 0.1),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+                errorWidget: (context, url, error) => Container(
                   height: 130,
                   width: double.infinity,
                   color: colorScheme.outline.withValues(alpha: 0.1),

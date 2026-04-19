@@ -1,0 +1,18 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- This foreground is designed for Android Adaptive Icons (108x108 dp) -->
+  <!-- The content is centered within the 66% safe zone to prevent clipping -->
+  
+  <g transform="translate(192, 192) scale(0.625)">
+    <!-- Terminal Prompt symbol (>) -->
+    <path d="M320 380L480 512L320 644" stroke="white" stroke-width="70" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    
+    <!-- Vertical line of the 'T' -->
+    <path d="M580 380V644" stroke="white" stroke-width="70" stroke-linecap="round" fill="none"/>
+    
+    <!-- Horizontal top of the 'T' -->
+    <path d="M520 380H740" stroke="white" stroke-width="70" stroke-linecap="round" fill="none"/>
+    
+    <!-- The 'Q' tail/loop element integrated into the T base -->
+    <path d="M680 644L760 724" stroke="white" stroke-width="70" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/explore/providers/leaderboard_provider.dart';
@@ -12,13 +11,15 @@ class LeaderboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final leaderboardAsync = ref.watch(leaderboardProvider);
     final currentUser = ref.watch(authStateProvider).value;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Global Ranking',
-          style: TextStyle(fontFamily: 'Syne', fontSize: 16),
+          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
@@ -38,18 +39,20 @@ class LeaderboardScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               // ── Top 3 Podium ────────────────────────────────────────
-              _buildPodium(top3),
+              _buildPodium(context, top3),
 
               const SizedBox(height: 32),
 
               // ── Ranked List ─────────────────────────────────────────
               Expanded(
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: AppTheme.white,
-                    borderRadius: BorderRadius.vertical(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(32),
                     ),
+                    border: Border.all(color: colorScheme.outline),
                   ),
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(
@@ -63,7 +66,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       final rank = index + 4;
                       final isCurrent = user.uid == currentUser?.uid;
 
-                      return _buildLeaderboardTile(user, rank, isCurrent);
+                      return _buildLeaderboardTile(context, user, rank, isCurrent);
                     },
                   ),
                 ),
@@ -77,39 +80,47 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPodium(List<UserModel> top3) {
+  Widget _buildPodium(BuildContext context, List<UserModel> top3) {
     if (top3.isEmpty) return const SizedBox.shrink();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        // 2nd Place
-        if (top3.length > 1) _buildPodiumItem(top3[1], 2, 70),
-        const SizedBox(width: 12),
-        // 1st Place
-        _buildPodiumItem(top3[0], 1, 90),
-        const SizedBox(width: 12),
-        // 3rd Place
-        if (top3.length > 2) _buildPodiumItem(top3[2], 3, 60),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // 2nd Place
+            if (top3.length > 1) _buildPodiumItem(context, top3[1], 2, 70),
+            const SizedBox(width: 12),
+            // 1st Place
+            _buildPodiumItem(context, top3[0], 1, 90),
+            const SizedBox(width: 12),
+            // 3rd Place
+            if (top3.length > 2) _buildPodiumItem(context, top3[2], 3, 60),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildPodiumItem(UserModel user, int rank, double size) {
-    final colors = [Colors.amber, Colors.grey, Colors.orange];
+  Widget _buildPodiumItem(BuildContext context, UserModel user, int rank, double size) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final colors = [Colors.amber, const Color(0xFFC0C0C0), Colors.orange.shade300];
     final color = colors[rank - 1];
 
     return Column(
       children: [
         Stack(
           alignment: Alignment.bottomCenter,
+          clipBehavior: Clip.none,
           children: [
             Container(
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: AppTheme.black,
+                color: colorScheme.onSurface,
                 borderRadius: BorderRadius.circular(size * 0.3),
                 border: Border.all(color: color, width: 2),
               ),
@@ -120,13 +131,13 @@ class LeaderboardScreen extends ConsumerWidget {
                     fontFamily: 'Syne',
                     fontWeight: FontWeight.w800,
                     fontSize: size * 0.4,
-                    color: Colors.white,
+                    color: colorScheme.surface,
                   ),
                 ),
               ),
             ),
-            Transform.translate(
-              offset: const Offset(0, 10),
+            Positioned(
+              bottom: -10,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -135,6 +146,7 @@ class LeaderboardScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: colorScheme.surface, width: 2),
                 ),
                 child: Text(
                   rank == 1
@@ -156,31 +168,34 @@ class LeaderboardScreen extends ConsumerWidget {
         const SizedBox(height: 24),
         Text(
           user.displayName.split(' ').first,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Syne',
             fontWeight: FontWeight.w700,
             fontSize: 13,
+            color: colorScheme.onSurface,
           ),
         ),
         Text(
-          '${(user.xp / 1000).toStringAsFixed(1)}k XP',
-          style: const TextStyle(
+          '${user.streak} day streak',
+          style: TextStyle(
             fontFamily: 'DM Mono',
             fontSize: 10,
-            color: AppTheme.muted,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLeaderboardTile(UserModel user, int rank, bool isCurrent) {
+  Widget _buildLeaderboardTile(BuildContext context, UserModel user, int rank, bool isCurrent) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isCurrent ? AppTheme.backgroundLight : Colors.transparent,
+        color: isCurrent ? colorScheme.onSurface.withValues(alpha: 0.05) : Colors.transparent,
         border: Border.all(
-          color: isCurrent ? AppTheme.black : AppTheme.borderLight,
+          color: isCurrent ? colorScheme.onSurface : colorScheme.outline,
         ),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -190,10 +205,11 @@ class LeaderboardScreen extends ConsumerWidget {
             width: 24,
             child: Text(
               '$rank',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -202,15 +218,15 @@ class LeaderboardScreen extends ConsumerWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
               child: Text(
                 user.displayName[0].toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Syne',
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -221,19 +237,21 @@ class LeaderboardScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               user.displayName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Syne',
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
           Text(
-            '${user.xp} XP',
-            style: const TextStyle(
+            '${user.streak} days',
+            style: TextStyle(
               fontFamily: 'DM Mono',
               fontWeight: FontWeight.bold,
               fontSize: 11,
+              color: colorScheme.onSurface,
             ),
           ),
         ],

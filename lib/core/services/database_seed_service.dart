@@ -12,19 +12,103 @@ class DatabaseSeedService {
 
   Future<void> seedBadges() async {
     final badgesRef = _db.collection('badges');
-    final snapshot = await badgesRef.get();
-
-    if (snapshot.docs.isNotEmpty) {
-      debugPrint('Badges already seeded.');
-      return;
-    }
 
     final initialBadges = [
       {
-        'id': 'first_flight',
-        'title': 'First Flight',
-        'description': 'Complete your first quest',
-        'icon': 'auto_awesome_rounded',
+        'id': 'the_initiate',
+        'title': 'The Initiate',
+        'description': 'Awarded for completing the first quest or tutorial.',
+        'icon': 'stars_rounded',
+      },
+      {
+        'id': 'seven_day_flame',
+        'title': '7-Day Flame',
+        'description': 'Maintaining a login or task streak for one full week.',
+        'icon': 'local_fire_department_rounded',
+      },
+      {
+        'id': 'critical_thinker',
+        'title': 'Critical Thinker',
+        'description': 'Scoring 100% on a high-difficulty quiz or challenge.',
+        'icon': 'psychology_rounded',
+      },
+      {
+        'id': 'syntax_sentinel',
+        'title': 'Syntax Sentinel',
+        'description': 'Complete 5 tasks without a syntax error.',
+        'icon': 'verified_user_rounded',
+      },
+      {
+        'id': 'knowledge_seeker',
+        'title': 'Knowledge Seeker',
+        'description': 'Use the Search Bar to find and complete a specific topic.',
+        'icon': 'search_rounded',
+      },
+      {
+        'id': 'web_pioneer',
+        'title': 'Web Pioneer',
+        'description': 'Finish the featured article about the World Wide Web.',
+        'icon': 'language_rounded',
+      },
+      {
+        'id': 'the_chronologist',
+        'title': 'The Chronologist',
+        'description': 'Read at least 5 articles in the "Notable Individuals" section.',
+        'icon': 'history_rounded',
+      },
+      {
+        'id': 'the_ethicist',
+        'title': 'The Ethicist',
+        'description': 'Complete the "AI Ethics" module with a perfect quiz score.',
+        'icon': 'gavel_rounded',
+      },
+      {
+        'id': 'apprentice_archivist',
+        'title': 'Apprentice Archivist',
+        'description': 'Achieve your first perfect score.',
+        'icon': 'inventory_2_rounded',
+      },
+      {
+        'id': 'syntax_scholar_1',
+        'title': 'Syntax Scholar I',
+        'description': 'Perfect 3 Programming Languages in easy difficulty.',
+        'icon': 'school_rounded',
+      },
+      {
+        'id': 'syntax_scholar_2',
+        'title': 'Syntax Scholar II',
+        'description': 'Perfect 3 Programming Languages in medium difficulty.',
+        'icon': 'school_rounded',
+      },
+      {
+        'id': 'syntax_scholar_3',
+        'title': 'Syntax Scholar III',
+        'description': 'Perfect 3 Programming Languages in hard difficulty.',
+        'icon': 'school_rounded',
+      },
+      {
+        'id': 'algorithm_historian_1',
+        'title': 'Algorithm Historian I',
+        'description': 'Perfect 3 Algorithm problems in easy difficulty.',
+        'icon': 'menu_book_rounded',
+      },
+      {
+        'id': 'algorithm_historian_2',
+        'title': 'Algorithm Historian II',
+        'description': 'Perfect 3 Algorithm problems in medium difficulty.',
+        'icon': 'menu_book_rounded',
+      },
+      {
+        'id': 'algorithm_historian_3',
+        'title': 'Algorithm Historian III',
+        'description': 'Perfect 3 Algorithm problems in hard difficulty.',
+        'icon': 'menu_book_rounded',
+      },
+      {
+        'id': 'algorithm_ace',
+        'title': 'Algorithm Ace',
+        'description': 'Solve 10 algorithm challenges.',
+        'icon': 'functions_rounded',
       },
       {
         'id': 'syntax_sage',
@@ -44,24 +128,12 @@ class DatabaseSeedService {
         'description': 'Get 100% on a logic quiz',
         'icon': 'psychology_rounded',
       },
-      {
-        'id': 'polyglot',
-        'title': 'Polyglot',
-        'description': 'Identify 5 different languages',
-        'icon': 'language_rounded',
-      },
-      {
-        'id': 'flash_ai',
-        'title': 'Flash AI',
-        'description': 'Generate 5 AI flashcard decks',
-        'icon': 'bolt_rounded',
-      },
     ];
 
     for (var badge in initialBadges) {
-      await badgesRef.doc(badge['id'] as String).set(badge);
+      await badgesRef.doc(badge['id'] as String).set(badge, SetOptions(merge: true));
     }
-    debugPrint('Successfully seeded ${initialBadges.length} badges.');
+    debugPrint('Successfully seeded/updated ${initialBadges.length} badges.');
   }
 
   Future<void> seedQuests() async {

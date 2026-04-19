@@ -37,9 +37,18 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('My Library', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          'My Library',
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left_rounded),
+          icon: Icon(Icons.chevron_left_rounded, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -82,7 +91,11 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
                         const SizedBox(height: 16),
                         Text(
                           _query.isEmpty ? 'Your library is empty' : 'No matches found',
-                          style: const TextStyle(fontFamily: 'DM Mono', fontSize: 12),
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -141,11 +154,20 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
         ),
         title: Text(
           deck.title,
-          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14),
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            color: colorScheme.onSurface,
+          ),
         ),
         subtitle: Text(
           '${deck.cards.length} cards · ${deck.category}',
-          style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: colorScheme.onSurfaceVariant),
+          style: TextStyle(
+            fontFamily: 'DM Mono',
+            fontSize: 10,
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -156,7 +178,12 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
           ),
           child: Text(
             '${deck.masteryProgress}%',
-            style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
           ),
         ),
       ),

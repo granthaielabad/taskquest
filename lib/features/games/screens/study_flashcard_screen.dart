@@ -7,6 +7,7 @@ import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
 import 'package:taskquest/core/services/sound_service.dart';
+import 'package:taskquest/features/shared/widgets/report_dialog.dart';
 
 class StudyFlashcardScreen extends ConsumerStatefulWidget {
   final FlashcardDeckModel deck;
@@ -61,24 +62,29 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
         .checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
 
     if (mounted) {
+      final colorScheme = Theme.of(context).colorScheme;
       HapticFeedback.vibrate();
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppTheme.backgroundLight,
+          backgroundColor: colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          title: const Text(
+          title: Text(
             'Study Complete!',
-            style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'You mastered $mastery% of this deck.',
-                style: AppTheme.bodyMono,
+                style: AppTheme.bodyMono.copyWith(color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -98,11 +104,11 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text(
+              child: Text(
                 'BACK TO DECKS',
                 style: TextStyle(
                   fontFamily: 'DM Mono',
-                  color: AppTheme.black,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -116,28 +122,48 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
   @override
   Widget build(BuildContext context) {
     final card = widget.deck.cards[_currentIndex];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         title: Text(
           widget.deck.title,
-          style: const TextStyle(fontFamily: 'Syne', fontSize: 16),
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontSize: 16,
+            color: colorScheme.onSurface,
+          ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: Icon(Icons.close_rounded, color: colorScheme.onSurface),
           onPressed: () {
             _soundService.playTap();
             Navigator.pop(context);
           },
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.flag_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => ReportDialog(
+                  gameType: 'flashcards',
+                  contentId: card.id,
+                ),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: Text(
                 '${_currentIndex + 1}/${widget.deck.cards.length}',
-                style: AppTheme.labelMono,
+                style: AppTheme.labelMono.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
           ),
@@ -168,15 +194,15 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                       child: Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: isBack ? AppTheme.black : AppTheme.white,
+                          color: isBack ? colorScheme.onSurface : colorScheme.surface,
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: AppTheme.borderLight,
+                            color: colorScheme.outline,
                             width: 2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -189,16 +215,18 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                               ..rotateY(isBack ? pi : 0),
                             child: Padding(
                               padding: const EdgeInsets.all(40),
-                              child: Text(
-                                isBack ? card.definition : card.term,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: isBack ? 'DM Mono' : 'Syne',
-                                  fontSize: isBack ? 16 : 24,
-                                  fontWeight: isBack
-                                      ? FontWeight.w400
-                                      : FontWeight.w800,
-                                  color: isBack ? Colors.white : AppTheme.black,
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  isBack ? card.definition : card.term,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: isBack ? 'DM Mono' : 'Syne',
+                                    fontSize: isBack ? 16 : 24,
+                                    fontWeight: isBack
+                                        ? FontWeight.w400
+                                        : FontWeight.w800,
+                                    color: isBack ? colorScheme.surface : colorScheme.onSurface,
+                                  ),
                                 ),
                               ),
                             ),

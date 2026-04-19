@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/screens/login_screen.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
@@ -21,6 +23,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordFocus = FocusNode();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
   bool _agreeToTerms = false;
   String? _errorMessage;
 
@@ -66,8 +69,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _emailController.text.trim(),
             _passwordController.text,
           );
+      if (mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_onboarding', true);
+        ref.read(authTransitionProvider.notifier).setTransitioning(true);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        setState(() => _errorMessage = "Email already exists. You can log in or use Google to link this account.");
+      } else {
+        setState(() => _errorMessage = e.message ?? "Registration failed");
+      }
     } catch (e) {
       setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final credential = await ref.read(authServiceProvider).signInWithGoogle();
+      if (credential != null && mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_onboarding', true);
+        ref.read(authTransitionProvider.notifier).setTransitioning(true);
+      }
+    } catch (e) {
+      debugPrint('DEBUG: Google Sign-In error: $e');
+      setState(() => _errorMessage = 'Google Sign-In failed: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -181,8 +215,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 controller: _passwordController,
                 focusNode: _passwordFocus,
                 hintText: 'min. 8 characters',
-                obscureText: true,
-                suffixIcon: Icon(Icons.visibility_off_outlined, size: 16, color: colorScheme.onSurfaceVariant),
+                obscureText: _obscurePassword,
+                suffixIcon: GestureDetector(
+                  onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                  child: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -231,6 +274,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 label: 'Sign Up',
                 isLoading: _isLoading,
                 onTap: _handleRegister,
+              ),
+
+              const SizedBox(height: 32),
+
+              // Divider
+              const OrDivider(label: 'OR CONTINUE WITH'),
+
+              const SizedBox(height: 32),
+
+              // Google Login
+              GoogleButton(
+                onTap: _handleGoogleSignIn,
+                isLoading: _isLoading,
               ),
 
               const SizedBox(height: 48),

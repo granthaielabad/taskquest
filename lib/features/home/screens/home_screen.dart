@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/games/models/game_models.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
@@ -11,6 +12,8 @@ import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
+import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
 import 'package:taskquest/features/settings/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
@@ -705,6 +708,7 @@ class HomeScreen extends ConsumerWidget {
                   },
                   startButtonText: 'Start Coding',
                   gameScreen: CodeBlocksGameplayScreen(),
+                  gameType: GameType.codeBlocks,
                 )),
               );
             },
@@ -735,6 +739,66 @@ class HomeScreen extends ConsumerWidget {
                   },
                   startButtonText: 'Start Quiz',
                   gameScreen: QuizGameplayScreen(),
+                  gameType: GameType.quiz,
+                )),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+          _GamePill(
+            title: 'SDLC Seq',
+            desc: 'Arrange lifecycle',
+            tag: 'Logic',
+            icon: Icons.reorder_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => GameLobbyScreen(
+                  title: 'SDLC Sequence',
+                  description: 'Master the Software Development Life Cycle by arranging phases in the correct logical order for different methodologies.',
+                  icon: Icons.reorder_rounded,
+                  stats: const [
+                    {'value': '5', 'label': 'SEQUENCES'},
+                    {'value': '4/5', 'label': 'ACCURACY'},
+                    {'value': '+120', 'label': 'XP REWARD'},
+                    {'value': '5m', 'label': 'EST. TIME'},
+                  ],
+                  configOptions: const {
+                    'Complexity': ['Standard', 'Advanced', 'Industry'],
+                  },
+                  startButtonText: 'Start Sorting',
+                  gameScreen: SdlcGameplayScreen(),
+                  gameType: GameType.sdlc,
+                )),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+          _GamePill(
+            title: 'Algorithm',
+            desc: 'Solve trace logic',
+            tag: 'Advanced',
+            icon: Icons.functions_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => GameLobbyScreen(
+                  title: 'Algorithm Trace',
+                  description: 'Analyze pseudocode and determine the output or time complexity. Perfect for technical interview prep!',
+                  icon: Icons.functions_rounded,
+                  stats: const [
+                    {'value': '8', 'label': 'PROBLEMS'},
+                    {'value': '12ms', 'label': 'AVG SPEED'},
+                    {'value': '+200', 'label': 'XP REWARD'},
+                    {'value': '8m', 'label': 'EST. TIME'},
+                  ],
+                  configOptions: const {
+                    'Difficulty': ['Beginner', 'Advanced'],
+                    'Topic': ['All', 'Data Structures', 'Sort/Search', 'Recursion'],
+                  },
+                  startButtonText: 'Start Solving',
+                  gameScreen: SolveAlgorithmGameplayScreen(),
+                  gameType: GameType.algorithm,
                 )),
               );
             },
@@ -746,6 +810,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildRecentActivityHeader(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
@@ -757,24 +822,28 @@ class HomeScreen extends ConsumerWidget {
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.8,
-              color: theme.colorScheme.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
-          GestureDetector(
+          InkWell(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AllActivityScreen()),
               );
             },
-            child: Text(
-              'SEE ALL',
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 9,
-                letterSpacing: 1.0,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                decoration: TextDecoration.underline,
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text(
+                'SEE ALL',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 9,
+                  letterSpacing: 1.0,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ),

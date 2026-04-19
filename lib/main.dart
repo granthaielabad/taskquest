@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/theme_provider.dart';
+import 'core/services/database_seed_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/auth_success_screen.dart';
@@ -14,10 +16,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Safely initialize Google Sign-In for Web compatibility
+  // Initialize Google Sign-In as required by the package
   try {
+    const clientId = '910396668792-5qatv8m0g9i1um66pso655qfvud90vr8.apps.googleusercontent.com';
     await GoogleSignIn.instance.initialize(
-      // clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+      serverClientId: clientId,
+      clientId: kIsWeb ? clientId : null,
     );
   } catch (e) {
     debugPrint('Google Sign-In initialization note: $e');

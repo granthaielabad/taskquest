@@ -10,16 +10,18 @@ class BadgesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final badgesAsync = ref.watch(userBadgesProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // ── Header ──────────────────────────────────────────────
               Text(
@@ -28,16 +30,17 @@ class BadgesScreen extends ConsumerWidget {
                   fontSize: 32,
                   height: 0.9,
                   letterSpacing: -1.2,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Every quest completed is a step to mastery',
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
                   letterSpacing: 0.5,
-                  color: AppTheme.muted,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 32),
@@ -50,15 +53,15 @@ class BadgesScreen extends ConsumerWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSummaryCard(unlockedCount, badges.length),
+                      _buildSummaryCard(context, unlockedCount, badges.length),
                       const SizedBox(height: 32),
-                      const Text(
+                      Text(
                         'ALL BADGES',
                         style: TextStyle(
                           fontFamily: 'DM Mono',
                           fontSize: 10,
                           letterSpacing: 1.8,
-                          color: AppTheme.muted,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -79,8 +82,13 @@ class BadgesScreen extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => Text('Error: $e'),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 100),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (e, s) => Center(child: Text('Error: $e')),
               ),
 
               const SizedBox(height: 40),
@@ -91,11 +99,12 @@ class BadgesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(int unlocked, int total) {
+  Widget _buildSummaryCard(BuildContext context, int unlocked, int total) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.black,
+        color: theme.colorScheme.onSurface,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -104,23 +113,23 @@ class BadgesScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'TOTAL PROGRESS',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 10,
                     letterSpacing: 1.2,
-                    color: Color(0xFF777777),
+                    color: theme.colorScheme.surface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '$unlocked / $total Badges',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Syne',
                     fontWeight: FontWeight.w800,
                     fontSize: 20,
-                    color: Colors.white,
+                    color: theme.colorScheme.surface,
                   ),
                 ),
               ],
@@ -135,17 +144,17 @@ class BadgesScreen extends ConsumerWidget {
                 child: CircularProgressIndicator(
                   value: total > 0 ? unlocked / total : 0,
                   strokeWidth: 6,
-                  backgroundColor: const Color(0xFF222222),
-                  valueColor: const AlwaysStoppedAnimation(Colors.white),
+                  backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.1),
+                  valueColor: AlwaysStoppedAnimation(theme.colorScheme.surface),
                 ),
               ),
               Text(
                 '${(total > 0 ? (unlocked / total) * 100 : 0).round()}%',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: theme.colorScheme.surface,
                 ),
               ),
             ],
@@ -163,8 +172,7 @@ class _BadgeCard extends StatelessWidget {
   void _shareBadge() {
     SharePlus.instance.share(
       ShareParams(
-        text:
-            'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
+        text: 'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
         subject: 'TaskQuest Achievement!',
       ),
     );
@@ -172,16 +180,19 @@ class _BadgeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: badge.isUnlocked
-            ? AppTheme.white
-            : AppTheme.white.withValues(alpha: 0.5),
+            ? colorScheme.surface
+            : colorScheme.surface.withValues(alpha: 0.5),
         border: Border.all(
           color: badge.isUnlocked
-              ? AppTheme.black.withValues(alpha: 0.1)
-              : AppTheme.borderLight,
+              ? colorScheme.onSurface.withValues(alpha: 0.1)
+              : colorScheme.outline,
         ),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -196,15 +207,15 @@ class _BadgeCard extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: badge.isUnlocked
-                      ? AppTheme.black
-                      : AppTheme.backgroundLight,
+                      ? colorScheme.onSurface
+                      : colorScheme.onSurface.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   badge.isUnlocked
                       ? Icons.verified_rounded
                       : Icons.lock_outline_rounded,
-                  color: badge.isUnlocked ? Colors.white : AppTheme.borderLight,
+                  color: badge.isUnlocked ? colorScheme.surface : colorScheme.onSurface.withValues(alpha: 0.2),
                   size: 24,
                 ),
               ),
@@ -215,13 +226,14 @@ class _BadgeCard extends StatelessWidget {
                     onTap: _shareBadge,
                     child: Container(
                       padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.black,
+                      decoration: BoxDecoration(
+                        color: colorScheme.onSurface,
                         shape: BoxShape.circle,
+                        border: Border.all(color: colorScheme.surface, width: 2),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.share_rounded,
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         size: 12,
                       ),
                     ),
@@ -237,7 +249,7 @@ class _BadgeCard extends StatelessWidget {
               fontFamily: 'Syne',
               fontWeight: FontWeight.w700,
               fontSize: 13,
-              color: badge.isUnlocked ? AppTheme.black : AppTheme.muted,
+              color: badge.isUnlocked ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
@@ -246,11 +258,11 @@ class _BadgeCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 8,
               height: 1.4,
-              color: AppTheme.muted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],

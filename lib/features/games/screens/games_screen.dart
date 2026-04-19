@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/games/models/game_models.dart';
 import 'flashcard_scan_screen.dart';
 import 'game_lobby_screen.dart';
 import 'code_blocks_gameplay_screen.dart';
@@ -17,7 +17,7 @@ class GamesScreen extends ConsumerStatefulWidget {
 }
 
 class _GamesScreenState extends ConsumerState<GamesScreen> {
-  String _selectedFilter = 'ALL GAMES';
+  String _selectedFilter = 'ALL MODES';
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +88,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
                       ),
                     ),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (e, st) => const SizedBox.shrink(),
                   ),
                 ],
               ),
@@ -99,7 +99,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: ['ALL GAMES', 'IN PROGRESS', 'COMPLETED', 'LOCKED']
+                  children: ['ALL MODES', 'SYNTAX', 'LOGIC', 'ARCHITECTURE']
                       .map((filter) {
                     final isSelected = _selectedFilter == filter;
                     return Padding(
@@ -135,13 +135,14 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
 
               const SizedBox(height: 32),
 
-              // Featured Card: Flashcards
-              _buildFeaturedCard(context),
-
-              const SizedBox(height: 32),
+              // Featured Card: Flashcards (Visible in ALL or specifically AI/FLASH if we added that)
+              if (_selectedFilter == 'ALL MODES') ...[
+                _buildFeaturedCard(context),
+                const SizedBox(height: 32),
+              ],
 
               Text(
-                'ALL MODES',
+                _selectedFilter == 'ALL MODES' ? 'ALL MODES' : '$_selectedFilter CHALLENGES',
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
@@ -152,130 +153,185 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               const SizedBox(height: 16),
 
               // Grid of Other Modes
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.85,
-                children: [
-                  _buildGameCard(
-                    context,
-                    title: 'Code Blocks',
-                    desc: 'Drag & drop missing syntax into place',
-                    tag: 'INTERACTIVE',
-                    xp: '+150 XP',
-                    points: '60',
-                    icon: Icons.code_rounded,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GameLobbyScreen(
-                      title: 'Code Blocks',
-                      description: 'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!',
-                      icon: Icons.code_rounded,
-                      stats: [
-                        {'value': '6', 'label': 'PUZZLES'},
-                        {'value': '190', 'label': 'BEST XP'},
-                        {'value': '+150', 'label': 'XP REWARD'},
-                        {'value': '6m', 'label': 'EST. TIME'},
-                      ],
-                      configOptions: {
-                        'Language': ['Python', 'JavaScript', 'Java', 'C++'],
-                        'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
-                        'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
-                      },
-                      startButtonText: 'Start Coding',
-                      gameScreen: CodeBlocksGameplayScreen(),
-                    ))),
-                  ),
-                  _buildGameCard(
-                    context,
-                    title: 'Which Lang?',
-                    desc: 'Identify from descriptions & syntax',
-                    tag: 'QUIZ',
-                    xp: '+100 XP',
-                    points: '40',
-                    icon: Icons.quiz_rounded,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GameLobbyScreen(
-                      title: 'Which Lang?',
-                      description: 'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?',
-                      icon: Icons.quiz_rounded,
-                      stats: [
-                        {'value': '10', 'label': 'QUESTIONS'},
-                        {'value': '8/10', 'label': 'BEST SCORE'},
-                        {'value': '+100', 'label': 'XP REWARD'},
-                        {'value': '4m', 'label': 'EST. TIME'},
-                      ],
-                      configOptions: {
-                        'Clue Type': ['Mix of All', 'Syntax Only', 'Description', 'Fun Facts'],
-                        'Language Pool': ['All (20 langs)', 'Popular 10', 'Beginner Set'],
-                        'Time per Question': ['45s', '30s', '15s'],
-                      },
-                      startButtonText: 'Start Quiz',
-                      gameScreen: QuizGameplayScreen(),
-                    ))),
-                  ),
-                  _buildGameCard(
-                    context,
-                    title: 'SDLC Sequence',
-                    desc: 'Arrange software dev phases in order',
-                    tag: 'PUZZLE',
-                    xp: '+120 XP',
-                    points: '80',
-                    icon: Icons.account_tree_rounded,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GameLobbyScreen(
-                      title: 'SDLC Sequence',
-                      description: 'Master the lifecycle — arrange software development phases in the correct order to earn experience points.',
-                      icon: Icons.account_tree_rounded,
-                      stats: [
-                        {'value': '5', 'label': 'ROUNDS'},
-                        {'value': '0', 'label': 'BEST SCORE'},
-                        {'value': '+120', 'label': 'XP REWARD'},
-                        {'value': '5m', 'label': 'EST. TIME'},
-                      ],
-                      configOptions: {
-                        'Project Type': ['Web App', 'Mobile App', 'Embedded System'],
-                        'Difficulty': ['Normal', 'Hard', 'Expert'],
-                        'Rounds': ['5 Rounds', '10 Rounds'],
-                      },
-                      startButtonText: 'Begin SDLC',
-                      gameScreen: SdlcGameplayScreen(),
-                    ))),
-                  ),
-                  _buildGameCard(
-                    context,
-                    title: 'Solve Algorithm',
-                    desc: 'Work through logic problems step by step',
-                    tag: 'LOGIC',
-                    xp: '+200 XP',
-                    points: '20',
-                    icon: Icons.functions_rounded,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GameLobbyScreen(
-                      title: 'Solve Algorithm',
-                      description: 'Trace and solve — analyze pseudocode and determine the correct output. Sharpen your logical thinking skills.',
-                      icon: Icons.functions_rounded,
-                      stats: [
-                        {'value': '8', 'label': 'STEPS'},
-                        {'value': '0', 'label': 'BEST SCORE'},
-                        {'value': '+200', 'label': 'XP REWARD'},
-                        {'value': '8m', 'label': 'EST. TIME'},
-                      ],
-                      configOptions: {
-                        'Algorithm Type': ['Search', 'Sorting', 'Graph', 'Math'],
-                        'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
-                        'Language': ['Pseudocode', 'Python', 'C++'],
-                      },
-                      startButtonText: 'Solve Problem',
-                      gameScreen: SolveAlgorithmGameplayScreen(),
-                    ))),
-                  ),
-                ],
-              ),
+              _buildGamesGrid(context),
               const SizedBox(height: 40),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildGamesGrid(BuildContext context) {
+    final List<Widget> allGames = [
+      _buildGameCard(
+        context,
+        title: 'Code Blocks',
+        desc: 'Drag & drop missing syntax into place',
+        tag: 'SYNTAX',
+        xp: '+150 XP',
+        points: '60',
+        icon: Icons.code_rounded,
+        onTap: () => _navigateToLobby(
+          context, 
+          'Code Blocks', 
+          'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!', 
+          Icons.code_rounded,
+          [
+            {'value': '6', 'label': 'PUZZLES'},
+            {'value': '190', 'label': 'BEST XP'},
+            {'value': '+150', 'label': 'XP REWARD'},
+            {'value': '6m', 'label': 'EST. TIME'},
+          ],
+          {
+            'Language': ['Python', 'JavaScript', 'Java', 'C++'],
+            'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
+            'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
+          },
+          'Start Coding',
+          const CodeBlocksGameplayScreen(),
+          GameType.codeBlocks,
+        ),
+      ),
+      _buildGameCard(
+        context,
+        title: 'Which Lang?',
+        desc: 'Identify from descriptions & syntax',
+        tag: 'SYNTAX',
+        xp: '+100 XP',
+        points: '40',
+        icon: Icons.quiz_rounded,
+        onTap: () => _navigateToLobby(
+          context, 
+          'Which Lang?', 
+          'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?', 
+          Icons.quiz_rounded,
+          [
+            {'value': '10', 'label': 'QUESTIONS'},
+            {'value': '8/10', 'label': 'BEST SCORE'},
+            {'value': '+100', 'label': 'XP REWARD'},
+            {'value': '4m', 'label': 'EST. TIME'},
+          ],
+          {
+            'Clue Type': ['Mix of All', 'Syntax Only', 'Description', 'Fun Facts'],
+            'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
+            'Language Pool': ['All (20 langs)', 'Popular 10', 'Beginner Set'],
+            'Time per Question': ['45s', '30s', '15s'],
+          },
+          'Start Quiz',
+          const QuizGameplayScreen(),
+          GameType.quiz,
+        ),
+      ),
+      _buildGameCard(
+        context,
+        title: 'SDLC Sequence',
+        desc: 'Arrange software dev phases in order',
+        tag: 'ARCHITECTURE',
+        xp: '+120 XP',
+        points: '80',
+        icon: Icons.account_tree_rounded,
+        onTap: () => _navigateToLobby(
+          context, 
+          'SDLC Sequence', 
+          'Master the lifecycle — arrange software development phases in the correct order to earn experience points.', 
+          Icons.account_tree_rounded,
+          [
+            {'value': '5', 'label': 'ROUNDS'},
+            {'value': '0', 'label': 'BEST SCORE'},
+            {'value': '+120', 'label': 'XP REWARD'},
+            {'value': '5m', 'label': 'EST. TIME'},
+          ],
+          {
+            'Project Type': ['Web App', 'Mobile App', 'Embedded System'],
+            'Difficulty': ['Normal', 'Hard', 'Expert'],
+            'Rounds': ['5 Rounds', '10 Rounds'],
+          },
+          'Begin SDLC',
+          const SdlcGameplayScreen(),
+          GameType.sdlc,
+        ),
+      ),
+      _buildGameCard(
+        context,
+        title: 'Solve Algorithm',
+        desc: 'Work through logic problems step by step',
+        tag: 'LOGIC',
+        xp: '+200 XP',
+        points: '20',
+        icon: Icons.functions_rounded,
+        onTap: () => _navigateToLobby(
+          context, 
+          'Solve Algorithm', 
+          'Trace and solve — analyze pseudocode and determine the correct output. Sharpen your logical thinking skills.', 
+          Icons.functions_rounded,
+          [
+            {'value': '8', 'label': 'STEPS'},
+            {'value': '0', 'label': 'BEST SCORE'},
+            {'value': '+200', 'label': 'XP REWARD'},
+            {'value': '8m', 'label': 'EST. TIME'},
+          ],
+          {
+            'Algorithm Type': ['Search', 'Sorting', 'Graph', 'Math'],
+            'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
+            'Language': ['Pseudocode', 'Python', 'C++'],
+          },
+          'Solve Problem',
+          const SolveAlgorithmGameplayScreen(),
+          GameType.algorithm,
+        ),
+      ),
+    ];
+
+    // Filter based on tag
+    final List<Widget> filteredGames = _selectedFilter == 'ALL MODES' 
+      ? allGames 
+      : allGames.whereType<_GameCardWidget>().where((g) => g.tag == _selectedFilter).toList();
+
+    if (filteredGames.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Text(
+            'More ${_selectedFilter.toLowerCase()} modes coming soon!', 
+            style: const TextStyle(fontFamily: 'DM Mono', fontSize: 11, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 0.85,
+      children: filteredGames,
+    );
+  }
+
+  void _navigateToLobby(
+    BuildContext context, 
+    String title, 
+    String description, 
+    IconData icon, 
+    List<Map<String, String>> stats, 
+    Map<String, List<String>> configOptions, 
+    String startButtonText, 
+    Widget gameScreen, 
+    GameType gameType
+  ) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => GameLobbyScreen(
+      title: title,
+      description: description,
+      icon: icon,
+      stats: stats,
+      configOptions: configOptions,
+      startButtonText: startButtonText,
+      gameScreen: gameScreen,
+      gameType: gameType,
+    )));
   }
 
   Widget _buildFeaturedCard(BuildContext context) {
@@ -421,6 +477,39 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
     required IconData icon,
     required VoidCallback onTap,
   }) {
+    return _GameCardWidget(
+      title: title,
+      desc: desc,
+      tag: tag,
+      xp: xp,
+      points: points,
+      icon: icon,
+      onTap: onTap,
+    );
+  }
+}
+
+class _GameCardWidget extends StatelessWidget {
+  final String title;
+  final String desc;
+  final String tag;
+  final String xp;
+  final String points;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _GameCardWidget({
+    required this.title,
+    required this.desc,
+    required this.tag,
+    required this.xp,
+    required this.points,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
@@ -506,6 +595,26 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTag(BuildContext context, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: colorScheme.onSurface.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 8,
+          fontWeight: FontWeight.bold,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );
