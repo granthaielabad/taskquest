@@ -84,7 +84,6 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     await prefs.setInt(_hourKey, hour);
     await prefs.setInt(_minuteKey, minute);
 
-    // Re-schedule daily reminder with the new time if active
     if (state.toggles['all'] == true && state.toggles['daily'] == true) {
       await NotificationService().scheduleDailyReminder(
         hour, 
@@ -111,7 +110,6 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     } else if (newToggles['all'] == true) {
       if (key == 'daily') {
         if (value) {
-          // Now schedules for the user-selected time (default 9am)
           await service.scheduleDailyReminder(
             state.reminderHour, 
             state.reminderMinute,
@@ -119,11 +117,17 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
             title: 'Daily Quest! ⚔️',
             body: 'Your daily challenges are waiting.',
           );
-        } else {
-          // Optional: Cancel specifically ID 1 here if you want
+        }
+      } else if (key == 'streak') {
+        if (value) {
+          await service.scheduleDailyReminder(
+            21, 0, 
+            id: 2,
+            title: 'Streak at Risk! 🔥',
+            body: 'Open the app now to keep your streak alive.',
+          );
         }
       } else if (value == true && key != 'quiet') {
-        // Keeping other buttons as 30s test for now, or you can set them to their real logic
         _triggerTestNotif(key);
       }
     }
@@ -135,11 +139,6 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     int notificationId = 1;
 
     switch (key) {
-      case 'streak':
-        title = 'Streak at Risk! 🔥';
-        body = 'Open the app now to keep your streak alive.';
-        notificationId = 2;
-        break;
       case 'quest':
         title = 'Quest Completed! ✅';
         body = 'Well done! Check your rewards.';
@@ -163,7 +162,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
     }
 
     await NotificationService().scheduleTestNotification(
-      30, 
+      30, // Delay changed to 30 seconds
       id: notificationId,
       title: title,
       body: body,
@@ -233,14 +232,23 @@ class NotificationsScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Expanded(
-                    child: Text(
-                      'Notifications',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 24,
-                        letterSpacing: -0.5,
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        NotificationService().showNotification(
+                          id: 99,
+                          title: 'Notifications Working! 🚀',
+                          body: 'Test successful. Your alerts are now active.',
+                        );
+                      },
+                      child: const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                     ),
                   ),
