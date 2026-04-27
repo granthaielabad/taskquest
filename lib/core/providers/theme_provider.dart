@@ -39,3 +39,29 @@ class ReduceMotionNotifier extends Notifier<bool> {
 final reduceMotionProvider = NotifierProvider<ReduceMotionNotifier, bool>(() {
   return ReduceMotionNotifier();
 });
+
+class FontStyleNotifier extends Notifier<String> {
+  @override
+  String build() => 'Syne / DM Mono';
+
+  void setFontStyle(String style) {
+    state = style;
+  }
+}
+
+final fontStyleProvider = NotifierProvider<FontStyleNotifier, String>(() {
+  return FontStyleNotifier();
+});
+
+class NavigationIndexNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void setIndex(int index) {
+    state = index;
+  }
+}
+
+final navigationIndexProvider = NotifierProvider<NavigationIndexNotifier, int>(() {
+  return NavigationIndexNotifier();
+});

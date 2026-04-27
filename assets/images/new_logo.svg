@@ -1,0 +1,48 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Modern Background: Deep Surface Color -->
+  <rect width="1024" height="1024" rx="220" fill="#111111"/>
+  
+  <g transform="translate(212, 212) scale(0.6)">
+    <!-- 1. The 'Terminal Prompt' (>) - Symbolizing Code -->
+    <path d="M150 300L400 512L150 724" 
+          stroke="#FFFFFF" 
+          stroke-width="80" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"/>
+    
+    <!-- 2. The 'Quest Path' / Stylized 'T' - Symbolizing the Journey -->
+    <path d="M550 300V724" 
+          stroke="#FFFFFF" 
+          stroke-width="80" 
+          stroke-linecap="round" 
+          fill="none"/>
+    
+    <path d="M480 300H750" 
+          stroke="#FFFFFF" 
+          stroke-width="80" 
+          stroke-linecap="round" 
+          fill="none"/>
+
+    <!-- 3. The 'Success' Sparkle / Pixel Element -->
+    <rect x="700" y="650" width="120" height="120" rx="20" fill="#4CAF50">
+      <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+    </rect>
+    
+    <!-- 4. Modern Accents: Terminal Cursor (_) -->
+    <path d="M150 820H450" 
+          stroke="#FFFFFF" 
+          stroke-width="40" 
+          stroke-linecap="round" 
+          opacity="0.6"/>
+  </g>
+  
+  <!-- Subtle Gradient Overlay for Depth -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#paint0_linear)"/>
+</svg>

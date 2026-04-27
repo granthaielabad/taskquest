@@ -6,7 +6,8 @@ import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 
 class ManualFlashcardScreen extends ConsumerStatefulWidget {
-  const ManualFlashcardScreen({super.key});
+  final FlashcardDeckModel? deck;
+  const ManualFlashcardScreen({super.key, this.deck});
 
   @override
   ConsumerState<ManualFlashcardScreen> createState() =>
@@ -17,12 +18,10 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   final _titleController = TextEditingController();
   final _titleFocus = FocusNode();
 
-  final List<TextEditingController> _termControllers = [
-    TextEditingController(),
-  ];
-  final List<TextEditingController> _defControllers = [TextEditingController()];
-  final List<FocusNode> _termFocusNodes = [FocusNode()];
-  final List<FocusNode> _defFocusNodes = [FocusNode()];
+  final List<TextEditingController> _termControllers = [];
+  final List<TextEditingController> _defControllers = [];
+  final List<FocusNode> _termFocusNodes = [];
+  final List<FocusNode> _defFocusNodes = [];
 
   final Set<int> _errorIndices = {};
   bool _titleError = false;
@@ -43,8 +42,26 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   void initState() {
     super.initState();
     _titleFocus.addListener(() => setState(() {}));
-    _termFocusNodes[0].addListener(() => setState(() {}));
-    _defFocusNodes[0].addListener(() => setState(() {}));
+    
+    if (widget.deck != null) {
+      _titleController.text = widget.deck!.title;
+      _selectedCategory = widget.deck!.category;
+      for (var card in widget.deck!.cards) {
+        final tc = TextEditingController(text: card.term);
+        final dc = TextEditingController(text: card.definition);
+        final tf = FocusNode();
+        final df = FocusNode();
+        tf.addListener(() => setState(() {}));
+        df.addListener(() => setState(() {}));
+        
+        _termControllers.add(tc);
+        _defControllers.add(dc);
+        _termFocusNodes.add(tf);
+        _defFocusNodes.add(df);
+      }
+    } else {
+      _addCard();
+    }
   }
 
   @override
@@ -286,21 +303,27 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
       final user = ref.read(currentUserProvider);
       if (user != null) {
         final deck = FlashcardDeckModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: widget.deck?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
           userId: user.uid,
           title: _titleController.text.trim(),
           type: 'Manual',
           category: _selectedCategory,
           cards: cards,
-          createdAt: DateTime.now(),
+          masteryProgress: 0,
+          createdAt: widget.deck?.createdAt ?? DateTime.now(),
         );
 
-        await ref.read(flashcardServiceProvider).createDeck(deck);
+        if (widget.deck != null) {
+          await ref.read(flashcardServiceProvider).updateDeck(deck);
+        } else {
+          await ref.read(flashcardServiceProvider).createDeck(deck);
+        }
+
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Deck saved to cloud!'),
+              content: Text(widget.deck != null ? 'Deck updated!' : 'Deck saved to cloud!'),
               backgroundColor: isDark ? Colors.lightGreenAccent : Colors.green,
             ),
           );
@@ -340,9 +363,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         appBar: AppBar(
           backgroundColor: colorScheme.surface,
           surfaceTintColor: Colors.transparent,
-          title: const Text(
-            'Create Manually',
-            style: TextStyle(fontFamily: 'Syne', fontSize: 16),
+          title: Text(
+            widget.deck != null ? 'Edit Deck' : 'Create Manually',
+            style: const TextStyle(fontFamily: 'Syne', fontSize: 16),
           ),
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),

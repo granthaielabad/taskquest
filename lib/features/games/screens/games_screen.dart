@@ -95,31 +95,6 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
                       ),
                     ),
                     loading: () => const SizedBox.shrink(),
-                  userAsync.when(
-                    data: (user) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: colorScheme.onSurface,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.star_rounded, color: colorScheme.surface, size: 14),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${user?.xp ?? 0} XP',
-                            style: TextStyle(
-                              fontFamily: 'Syne',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                              color: colorScheme.surface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    loading: () => const SizedBox.shrink(),
                     error: (e, st) => const SizedBox.shrink(),
                   ),
                 ],
@@ -195,9 +170,8 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
   }
 
   Widget _buildGamesGrid(BuildContext context, double textScale) {
-    final List<Widget> allGames = [
-      _buildGameCard(
-        context,
+    final List<_GameCardWidget> allGames = [
+      _GameCardWidget(
         title: 'Code Blocks',
         desc: 'Drag & drop missing syntax into place',
         tag: 'SYNTAX',
@@ -225,8 +199,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
           GameType.codeBlocks,
         ),
       ),
-      _buildGameCard(
-        context,
+      _GameCardWidget(
         title: 'Which Lang?',
         desc: 'Identify from descriptions & syntax',
         tag: 'SYNTAX',
@@ -255,8 +228,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
           GameType.quiz,
         ),
       ),
-      _buildGameCard(
-        context,
+      _GameCardWidget(
         title: 'SDLC Sequence',
         desc: 'Arrange software dev phases in order',
         tag: 'ARCHITECTURE',
@@ -284,8 +256,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
           GameType.sdlc,
         ),
       ),
-      _buildGameCard(
-        context,
+      _GameCardWidget(
         title: 'Solve Algorithm',
         desc: 'Work through logic problems step by step',
         tag: 'LOGIC',
@@ -318,7 +289,7 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
     // Filter based on tag
     final List<Widget> filteredGames = _selectedFilter == 'ALL MODES' 
       ? allGames 
-      : allGames.whereType<_GameCardWidget>().where((g) => g.tag == _selectedFilter).toList();
+      : allGames.where((g) => g.tag == _selectedFilter).toList();
 
     if (filteredGames.isEmpty) {
       return Padding(
@@ -504,27 +475,6 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
           color: isDark ? Colors.white70 : colorScheme.onSurfaceVariant,
         ),
       ),
-    );
-  }
-
-  Widget _buildGameCard(
-    BuildContext context, {
-    required String title,
-    required String desc,
-    required String tag,
-    required String xp,
-    required String points,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return _GameCardWidget(
-      title: title,
-      desc: desc,
-      tag: tag,
-      xp: xp,
-      points: points,
-      icon: icon,
-      onTap: onTap,
     );
   }
 }

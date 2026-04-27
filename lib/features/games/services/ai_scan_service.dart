@@ -6,11 +6,16 @@ import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/core/constants/app_constants.dart';
 
 class AIScanService {
-  final GenerativeModel _model;
+  final GenerativeModel _primaryModel;
+  final GenerativeModel _fallbackModel;
 
   AIScanService()
-    : _model = GenerativeModel(
+    : _primaryModel = GenerativeModel(
         model: 'gemini-2.5-flash',
+        apiKey: AppConstants.geminiApiKey,
+      ),
+      _fallbackModel = GenerativeModel(
+        model: 'gemini-1.5-flash',
         apiKey: AppConstants.geminiApiKey,
       );
 
@@ -34,11 +39,11 @@ class AIScanService {
 
       if (extension == 'pdf') {
         final text = _extractTextFromPdf(bytes);
-        response = await _model.generateContent([
+        response = await _executeWithFallback([
           Content.text("$prompt\n\nContent:\n$text"),
         ]);
       } else if (['png', 'jpg', 'jpeg'].contains(extension)) {
-        response = await _model.generateContent([
+        response = await _executeWithFallback([
           Content.multi([
             TextPart(prompt),
             DataPart('image/jpeg', bytes),
@@ -59,6 +64,41 @@ class AIScanService {
         throw Exception('API Key invalid or restricted. Check your AI Studio settings.');
       }
       throw Exception('Failed to generate cards: ${e.toString()}');
+    }
+  }
+
+  /// ── Fallback Strategy ──────────────────────────────────────
+  Future<GenerateContentResponse> _executeWithFallback(
+    List<Content> content,
+  ) async {
+    try {
+      // 1. Attempt with Primary Model
+      return await _primaryModel.generateContent(content);
+    } catch (e) {
+      final errorStr = e.toString().toLowerCase();
+      
+      // 2. Check if it's a "High Demand" or "Overloaded" error (503)
+      if (errorStr.contains('503') || 
+          errorStr.contains('demand') || 
+          errorStr.contains('overloaded') ||
+          errorStr.contains('temporary')) {
+        
+        debugPrint('Primary model busy. Falling back to gemini-1.5-flash...');
+        
+        // 3. Small wait before retry
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // 4. Attempt with Fallback Model
+        try {
+          return await _fallbackModel.generateContent(content);
+        } catch (fallbackError) {
+          debugPrint('Fallback model also failed: $fallbackError');
+          rethrow;
+        }
+      }
+      
+      // If it's a different kind of error, just rethrow
+      rethrow;
     }
   }
 

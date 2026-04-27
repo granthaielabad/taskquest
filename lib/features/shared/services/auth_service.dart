@@ -24,12 +24,17 @@ class AuthService {
     }
   }
 
-  Future<UserCredential> signUpWithEmail(String email, String password) async {
+  Future<UserCredential> signUpWithEmail(String email, String password, String displayName) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      
+      // Set the display name in Firebase Auth profile immediately
+      await credential.user?.updateDisplayName(displayName);
+      
+      return credential;
     } catch (e) {
       debugPrint('Sign-up Error: $e');
       rethrow;

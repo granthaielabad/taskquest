@@ -22,9 +22,12 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
   int _currentIndex = 0;
   bool _isFlipped = false;
   int _correctCount = 0;
+  bool _isFinishing = false;
   final SoundService _soundService = SoundService();
 
   void _nextCard(bool wasCorrect) {
+    if (_isFinishing) return;
+
     if (wasCorrect) {
       _correctCount++;
       HapticFeedback.mediumImpact();
@@ -44,28 +47,42 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     }
   }
 
-  void _finishStudy() async {
-    final mastery = ((_correctCount / widget.deck.cards.length) * 100).round();
+  void _finishStudy() {
+    if (_isFinishing) return;
+    setState(() => _isFinishing = true);
 
-    // 1. Save progress to deck
-    await ref
-        .read(flashcardServiceProvider)
-        .updateMastery(widget.deck.id, mastery);
+    final sessionScore =
+        ((_correctCount / widget.deck.cards.length) * 100).round().clamp(0, 100);
 
-    // 2. Reward XP to user profile
-    const xpReward = 50;
-    await ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
+    // Prevent mastery from ever going down
+    final finalMastery = max(widget.deck.masteryProgress, sessionScore);
+    final bool wasAlreadyCompleted = widget.deck.masteryProgress >= 100;
 
-    // 3. Check for "Syntax Sage" Badge progress
-    await ref
+    // ── FIRE & FORGET (Asynchronous Background Updates) ──────
+    if (finalMastery > widget.deck.masteryProgress) {
+      ref
+          .read(flashcardServiceProvider)
+          .updateMastery(widget.deck.id, finalMastery);
+    }
+
+    // Only reward XP if the deck was not already completed
+    int xpReward = 0;
+    if (!wasAlreadyCompleted) {
+      xpReward = 50;
+      ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
+    }
+
+    ref
         .read(badgeServiceProvider)
         .checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
 
+    // ── UI COMPLETION ──────────────────────────────────────────
     if (mounted) {
       final colorScheme = Theme.of(context).colorScheme;
       HapticFeedback.vibrate();
       showDialog(
         context: context,
+        barrierDismissible: false, // Prevent accidental dismissal
         builder: (context) => AlertDialog(
           backgroundColor: colorScheme.surface,
           shape: RoundedRectangleBorder(
@@ -83,26 +100,46 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'You mastered $mastery% of this deck.',
-                style: AppTheme.bodyMono.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '🔥 +50 XP Earned',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange,
+                'You mastered $sessionScore% of the cards this round.',
+                style: AppTheme.bodyMono.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
+              const SizedBox(height: 12),
+              Text(
+                'Overall Mastery: $finalMastery%',
+                style: AppTheme.labelMono.copyWith(
+                  color: finalMastery >= 100 ? Colors.green : colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (xpReward > 0)
+                const Text(
+                  '🔥 +50 XP Earned',
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                )
+              else
+                Text(
+                  'Deck already completed.',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
                 _soundService.playTap();
-                Navigator.pop(context);
-                Navigator.pop(context);
+                Navigator.pop(context); // Close Dialog
+                Navigator.pop(context); // Exit Study Screen
               },
               child: Text(
                 'BACK TO DECKS',

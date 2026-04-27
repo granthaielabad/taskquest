@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/games/providers/flashcard_provider.dart';
+import 'package:taskquest/features/games/screens/manual_flashcard_screen.dart';
 import 'package:taskquest/features/games/screens/study_flashcard_screen.dart';
 
 class AllDecksScreen extends ConsumerStatefulWidget {
@@ -138,10 +139,10 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
             MaterialPageRoute(builder: (context) => StudyFlashcardScreen(deck: deck)),
           );
         },
-        contentPadding: const EdgeInsets.all(12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 48,
-          height: 48,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: colorScheme.onSurface,
             borderRadius: BorderRadius.circular(12),
@@ -169,22 +170,49 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
             color: colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: theme.scaffoldBackgroundColor,
-            border: Border.all(color: colorScheme.outline),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            '${deck.masteryProgress}%',
-            style: TextStyle(
-              fontFamily: 'DM Mono',
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (deck.type == 'Manual')
+              IconButton(
+                icon: Icon(Icons.edit_outlined, size: 18, color: colorScheme.onSurfaceVariant),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ManualFlashcardScreen(deck: deck),
+                    ),
+                  );
+                },
+              ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: deck.masteryProgress >= 100
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : theme.scaffoldBackgroundColor,
+                border: Border.all(
+                  color: deck.masteryProgress >= 100
+                      ? Colors.green
+                      : colorScheme.outline,
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                deck.masteryProgress >= 100
+                    ? 'Completed'
+                    : '${deck.masteryProgress}%',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  color: deck.masteryProgress >= 100
+                      ? Colors.green
+                      : colorScheme.onSurface,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/theme/app_theme.dart';
 import 'package:taskquest/core/providers/theme_provider.dart';
+import 'package:taskquest/core/providers/tutorial_provider.dart';
 
 class AppearanceScreen extends ConsumerStatefulWidget {
   const AppearanceScreen({super.key});
@@ -18,13 +19,17 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
     final themeMode = ref.watch(themeProvider);
     final textScale = ref.watch(textScaleProvider);
     final reduceMotion = ref.watch(reduceMotionProvider);
+    final fontStyle = ref.watch(fontStyleProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     String scaleLabel = 'Default';
     if (textScale < 0.95) scaleLabel = 'Small';
     if (textScale > 1.05) scaleLabel = 'Large';
-    if (textScale > 1.25) scaleLabel = 'Huge';
+
+    double sliderValue = 1.0; // Default
+    if (textScale < 0.95) sliderValue = 0.0; // Small
+    if (textScale > 1.05) sliderValue = 2.0; // Large
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -62,7 +67,6 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                         fontSize: 24,
                         letterSpacing: -0.5,
                       ),
-                      softWrap: true,
                     ),
                   ),
                 ],
@@ -107,6 +111,38 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                           child: const _ThemePreview(isSystem: true),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 32),
+                    const _SectionLabel(label: 'FONT STYLE'),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          _FontOption(
+                            label: 'Syne / DM Mono',
+                            isSelected: fontStyle == 'Syne / DM Mono',
+                            onTap: () => ref.read(fontStyleProvider.notifier).setFontStyle('Syne / DM Mono'),
+                          ),
+                          Divider(color: colorScheme.outline, height: 1),
+                          _FontOption(
+                            label: 'System Default',
+                            isSelected: fontStyle == 'System Default',
+                            onTap: () => ref.read(fontStyleProvider.notifier).setFontStyle('System Default'),
+                          ),
+                          Divider(color: colorScheme.outline, height: 1),
+                          _FontOption(
+                            label: 'Serif',
+                            isSelected: fontStyle == 'Serif',
+                            onTap: () => ref.read(fontStyleProvider.notifier).setFontStyle('Serif'),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 32),
@@ -168,11 +204,17 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                                     trackHeight: 4,
                                   ),
                                   child: Slider(
-                                    value: textScale,
-                                    min: 0.8,
-                                    max: 1.4,
+                                    value: sliderValue,
+                                    min: 0,
+                                    max: 2,
+                                    divisions: 2,
                                     onChanged: (v) {
-                                      ref.read(textScaleProvider.notifier).setTextScale(v);
+                                      double newScale = 1.0;
+                                      if (v == 0) newScale = 0.85;
+                                      if (v == 2) newScale = 1.2;
+                                      ref
+                                          .read(textScaleProvider.notifier)
+                                          .setTextScale(newScale);
                                     },
                                   ),
                                 ),
@@ -220,6 +262,56 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    const _SectionLabel(label: 'APP GUIDE'),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        border: Border.all(color: colorScheme.outline),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: InkWell(
+                        onTap: () async {
+                          await ref.read(walkthroughProvider.notifier).resetWalkthrough();
+                          // Switch to Home tab automatically
+                          ref.read(navigationIndexProvider.notifier).setIndex(0);
+                          
+                          if (context.mounted) {
+                            // Close settings and go back to MainScaffold (which is now on Home)
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                            
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Walkthrough reset! Returning home...'),
+                                backgroundColor: Colors.black,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          child: Row(
+                            children: [
+                              Icon(Icons.refresh_rounded, size: 20),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  'Restart User Walkthrough',
+                                  style: TextStyle(
+                                    fontFamily: 'Syne',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -383,6 +475,47 @@ class _DisplayToggle extends StatelessWidget {
             activeThumbColor: theme.colorScheme.primary,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FontOption extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FontOption({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_rounded, color: colorScheme.primary, size: 20),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskquest/core/providers/tutorial_provider.dart';
 
 class TQBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -26,12 +27,14 @@ class TQBottomNav extends StatelessWidget {
         child: Row(
           children: [
             _NavItem(
+              key: WalkthroughKeys.navHomeKey,
               icon: Icons.home_outlined,
               label: 'Home',
               active: currentIndex == 0,
               onTap: () => onTap(0),
             ),
             _NavItem(
+              key: WalkthroughKeys.navGamesKey,
               icon: Icons.grid_view_rounded,
               label: 'Games',
               active: currentIndex == 1,
@@ -39,6 +42,7 @@ class TQBottomNav extends StatelessWidget {
             ),
             // Center scan button
             Expanded(
+              key: WalkthroughKeys.navScanKey,
               child: GestureDetector(
                 onTap: () => onTap(2),
                 behavior: HitTestBehavior.opaque,
@@ -69,12 +73,14 @@ class TQBottomNav extends StatelessWidget {
               ),
             ),
             _NavItem(
+              key: WalkthroughKeys.navExploreKey,
               icon: Icons.explore_outlined,
               label: 'Explore',
               active: currentIndex == 3,
               onTap: () => onTap(3),
             ),
             _NavItem(
+              key: WalkthroughKeys.navProfileKey,
               icon: Icons.person_outline_rounded,
               label: 'Profile',
               active: currentIndex == 4,
@@ -94,6 +100,7 @@ class _NavItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const _NavItem({
+    super.key,
     required this.icon,
     required this.label,
     required this.active,

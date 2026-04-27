@@ -6,7 +6,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/theme_provider.dart';
-import 'core/services/database_seed_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/auth_success_screen.dart';
@@ -43,13 +42,14 @@ class TaskQuestApp extends ConsumerWidget {
     final isTransitioning = ref.watch(authTransitionProvider);
     final themeMode = ref.watch(themeProvider);
     final textScale = ref.watch(textScaleProvider);
+    final fontStyle = ref.watch(fontStyleProvider);
 
     return MaterialApp(
       key: ValueKey(authState.value?.uid ?? 'unauthenticated'),
       title: 'TaskQuest',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.createTheme(brightness: Brightness.light, fontStyle: fontStyle),
+      darkTheme: AppTheme.createTheme(brightness: Brightness.dark, fontStyle: fontStyle),
       themeMode: themeMode,
       builder: (context, child) {
         return MediaQuery(

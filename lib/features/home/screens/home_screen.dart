@@ -17,6 +17,7 @@ import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
+import 'package:taskquest/core/providers/tutorial_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -207,6 +208,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Text(
                 'TODAY\'S CHALLENGES',
+                key: WalkthroughKeys.challengesKey, // Targeted specific text
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
@@ -286,6 +288,7 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'GAME MODES',
+            key: WalkthroughKeys.gamesKey, // Targeted specific text
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
@@ -320,6 +323,7 @@ class HomeScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
+        key: WalkthroughKeys.streakKey,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: colorScheme.onSurface,
@@ -856,7 +860,7 @@ class HomeScreen extends ConsumerWidget {
                   fontFamily: 'DM Mono',
                   fontSize: 9,
                   letterSpacing: 1.0,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: colorScheme.onSurfaceVariant,
                   decoration: TextDecoration.underline,
                 ),
               ),

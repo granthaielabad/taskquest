@@ -182,10 +182,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   ),
                 ],
               ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(width: 12),
               _buildAIBadge(),
             ],
@@ -617,9 +613,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                     ),
                   ),
                 ],
-                    ),
-                  ),
-                ],
               ),
             ),
             const SizedBox(height: 32),
@@ -742,7 +735,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.0,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurfaceVariant,
               decoration: TextDecoration.underline,
             ),
           ),
@@ -754,6 +747,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   Widget _buildDeckItem(BuildContext context, FlashcardDeckModel deck) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isCompleted = deck.masteryProgress >= 100;
 
     return GestureDetector(
       onTap: () {
@@ -824,17 +818,21 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.scaffoldBackgroundColor,
-                    border: Border.all(color: colorScheme.outline),
+                    color: isCompleted
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : theme.scaffoldBackgroundColor,
+                    border: Border.all(
+                      color: isCompleted ? Colors.green : colorScheme.outline,
+                    ),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    '${deck.masteryProgress}%',
+                    isCompleted ? 'Completed' : '${deck.masteryProgress}%',
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
+                      color: isCompleted ? Colors.green : colorScheme.onSurface,
                     ),
                   ),
                 ),

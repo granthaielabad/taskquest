@@ -8,6 +8,10 @@ class FlashcardService {
     await _db.collection('decks').doc(deck.id).set(deck.toMap());
   }
 
+  Future<void> updateDeck(FlashcardDeckModel deck) async {
+    await _db.collection('decks').doc(deck.id).update(deck.toMap());
+  }
+
   Stream<List<FlashcardDeckModel>> getUserDecks(String userId) {
     return _db
         .collection('decks')
@@ -22,8 +26,9 @@ class FlashcardService {
   }
 
   Future<void> updateMastery(String deckId, int newProgress) async {
+    final safeProgress = newProgress.clamp(0, 100);
     await _db.collection('decks').doc(deckId).update({
-      'masteryProgress': newProgress,
+      'masteryProgress': safeProgress,
     });
   }
 

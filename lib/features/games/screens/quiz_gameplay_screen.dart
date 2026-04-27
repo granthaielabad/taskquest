@@ -6,6 +6,7 @@ import 'package:taskquest/features/games/models/game_models.dart';
 import 'package:taskquest/features/games/providers/game_engine_provider.dart';
 import 'package:taskquest/features/games/screens/game_results_screen.dart';
 import 'package:taskquest/features/games/widgets/game_timer.dart';
+import 'package:taskquest/features/shared/widgets/report_dialog.dart';
 
 class QuizGameplayScreen extends ConsumerWidget {
   const QuizGameplayScreen({super.key});

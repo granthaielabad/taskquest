@@ -68,6 +68,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       await ref.read(authServiceProvider).signUpWithEmail(
             _emailController.text.trim(),
             _passwordController.text,
+            _nameController.text.trim(),
           );
       if (mounted) {
         final prefs = await SharedPreferences.getInstance();
