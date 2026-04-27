@@ -39,6 +39,25 @@ class UserService {
     });
   }
 
+  /// Adds a persistent notification record to Firestore
+  Future<void> _savePersistentNotification(String uid, {
+    required String title,
+    required String body,
+    required String type,
+  }) async {
+    try {
+      await _db.collection('users').doc(uid).collection('notifications').add({
+        'title': title,
+        'body': body,
+        'type': type,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+    } catch (e) {
+      debugPrint('Error saving notification: $e');
+    }
+  }
+
   Future<void> addXp(String uid, int xpToAdd) async {
     final user = await getUserProfile(uid);
     if (user == null) return;
@@ -53,9 +72,8 @@ class UserService {
 
     // ── TRIGGER NOTIFICATIONS ───────────────────────────────────
     final prefs = await SharedPreferences.getInstance();
-    // We check for all versions of settings keys used
-    final settings = prefs.getStringList('notification_settings_v4') ?? 
-                     prefs.getStringList('notification_settings_v3') ?? [];
+    // Standardized to v5 to match the settings screen logic
+    final settings = prefs.getStringList('notification_settings_v5') ?? [];
     
     bool isAllOn = true;
     bool isXpOn = false;
@@ -64,34 +82,29 @@ class UserService {
     for (var s in settings) {
       if (s == 'all:false') isAllOn = false;
       if (s == 'xp:true') isXpOn = true;
-      if (s == 'quest:true') isQuestOn = true;
+      if (s == 'quest:false') isQuestOn = false; // Explicit check for OFF
     }
 
     if (isAllOn) {
-      // 1. XP Milestones & Level Up
       if (isXpOn) {
         if (newLevel > oldLevel) {
-          NotificationService().showNotification(
-            id: 7,
-            title: 'Level Up! 🎉',
-            body: 'Congratulations! You\'ve reached Level $newLevel.',
-          );
+          const title = 'Level Up! 🎉';
+          final body = 'Congratulations! You\'ve reached Level $newLevel.';
+          NotificationService().showNotification(id: 7, title: title, body: body);
+          await _savePersistentNotification(uid, title: title, body: body, type: 'level_up');
         } else if (nextThreshold - newTotalXp <= 50) {
-          NotificationService().showNotification(
-            id: 4,
-            title: 'Level Up Imminent! ⚡',
-            body: 'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!',
-          );
+          const title = 'Level Up Imminent! ⚡';
+          final body = 'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!';
+          NotificationService().showNotification(id: 4, title: title, body: body);
+          await _savePersistentNotification(uid, title: title, body: body, type: 'info');
         }
       }
 
-      // 2. Quest Complete
       if (isQuestOn) {
-        NotificationService().showNotification(
-          id: 3,
-          title: 'Quest Completed! ✅',
-          body: 'Great job! You earned $xpToAdd XP and moved closer to your goal.',
-        );
+        const title = 'Quest Completed! ✅';
+        final body = 'Great job! You earned $xpToAdd XP.';
+        NotificationService().showNotification(id: 3, title: title, body: body);
+        await _savePersistentNotification(uid, title: title, body: body, type: 'quest');
       }
     }
   }
@@ -102,16 +115,6 @@ class UserService {
     String displayName,
   ) async {
     try {
-      // Force a reload of the current user to get the latest profile data (like displayName)
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        await currentUser.reload();
-        // Use the reloaded display name if the one passed in is empty
-        if (displayName.isEmpty && currentUser.displayName != null) {
-          displayName = currentUser.displayName!;
-        }
-      }
-
       final user = await getUserProfile(uid);
       final now = DateTime.now();
       final bool isNewNameGeneric =
@@ -172,6 +175,7 @@ class UserService {
           'streak': FieldValue.increment(1),
           'lastLogin': Timestamp.fromDate(now),
         });
+        await _savePersistentNotification(uid, title: 'Streak Maintained! 🔥', body: 'You are on fire! Keep it up.', type: 'streak');
       } else {
         await _db.collection('users').doc(uid).update({
           'streak': 1,

@@ -14,7 +14,7 @@ import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
 import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
-import 'package:taskquest/features/settings/screens/notifications_screen.dart';
+import 'package:taskquest/features/home/screens/notifications_screen.dart'; // Correct import for UserNotificationsScreen
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
@@ -163,7 +163,7 @@ class HomeScreen extends ConsumerWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                    MaterialPageRoute(builder: (context) => const UserNotificationsScreen()),
                   );
                 },
               ),
@@ -588,7 +588,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
             ),
           ],
         ),
@@ -1106,7 +1106,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),
