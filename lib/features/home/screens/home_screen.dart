@@ -130,6 +130,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: Column(
+                  key: WalkthroughKeys.greetingKey,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -159,6 +160,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               IconButton(
+                key: WalkthroughKeys.notificationKey,
                 icon: Icon(Icons.notifications_none_rounded, color: colorScheme.onSurface),
                 onPressed: () {
                   Navigator.push(
@@ -186,6 +188,7 @@ class HomeScreen extends ConsumerWidget {
 
         // ── Leaderboard Link ────────────────────────────────────
         Padding(
+          key: WalkthroughKeys.leaderboardCardKey,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _buildLeaderboardCard(context),
         ),
@@ -194,6 +197,7 @@ class HomeScreen extends ConsumerWidget {
 
         // ── Badges Link ─────────────────────────────────────────
         Padding(
+          key: WalkthroughKeys.badgesCardKey,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _buildBadgesCard(context, user.unlockedBadges.length),
         ),
@@ -208,7 +212,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Text(
                 'TODAY\'S CHALLENGES',
-                key: WalkthroughKeys.challengesKey, // Targeted specific text
+                key: WalkthroughKeys.challengesKey,
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
@@ -288,7 +292,7 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'GAME MODES',
-            key: WalkthroughKeys.gamesKey, // Targeted specific text
+            key: WalkthroughKeys.gamesKey,
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
@@ -831,6 +835,7 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Padding(
+      key: WalkthroughKeys.recentActivityKey,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

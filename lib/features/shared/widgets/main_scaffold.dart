@@ -48,9 +48,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       alignSkip: Alignment.topRight,
       paddingFocus: 5,
       opacityShadow: 0.9,
-      // ── Handle scrolling when moving to next target ───────────
-      onClickTarget: (target) => _handleScroll(target),
-      onClickOverlay: (target) => _handleScroll(target),
+      // Note: enableOverlayTab and enableTargetTab removed from here
       onFinish: () => ref.read(walkthroughProvider.notifier).completeWalkthrough(),
       onSkip: () {
         ref.read(walkthroughProvider.notifier).completeWalkthrough();
@@ -59,13 +57,14 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     );
   }
 
-  void _handleScroll(TargetFocus target) {
-    // Determine which target is next and scroll to it
+  void _handleNext(String currentIdentify) {
     final allTargets = _createTargets();
-    final currentIndex = allTargets.indexWhere((t) => t.identify == target.identify);
+    final currentIndex = allTargets.indexWhere((t) => t.identify == currentIdentify);
+    
     if (currentIndex != -1 && currentIndex < allTargets.length - 1) {
       final nextTarget = allTargets[currentIndex + 1];
       final nextContext = nextTarget.keyTarget?.currentContext;
+      
       if (nextContext != null) {
         Scrollable.ensureVisible(
           nextContext,
@@ -73,158 +72,111 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           alignment: 0.5,
         );
       }
+      Future.delayed(const Duration(milliseconds: 100), () {
+        tutorialCoachMark?.next();
+      });
+    } else {
+      tutorialCoachMark?.finish();
     }
   }
 
   List<TargetFocus> _createTargets() {
     List<TargetFocus> targets = [];
 
-    targets.add(
-      TargetFocus(
-        identify: "streak",
-        keyTarget: WalkthroughKeys.streakKey,
-        shape: ShapeLightFocus.RRect,
+    // Helper updated to include tap restrictions per target
+    void addTarget(String id, GlobalKey key, String title, String body, {ShapeLightFocus shape = ShapeLightFocus.RRect, ContentAlign align = ContentAlign.bottom}) {
+      targets.add(TargetFocus(
+        identify: id,
+        keyTarget: key,
+        shape: shape,
+        enableOverlayTab: false, // Forces user to tap the bubble
+        enableTargetTab: false,  // Forces user to tap the bubble
         contents: [
           TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return _buildTutorialContent(
-                title: "Your Progress",
-                body: "Track your current streak and level progress here. Keep learning to maintain your streak!",
-              );
-            },
+            align: align,
+            builder: (context, controller) => _buildTutorialContent(
+              title: title,
+              body: body,
+              onTap: () => _handleNext(id),
+            ),
           ),
         ],
-      ),
-    );
+      ));
+    }
 
-    targets.add(
-      TargetFocus(
-        identify: "challenges",
-        keyTarget: WalkthroughKeys.challengesKey,
-        shape: ShapeLightFocus.RRect,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return _buildTutorialContent(
-                title: "Daily Quests",
-                body: "Complete these tasks daily to earn XP and level up your scholar profile.",
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    targets.add(
-      TargetFocus(
-        identify: "games",
-        keyTarget: WalkthroughKeys.gamesKey,
-        shape: ShapeLightFocus.RRect,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return _buildTutorialContent(
-                title: "Game Modes",
-                body: "Jump into interactive minigames to practice syntax, logic, and algorithms in a fun way.",
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    targets.add(
-      TargetFocus(
-        identify: "navScan",
-        keyTarget: WalkthroughKeys.navScanKey,
-        shape: ShapeLightFocus.Circle,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return _buildTutorialContent(
-                title: "AI Scanner",
-                body: "The heart of TaskQuest! Scan your physical notes to turn them into digital flashcards instantly.",
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    targets.add(
-      TargetFocus(
-        identify: "navExplore",
-        keyTarget: WalkthroughKeys.navExploreKey,
-        shape: ShapeLightFocus.Circle,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return _buildTutorialContent(
-                title: "Explore & Compete",
-                body: "Discover new content and check the Global Ranking to see where you stand among other scholars.",
-              );
-            },
-          ),
-        ],
-      ),
-    );
+    addTarget("greeting", WalkthroughKeys.greetingKey, "Welcome Scholar", "Your daily quest starts here. We'll keep you updated with personalized greetings.");
+    addTarget("notification", WalkthroughKeys.notificationKey, "Stay Alert", "Check here for level-up alerts, quest reminders, and updates.", shape: ShapeLightFocus.Circle);
+    addTarget("streak", WalkthroughKeys.streakKey, "Consistency is Key", "Your study streak and level progress. Keep the flame alive by completing daily tasks!");
+    addTarget("leaderboard", WalkthroughKeys.leaderboardCardKey, "Compete Globally", "See the Global Ranking to compare your XP with other scholars.", align: ContentAlign.top);
+    addTarget("badges", WalkthroughKeys.badgesCardKey, "Collect Achievements", "View your Hall of Achievements. master syntax and logic to earn unique badges.", align: ContentAlign.top);
+    addTarget("challenges", WalkthroughKeys.challengesKey, "Daily Quests", "Your core missions for today. Complete them all to maximize XP.");
+    addTarget("games", WalkthroughKeys.gamesKey, "Learning Minigames", "Engage in Syntax, Logic, and Algorithm challenges.");
+    addTarget("activity", WalkthroughKeys.recentActivityKey, "Quest History", "A log of your recent accomplishments and rewards.", align: ContentAlign.top);
+    
+    // Navbar
+    addTarget("navHome", WalkthroughKeys.navHomeKey, "Home Base", "The dashboard for your quests and rankings.", shape: ShapeLightFocus.Circle, align: ContentAlign.top);
+    addTarget("navGames", WalkthroughKeys.navGamesKey, "Game Lobby", "Browse and configure all coding minigames in one place.", shape: ShapeLightFocus.Circle, align: ContentAlign.top);
+    addTarget("navScan", WalkthroughKeys.navScanKey, "AI Power-Up", "Scan your physical notes and turn them into flashcards instantly.", shape: ShapeLightFocus.Circle, align: ContentAlign.top);
+    addTarget("navExplore", WalkthroughKeys.navExploreKey, "Content Discovery", "Discover new topics and curated study sets for your subjects.", shape: ShapeLightFocus.Circle, align: ContentAlign.top);
+    addTarget("navProfile", WalkthroughKeys.navProfileKey, "Profile", "Manage your account, customization, and track total progress.", shape: ShapeLightFocus.Circle, align: ContentAlign.top);
 
     return targets;
   }
 
-  Widget _buildTutorialContent({required String title, required String body}) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: const TextStyle(
-              fontFamily: 'Syne',
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              fontSize: 16,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            body,
-            style: const TextStyle(
-              fontFamily: 'DM Mono',
-              color: Colors.white70,
-              fontSize: 11,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                "TAP TO CONTINUE",
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  color: Colors.white.withValues(alpha: 0.3),
-                  fontSize: 8,
-                  letterSpacing: 0.8,
-                ),
+  Widget _buildTutorialContent({required String title, required String body, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white12),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 20, offset: const Offset(0, 10)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title.toUpperCase(),
+              style: const TextStyle(
+                fontFamily: 'Syne',
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                fontSize: 15,
+                letterSpacing: -0.5,
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              body,
+              style: const TextStyle(
+                fontFamily: 'DM Mono',
+                color: Colors.white70,
+                fontSize: 11,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  "TAP TO CONTINUE",
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    color: Colors.white.withValues(alpha: 0.3),
+                    fontSize: 8,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

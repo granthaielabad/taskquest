@@ -35,9 +35,14 @@ final walkthroughProvider = NotifierProvider<WalkthroughNotifier, bool>(() {
 });
 
 class WalkthroughKeys {
+  static final greetingKey = GlobalKey();
+  static final notificationKey = GlobalKey();
   static final streakKey = GlobalKey();
+  static final leaderboardCardKey = GlobalKey();
+  static final badgesCardKey = GlobalKey();
   static final challengesKey = GlobalKey();
   static final gamesKey = GlobalKey();
+  static final recentActivityKey = GlobalKey();
   
   static final navHomeKey = GlobalKey();
   static final navGamesKey = GlobalKey();

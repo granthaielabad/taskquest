@@ -65,42 +65,59 @@ class ProfileScreen extends ConsumerWidget {
 
   void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    bool isLoggingOut = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
-          'Logout',
-          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
-        ),
-        content: const Text(
-          'Are you sure you want to exit your quest?',
-          style: TextStyle(fontFamily: 'DM Mono', fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'CANCEL',
-              style: TextStyle(fontFamily: 'DM Mono', color: theme.colorScheme.onSurfaceVariant),
-            ),
+      barrierDismissible: !isLoggingOut,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: const Text(
+            'Logout',
+            style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authServiceProvider).signOut();
-            },
-            child: const Text(
-              'LOGOUT',
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+          content: isLoggingOut
+              ? const SizedBox(
+                  height: 100,
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  ),
+                )
+              : const Text(
+                  'Are you sure you want to exit your quest?',
+                  style: TextStyle(fontFamily: 'DM Mono', fontSize: 13),
+                ),
+          actions: isLoggingOut
+              ? []
+              : [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'CANCEL',
+                      style: TextStyle(fontFamily: 'DM Mono', color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      setState(() => isLoggingOut = true);
+                      await ref.read(authServiceProvider).signOut();
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text(
+                      'LOGOUT',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+        ),
       ),
     );
   }
