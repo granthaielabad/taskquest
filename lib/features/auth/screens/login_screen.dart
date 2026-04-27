@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/screens/register_screen.dart';
 import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
@@ -20,6 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordFocus = FocusNode();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
   String? _errorMessage;
 
   @override
@@ -54,6 +57,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _emailController.text.trim(),
             _passwordController.text,
           );
+      if (mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_onboarding', true);
+        ref.read(authTransitionProvider.notifier).setTransitioning(true);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-credential' || e.code == 'wrong-password') {
+        setState(() => _errorMessage = "Invalid credentials. If you've signed in with Google before, try that!");
+      } else if (e.code == 'account-exists-with-different-credential') {
+        setState(() => _errorMessage = "This email is associated with a different sign-in method. Please use Google.");
+      } else {
+        setState(() => _errorMessage = e.message ?? "Login failed");
+      }
     } catch (e) {
       setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
     } finally {
@@ -62,11 +78,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
-      await ref.read(authServiceProvider).signInWithGoogle();
+      final credential = await ref.read(authServiceProvider).signInWithGoogle();
+      if (credential != null && mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_onboarding', true);
+        ref.read(authTransitionProvider.notifier).setTransitioning(true);
+      }
     } catch (e) {
-      setState(() => _errorMessage = 'Google Sign-In failed');
+      debugPrint('DEBUG: Google Sign-In error: $e');
+      setState(() => _errorMessage = 'Google Sign-In failed: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -163,8 +188,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 controller: _passwordController,
                 focusNode: _passwordFocus,
                 hintText: 'password123',
-                obscureText: true,
-                suffixIcon: Icon(Icons.visibility_off_outlined, size: 16, color: colorScheme.onSurfaceVariant),
+                obscureText: _obscurePassword,
+                suffixIcon: GestureDetector(
+                  onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                  child: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
 
               // Forgot Password

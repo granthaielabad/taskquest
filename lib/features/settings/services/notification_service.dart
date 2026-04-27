@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -12,6 +11,8 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    if (kIsWeb) return;
+    
     tz_data.initializeTimeZones();
     
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -59,12 +60,14 @@ class NotificationService {
   }
 
   Future<void> requestPermissions() async {
-    if (Platform.isAndroid) {
+    if (kIsWeb) return;
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
           _notificationsPlugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
       await androidImplementation?.requestNotificationsPermission();
-    } else if (Platform.isIOS) {
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
@@ -80,6 +83,7 @@ class NotificationService {
     int id = 0,
     String? title, String? body, String? payload,
   }) async {
+    if (kIsWeb) return;
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'taskquest_channel', 'TaskQuest Notifications',
       importance: Importance.max, priority: Priority.high, showWhen: true,
@@ -91,18 +95,20 @@ class NotificationService {
   }
 
   Future<void> scheduleDailyReminder(int hour, int minute, {int id = 1, String? title, String? body}) async {
+    if (kIsWeb) return;
     final tz.TZDateTime scheduledTime = _nextInstanceOfTime(hour, minute);
     await _scheduleZoned(id, title ?? 'Reminder', body ?? 'Time for TaskQuest!', scheduledTime);
   }
 
-  // New method specifically for the 30-second test to avoid timezone/rounding issues
   Future<void> scheduleTestNotification(int seconds, {int id = 1, String? title, String? body}) async {
+    if (kIsWeb) return;
     final tz.TZDateTime scheduledTime = tz.TZDateTime.now(tz.local).add(Duration(seconds: seconds));
     debugPrint('SERVICE: Scheduling TEST ID $id for $scheduledTime');
     await _scheduleZoned(id, title ?? 'Test', body ?? 'Test content', scheduledTime);
   }
 
   Future<void> _scheduleZoned(int id, String title, String body, tz.TZDateTime scheduledTime) async {
+    if (kIsWeb) return;
     try {
       await _notificationsPlugin.zonedSchedule(
         id, title, body, scheduledTime,
@@ -138,6 +144,7 @@ class NotificationService {
   }
 
   Future<void> cancelAll() async {
+    if (kIsWeb) return;
     await _notificationsPlugin.cancelAll();
   }
 

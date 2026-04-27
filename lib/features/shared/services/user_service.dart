@@ -102,6 +102,16 @@ class UserService {
     String displayName,
   ) async {
     try {
+      // Force a reload of the current user to get the latest profile data (like displayName)
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        await currentUser.reload();
+        // Use the reloaded display name if the one passed in is empty
+        if (displayName.isEmpty && currentUser.displayName != null) {
+          displayName = currentUser.displayName!;
+        }
+      }
+
       final user = await getUserProfile(uid);
       final now = DateTime.now();
       final bool isNewNameGeneric =

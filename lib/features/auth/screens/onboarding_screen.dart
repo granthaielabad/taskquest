@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskquest/features/auth/screens/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -19,8 +20,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeOutCubic,
       );
     } else {
-      _goToLogin();
+      _completeOnboarding();
     }
+  }
+
+  Future<void> _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_onboarding', true);
+    _goToLogin();
   }
 
   void _goToLogin() {

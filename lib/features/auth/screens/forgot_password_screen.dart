@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _emailFocus = FocusNode();
   bool _isLoading = false;
   bool _isSuccess = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -28,17 +31,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _sendResetLink() async {
-    if (_emailController.text.isEmpty) return;
+    final email = _emailController.text.trim();
+    if (email.isEmpty) return;
 
-    setState(() => _isLoading = true);
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1200));
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _isSuccess = true;
-      });
+    try {
+      await ref.read(authServiceProvider).sendPasswordReset(email);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isSuccess = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.toString();
+        });
+      }
     }
   }
 
@@ -106,6 +121,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 32),
+
+              if (_errorMessage != null) ...[
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               if (_isSuccess) ...[
                 // Success state

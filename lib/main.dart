@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -10,7 +11,6 @@ import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/auth_success_screen.dart';
 import 'features/shared/widgets/main_scaffold.dart';
 import 'features/settings/services/notification_service.dart';
-import 'core/services/database_seed_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,12 +19,13 @@ void main() async {
   // Initialize Notifications
   await NotificationService().init();
 
-  // Run the database seeder to add all the new random challenges
-  await DatabaseSeedService().seedAll();
-
-  // Safely initialize Google Sign-In for Web compatibility
+  // Initialize Google Sign-In as required by the package
   try {
-    await GoogleSignIn.instance.initialize();
+    const clientId = '910396668792-5qatv8m0g9i1um66pso655qfvud90vr8.apps.googleusercontent.com';
+    await GoogleSignIn.instance.initialize(
+      serverClientId: clientId,
+      clientId: kIsWeb ? clientId : null,
+    );
   } catch (e) {
     debugPrint('Google Sign-In initialization note: $e');
   }
@@ -41,18 +42,19 @@ class TaskQuestApp extends ConsumerWidget {
     final isTransitioning = ref.watch(authTransitionProvider);
     final themeMode = ref.watch(themeProvider);
     final textScale = ref.watch(textScaleProvider);
+    final fontStyle = ref.watch(fontStyleProvider);
 
     return MaterialApp(
       key: ValueKey(authState.value?.uid ?? 'unauthenticated'),
       title: 'TaskQuest',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.createTheme(brightness: Brightness.light, fontStyle: fontStyle),
+      darkTheme: AppTheme.createTheme(brightness: Brightness.dark, fontStyle: fontStyle),
       themeMode: themeMode,
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScale ?? 1.0),
+            textScaler: TextScaler.linear(textScale),
           ),
           child: child!,
         );

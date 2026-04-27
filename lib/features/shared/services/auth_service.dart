@@ -24,12 +24,17 @@ class AuthService {
     }
   }
 
-  Future<UserCredential> signUpWithEmail(String email, String password) async {
+  Future<UserCredential> signUpWithEmail(String email, String password, String displayName) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      
+      // Set the display name in Firebase Auth profile immediately
+      await credential.user?.updateDisplayName(displayName);
+      
+      return credential;
     } catch (e) {
       debugPrint('Sign-up Error: $e');
       rethrow;
@@ -39,18 +44,24 @@ class AuthService {
   // ── Google Sign-In ──────────────────────────────────────────
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Ensure initialized (safe to call multiple times if we check)
-      // For simplicity, we assume initialize() was called in main or here
       final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken:
-            null, // accessToken is optional for Firebase Google Auth if idToken is present
+        accessToken: null,
         idToken: googleAuth.idToken,
       );
 
+      // This will automatically link if the email is the same and 
+      // "One account per email address" is enabled in Firebase Console.
       return await _auth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'account-exists-with-different-credential') {
+        debugPrint('AuthService: Account already exists with a different provider.');
+        // In this case, we could implement a re-auth flow, but Firebase
+        // usually handles the email-match automatically if configured.
+      }
+      rethrow;
     } catch (e) {
       debugPrint('Google Sign-in Error: $e');
       rethrow;
@@ -59,7 +70,13 @@ class AuthService {
 
   // ── Sign Out ────────────────────────────────────────────────
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      // Catch "Bad state: GoogleSignInPlugin::init() must be called" on Web
+      // or other initialization errors.
+      debugPrint('AuthService: Google sign-out skipped or failed: $e');
+    }
     await _auth.signOut();
   }
 

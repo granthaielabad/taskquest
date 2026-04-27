@@ -144,6 +144,9 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   }
 
   Widget _buildUploadView(AsyncValue<List<FlashcardDeckModel>> userDecksAsync) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SingleChildScrollView(
       key: const ValueKey('upload'),
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -155,32 +158,29 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'AI\nFlashcards',
-                      style: AppTheme.headingXL.copyWith(
-                        fontSize: 32,
-                        height: 0.9,
-                        letterSpacing: -1.2,
-                      ),
-                      softWrap: true,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI\nFlashcards',
+                    style: AppTheme.headingXL.copyWith(
+                      fontSize: 32,
+                      height: 0.9,
+                      letterSpacing: -1.2,
+                      color: colorScheme.onSurface,
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Scan a doc, get a full deck instantly',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 10,
-                        letterSpacing: 0.5,
-                        color: AppTheme.muted,
-                      ),
-                      softWrap: true,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Scan a doc, get a full deck instantly',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(width: 12),
               _buildAIBadge(),
@@ -241,31 +241,36 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
 
   Widget _buildSearchBar() {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline),
+        color: colorScheme.surface,
+        border: Border.all(color: colorScheme.outline),
         borderRadius: BorderRadius.circular(14),
       ),
       child: TextField(
         controller: _searchController,
         focusNode: _searchFocus,
-        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 13),
+        style: TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 13,
+          color: colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: 'Search decks or categories...',
-          hintStyle: const TextStyle(
+          hintStyle: TextStyle(
             fontFamily: 'DM Mono',
-            color: AppTheme.muted,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             fontSize: 13,
           ),
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search_rounded,
-            color: AppTheme.muted,
+            color: colorScheme.onSurfaceVariant,
             size: 20,
           ),
           suffixIcon: _query.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 18),
+                  icon: Icon(Icons.close_rounded, size: 18, color: colorScheme.onSurfaceVariant),
                   onPressed: () => _searchController.clear(),
                 )
               : null,
@@ -284,6 +289,10 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   }
 
   Widget _buildScanningView() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       key: const ValueKey('scanning'),
       width: double.infinity,
@@ -294,7 +303,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: AppTheme.black,
+              color: colorScheme.onSurface,
               borderRadius: BorderRadius.circular(32),
             ),
             child: Column(
@@ -303,27 +312,27 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: colorScheme.surface.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.file_present_rounded,
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     size: 28,
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
+                Text(
                   'AI IS WORKING',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 1.8,
-                    color: Color(0xFF777777),
+                    color: colorScheme.surface.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Scanning your\ndocument...',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -331,39 +340,39 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                     fontWeight: FontWeight.w800,
                     fontSize: 28,
                     height: 1.0,
-                    color: Colors.white,
+                    color: colorScheme.surface,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Reading content, identifying key\nconcepts, and generating flashcards for\nyou.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 10,
                     height: 1.6,
-                    color: Color(0xFF999999),
+                    color: colorScheme.surface.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 48),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'PROCESSING',
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 9,
-                        color: Color(0xFF777777),
+                        color: colorScheme.surface.withValues(alpha: 0.5),
                       ),
                     ),
                     Text(
                       '${(_progress * 100).round()}%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Syne',
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
-                        color: Colors.white,
+                        color: colorScheme.surface,
                       ),
                     ),
                   ],
@@ -374,8 +383,8 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   child: LinearProgressIndicator(
                     value: _progress,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    valueColor: const AlwaysStoppedAnimation(Colors.white),
+                    backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation(colorScheme.surface),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -399,20 +408,23 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   }
 
   Widget _buildStatusRow(String label, bool isDone, {bool isLast = false}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Row(
       children: [
         Container(
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: isDone ? Colors.white : Colors.transparent,
+            color: isDone ? colorScheme.surface : Colors.transparent,
             border: Border.all(
-              color: isDone ? Colors.white : const Color(0xFF444444),
+              color: isDone ? colorScheme.surface : colorScheme.surface.withValues(alpha: 0.2),
             ),
             borderRadius: BorderRadius.circular(6),
           ),
           child: isDone
-              ? const Icon(Icons.check, size: 12, color: AppTheme.black)
+              ? Icon(Icons.check, size: 12, color: colorScheme.onSurface)
               : null,
         ),
         const SizedBox(width: 12),
@@ -421,7 +433,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           style: TextStyle(
             fontFamily: 'DM Mono',
             fontSize: 11,
-            color: isDone ? Colors.white : const Color(0xFF666666),
+            color: isDone ? colorScheme.surface : colorScheme.surface.withValues(alpha: 0.4),
           ),
         ),
       ],
@@ -430,11 +442,13 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
 
   Widget _buildFileFooter() {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline),
+        color: colorScheme.surface,
+        border: Border.all(color: colorScheme.outline),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -448,7 +462,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             ),
             child: Icon(
               Icons.description_outlined,
-              color: theme.colorScheme.onSurface,
+              color: colorScheme.onSurface,
               size: 20,
             ),
           ),
@@ -461,19 +475,20 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   _selectedFileName ?? 'Document.pdf',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Syne',
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${_selectedFileSize ?? '0.0 MB'} · Uploaded just now',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 9,
-                    color: AppTheme.muted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -482,15 +497,15 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline),
+              border: Border.all(color: colorScheme.outline),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               _selectedFileName?.split('.').last.toUpperCase() ?? 'FILE',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 8,
-                color: AppTheme.muted,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -529,8 +544,11 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   Widget _buildUploadBox() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final warningColor = isDark ? Colors.orangeAccent : Colors.orange;
+
     return CustomPaint(
-      painter: _DashedRectPainter(color: AppTheme.dimmed),
+      painter: _DashedRectPainter(color: colorScheme.outline),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
@@ -550,25 +568,26 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Upload your document',
               style: TextStyle(
                 fontFamily: 'Syne',
                 fontWeight: FontWeight.w800,
                 fontSize: 20,
+                color: colorScheme.onSurface,
               ),
               softWrap: true,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'PDF, DOCX, TXT, or image files.\nOur AI will scan and build your deck.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'DM Mono',
                 fontSize: 10,
                 height: 1.5,
-                color: AppTheme.muted,
+                color: colorScheme.onSurfaceVariant,
               ),
               softWrap: true,
             ),
@@ -576,24 +595,21 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
+                color: warningColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                border: Border.all(color: warningColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.info_outline, size: 14, color: Colors.orange),
-                  SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'Limit: 5 Scans/Day (Generates 10 cards each)',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 9,
-                        color: Colors.orange,
-                      ),
-                      softWrap: true,
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: warningColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Limit: 5 Scans/Day (Generates 10 cards each)',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      color: warningColor,
                     ),
                   ),
                 ],
@@ -632,15 +648,15 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     return Row(
       children: [
         Expanded(child: Container(height: 1, color: theme.colorScheme.outline)),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'OR CREATE MANUALLY',
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 8,
               letterSpacing: 1.2,
-              color: AppTheme.muted,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -650,8 +666,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   }
 
   Widget _buildManualButton() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       height: 64,
@@ -698,13 +713,13 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
+        Text(
           'MY DECKS',
           style: TextStyle(
             fontFamily: 'DM Mono',
             fontSize: 10,
             letterSpacing: 1.8,
-            color: AppTheme.muted,
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
         GestureDetector(
@@ -720,7 +735,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.0,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurfaceVariant,
               decoration: TextDecoration.underline,
             ),
           ),
@@ -732,6 +747,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   Widget _buildDeckItem(BuildContext context, FlashcardDeckModel deck) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isCompleted = deck.masteryProgress >= 100;
 
     return GestureDetector(
       onTap: () {
@@ -774,19 +790,20 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 children: [
                   Text(
                     deck.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Syne',
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${deck.cards.length} cards · ${deck.category}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 10,
-                      color: AppTheme.muted,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -801,26 +818,31 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.scaffoldBackgroundColor,
-                    border: Border.all(color: colorScheme.outline),
+                    color: isCompleted
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : theme.scaffoldBackgroundColor,
+                    border: Border.all(
+                      color: isCompleted ? Colors.green : colorScheme.outline,
+                    ),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    '${deck.masteryProgress}%',
-                    style: const TextStyle(
+                    isCompleted ? 'Completed' : '${deck.masteryProgress}%',
+                    style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
+                      color: isCompleted ? Colors.green : colorScheme.onSurface,
                     ),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _formatDate(deck.createdAt),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 8,
-                    color: AppTheme.muted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -831,8 +853,8 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                       builder: (context) => AlertDialog(
                         backgroundColor: colorScheme.surface,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        title: const Text('Delete Deck?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold)),
-                        content: const Text('This action cannot be undone.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
+                        title: Text('Delete Deck?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                        content: Text('This action cannot be undone.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13, color: colorScheme.onSurfaceVariant)),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
@@ -840,7 +862,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('DELETE', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold)),
+                            child: Text('DELETE', style: TextStyle(fontFamily: 'DM Mono', color: colorScheme.error, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -850,15 +872,18 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                       await ref.read(flashcardServiceProvider).deleteDeck(deck.id);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Deck deleted.')),
+                          SnackBar(
+                            content: const Text('Deck deleted.'),
+                            backgroundColor: colorScheme.error,
+                          ),
                         );
                       }
                     }
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.delete_outline,
                     size: 16,
-                    color: Colors.redAccent,
+                    color: colorScheme.error,
                   ),
                 ),
               ],
@@ -880,6 +905,7 @@ class _DashedRectPainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
+
 
     const dashSpace = 4.0;
     const cornerLength = 12.0;

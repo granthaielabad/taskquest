@@ -3,17 +3,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/games/models/game_models.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
+import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
-import 'package:taskquest/features/home/providers/activity_provider.dart';
+import 'package:taskquest/core/providers/tutorial_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -204,6 +208,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Text(
                 'TODAY\'S CHALLENGES',
+                key: WalkthroughKeys.challengesKey, // Targeted specific text
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
@@ -283,6 +288,7 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'GAME MODES',
+            key: WalkthroughKeys.gamesKey, // Targeted specific text
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
@@ -317,6 +323,7 @@ class HomeScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
+        key: WalkthroughKeys.streakKey,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: colorScheme.onSurface,
@@ -336,7 +343,7 @@ class HomeScreen extends ConsumerWidget {
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       letterSpacing: 1.44,
-                      color: colorScheme.surface.withOpacity(0.6),
+                      color: colorScheme.surface.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -361,7 +368,7 @@ class HomeScreen extends ConsumerWidget {
                           fontFamily: 'Syne',
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
-                          color: colorScheme.surface.withOpacity(0.6),
+                          color: colorScheme.surface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -382,7 +389,7 @@ class HomeScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: isToday
                                     ? colorScheme.surface
-                                    : colorScheme.surface.withOpacity(0.2),
+                                    : colorScheme.surface.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(7),
                               ),
                               child: Center(
@@ -393,7 +400,7 @@ class HomeScreen extends ConsumerWidget {
                                     fontSize: 9,
                                     color: isToday
                                         ? colorScheme.onSurface
-                                        : colorScheme.surface.withOpacity(0.8),
+                                        : colorScheme.surface.withValues(alpha: 0.8),
                                   ),
                                 ),
                               ),
@@ -428,7 +435,7 @@ class HomeScreen extends ConsumerWidget {
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       letterSpacing: 0.9,
-                      color: colorScheme.surface.withOpacity(0.5),
+                      color: colorScheme.surface.withValues(alpha: 0.5),
                     ),
                     softWrap: false,
                   ),
@@ -440,7 +447,7 @@ class HomeScreen extends ConsumerWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 3,
-                        backgroundColor: colorScheme.surface.withOpacity(0.1),
+                        backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
                         valueColor: AlwaysStoppedAnimation(colorScheme.surface),
                       ),
                     ),
@@ -476,7 +483,7 @@ class HomeScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: colorScheme.surface.withOpacity(0.1),
+                color: colorScheme.surface.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -505,7 +512,7 @@ class HomeScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 9,
-                      color: colorScheme.surface.withOpacity(0.5),
+                      color: colorScheme.surface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -513,7 +520,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.surface.withOpacity(0.5),
+              color: colorScheme.surface.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -544,7 +551,7 @@ class HomeScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -581,7 +588,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -720,6 +727,7 @@ class HomeScreen extends ConsumerWidget {
                   },
                   startButtonText: 'Start Coding',
                   gameScreen: CodeBlocksGameplayScreen(),
+                  gameType: GameType.codeBlocks,
                 )),
               );
             },
@@ -750,6 +758,66 @@ class HomeScreen extends ConsumerWidget {
                   },
                   startButtonText: 'Start Quiz',
                   gameScreen: QuizGameplayScreen(),
+                  gameType: GameType.quiz,
+                )),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+          _GamePill(
+            title: 'SDLC Seq',
+            desc: 'Arrange lifecycle',
+            tag: 'Logic',
+            icon: Icons.reorder_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => GameLobbyScreen(
+                  title: 'SDLC Sequence',
+                  description: 'Master the Software Development Life Cycle by arranging phases in the correct logical order for different methodologies.',
+                  icon: Icons.reorder_rounded,
+                  stats: const [
+                    {'value': '5', 'label': 'SEQUENCES'},
+                    {'value': '4/5', 'label': 'ACCURACY'},
+                    {'value': '+120', 'label': 'XP REWARD'},
+                    {'value': '5m', 'label': 'EST. TIME'},
+                  ],
+                  configOptions: const {
+                    'Complexity': ['Standard', 'Advanced', 'Industry'],
+                  },
+                  startButtonText: 'Start Sorting',
+                  gameScreen: SdlcGameplayScreen(),
+                  gameType: GameType.sdlc,
+                )),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+          _GamePill(
+            title: 'Algorithm',
+            desc: 'Solve trace logic',
+            tag: 'Advanced',
+            icon: Icons.functions_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => GameLobbyScreen(
+                  title: 'Algorithm Trace',
+                  description: 'Analyze pseudocode and determine the output or time complexity. Perfect for technical interview prep!',
+                  icon: Icons.functions_rounded,
+                  stats: const [
+                    {'value': '8', 'label': 'PROBLEMS'},
+                    {'value': '12ms', 'label': 'AVG SPEED'},
+                    {'value': '+200', 'label': 'XP REWARD'},
+                    {'value': '8m', 'label': 'EST. TIME'},
+                  ],
+                  configOptions: const {
+                    'Difficulty': ['Beginner', 'Advanced'],
+                    'Topic': ['All', 'Data Structures', 'Sort/Search', 'Recursion'],
+                  },
+                  startButtonText: 'Start Solving',
+                  gameScreen: SolveAlgorithmGameplayScreen(),
+                  gameType: GameType.algorithm,
                 )),
               );
             },
@@ -761,6 +829,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildRecentActivityHeader(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
@@ -772,24 +841,28 @@ class HomeScreen extends ConsumerWidget {
               fontFamily: 'DM Mono',
               fontSize: 10,
               letterSpacing: 1.8,
-              color: theme.colorScheme.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
-          GestureDetector(
+          InkWell(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AllActivityScreen()),
               );
             },
-            child: Text(
-              'SEE ALL',
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 9,
-                letterSpacing: 1.0,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
-                decoration: TextDecoration.underline,
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text(
+                'SEE ALL',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 9,
+                  letterSpacing: 1.0,
+                  color: colorScheme.onSurfaceVariant,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ),
@@ -993,7 +1066,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.1)
+                    ? colorScheme.surface.withValues(alpha: 0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null
@@ -1024,7 +1097,7 @@ class _GamePill extends StatelessWidget {
                 fontSize: 9,
                 height: 1.4,
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.4)
+                    ? colorScheme.surface.withValues(alpha: 0.4)
                     : colorScheme.onSurfaceVariant,
               ),
             ),
@@ -1033,7 +1106,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.1)
+                    ? colorScheme.surface.withValues(alpha: 0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -1044,7 +1117,7 @@ class _GamePill extends StatelessWidget {
                   fontSize: 8,
                   letterSpacing: 0.08,
                   color: isFeatured
-                      ? colorScheme.surface.withOpacity(0.6)
+                      ? colorScheme.surface.withValues(alpha: 0.6)
                       : colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -1149,7 +1222,7 @@ class _ActivityItem extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 9,
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 ),
               ),
             ],

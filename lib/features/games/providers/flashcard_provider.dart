@@ -71,7 +71,7 @@ class FlashcardDeckModel {
       cards: (map['cards'] as List? ?? [])
           .map((c) => FlashcardModel.fromMap(c as Map<String, dynamic>))
           .toList(),
-      masteryProgress: map['masteryProgress'] ?? 0,
+      masteryProgress: (map['masteryProgress'] as int? ?? 0).clamp(0, 100),
       createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
   }

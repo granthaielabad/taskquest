@@ -7,6 +7,7 @@ import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
 import 'package:taskquest/core/services/sound_service.dart';
+import 'package:taskquest/features/shared/widgets/report_dialog.dart';
 
 class StudyFlashcardScreen extends ConsumerStatefulWidget {
   final FlashcardDeckModel deck;
@@ -21,9 +22,12 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
   int _currentIndex = 0;
   bool _isFlipped = false;
   int _correctCount = 0;
+  bool _isFinishing = false;
   final SoundService _soundService = SoundService();
 
   void _nextCard(bool wasCorrect) {
+    if (_isFinishing) return;
+
     if (wasCorrect) {
       _correctCount++;
       HapticFeedback.mediumImpact();
@@ -43,66 +47,105 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     }
   }
 
-  void _finishStudy() async {
-    final mastery = ((_correctCount / widget.deck.cards.length) * 100).round();
+  void _finishStudy() {
+    if (_isFinishing) return;
+    setState(() => _isFinishing = true);
 
-    // 1. Save progress to deck
-    await ref
-        .read(flashcardServiceProvider)
-        .updateMastery(widget.deck.id, mastery);
+    final sessionScore =
+        ((_correctCount / widget.deck.cards.length) * 100).round().clamp(0, 100);
 
-    // 2. Reward XP to user profile
-    const xpReward = 50;
-    await ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
+    // Prevent mastery from ever going down
+    final finalMastery = max(widget.deck.masteryProgress, sessionScore);
+    final bool wasAlreadyCompleted = widget.deck.masteryProgress >= 100;
 
-    // 3. Check for "Syntax Sage" Badge progress
-    await ref
+    // ── FIRE & FORGET (Asynchronous Background Updates) ──────
+    if (finalMastery > widget.deck.masteryProgress) {
+      ref
+          .read(flashcardServiceProvider)
+          .updateMastery(widget.deck.id, finalMastery);
+    }
+
+    // Only reward XP if the deck was not already completed
+    int xpReward = 0;
+    if (!wasAlreadyCompleted) {
+      xpReward = 50;
+      ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
+    }
+
+    ref
         .read(badgeServiceProvider)
         .checkSyntaxSage(widget.deck.userId, widget.deck.cards.length);
 
+    // ── UI COMPLETION ──────────────────────────────────────────
     if (mounted) {
+      final colorScheme = Theme.of(context).colorScheme;
       HapticFeedback.vibrate();
       showDialog(
         context: context,
+        barrierDismissible: false, // Prevent accidental dismissal
         builder: (context) => AlertDialog(
-          backgroundColor: AppTheme.backgroundLight,
+          backgroundColor: colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          title: const Text(
+          title: Text(
             'Study Complete!',
-            style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'You mastered $mastery% of this deck.',
-                style: AppTheme.bodyMono,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '🔥 +50 XP Earned',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange,
+                'You mastered $sessionScore% of the cards this round.',
+                style: AppTheme.bodyMono.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
+              const SizedBox(height: 12),
+              Text(
+                'Overall Mastery: $finalMastery%',
+                style: AppTheme.labelMono.copyWith(
+                  color: finalMastery >= 100 ? Colors.green : colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (xpReward > 0)
+                const Text(
+                  '🔥 +50 XP Earned',
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                )
+              else
+                Text(
+                  'Deck already completed.',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
                 _soundService.playTap();
-                Navigator.pop(context);
-                Navigator.pop(context);
+                Navigator.pop(context); // Close Dialog
+                Navigator.pop(context); // Exit Study Screen
               },
-              child: const Text(
+              child: Text(
                 'BACK TO DECKS',
                 style: TextStyle(
                   fontFamily: 'DM Mono',
-                  color: AppTheme.black,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -116,28 +159,48 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
   @override
   Widget build(BuildContext context) {
     final card = widget.deck.cards[_currentIndex];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         title: Text(
           widget.deck.title,
-          style: const TextStyle(fontFamily: 'Syne', fontSize: 16),
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontSize: 16,
+            color: colorScheme.onSurface,
+          ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: Icon(Icons.close_rounded, color: colorScheme.onSurface),
           onPressed: () {
             _soundService.playTap();
             Navigator.pop(context);
           },
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.flag_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => ReportDialog(
+                  gameType: 'flashcards',
+                  contentId: card.id,
+                ),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: Text(
                 '${_currentIndex + 1}/${widget.deck.cards.length}',
-                style: AppTheme.labelMono,
+                style: AppTheme.labelMono.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
           ),
@@ -168,15 +231,15 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                       child: Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: isBack ? AppTheme.black : AppTheme.white,
+                          color: isBack ? colorScheme.onSurface : colorScheme.surface,
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: AppTheme.borderLight,
+                            color: colorScheme.outline,
                             width: 2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -189,16 +252,18 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                               ..rotateY(isBack ? pi : 0),
                             child: Padding(
                               padding: const EdgeInsets.all(40),
-                              child: Text(
-                                isBack ? card.definition : card.term,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: isBack ? 'DM Mono' : 'Syne',
-                                  fontSize: isBack ? 16 : 24,
-                                  fontWeight: isBack
-                                      ? FontWeight.w400
-                                      : FontWeight.w800,
-                                  color: isBack ? Colors.white : AppTheme.black,
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  isBack ? card.definition : card.term,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: isBack ? 'DM Mono' : 'Syne',
+                                    fontSize: isBack ? 16 : 24,
+                                    fontWeight: isBack
+                                        ? FontWeight.w400
+                                        : FontWeight.w800,
+                                    color: isBack ? colorScheme.surface : colorScheme.onSurface,
+                                  ),
                                 ),
                               ),
                             ),

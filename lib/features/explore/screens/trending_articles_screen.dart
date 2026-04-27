@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/explore/providers/explore_provider.dart';
@@ -79,12 +80,18 @@ class _ArticleListTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
-              child: Image.network(
-                article.coverImage,
+              child: CachedNetworkImage(
+                imageUrl: article.coverImage,
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                placeholder: (context, url) => Container(
+                  width: 100,
+                  height: 100,
+                  color: colorScheme.outline.withValues(alpha: 0.1),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+                errorWidget: (context, url, error) => Container(
                   width: 100,
                   height: 100,
                   color: colorScheme.outline.withValues(alpha: 0.1),

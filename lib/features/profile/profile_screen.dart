@@ -8,6 +8,7 @@ import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/profile/editprofile_screen.dart';
 import 'package:taskquest/features/settings/screens/appearance_screen.dart';
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
+import 'package:taskquest/features/settings/screens/guide_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -294,6 +295,11 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           _buildGroupHeader('SUPPORT & LEGAL'),
           _buildSettingsGroup([
+            _SettingsTile(
+              icon: Icons.help_outline_rounded,
+              title: 'How to use TaskQuest',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GuideScreen())),
+            ),
             _SettingsTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -287,6 +288,8 @@ class ExploreApiService {
             'algorithm',
           ];
 
+          final List<WikiHistoryEvent> techEvents = [];
+
           for (final event in events) {
             final text = (event['text'] as String).toLowerCase();
             // Check if text or linked pages contain strict tech keywords
@@ -303,12 +306,19 @@ class ExploreApiService {
             }
 
             if (isTech) {
-              return WikiHistoryEvent(
-                title: 'On This Day',
-                fact: event['text'] ?? '',
-                year: event['year']?.toString() ?? '',
+              techEvents.add(
+                WikiHistoryEvent(
+                  title: 'On This Day',
+                  fact: event['text'] ?? '',
+                  year: event['year']?.toString() ?? '',
+                ),
               );
             }
+          }
+
+          if (techEvents.isNotEmpty) {
+            final random = Random();
+            return techEvents[random.nextInt(techEvents.length)];
           }
         }
       }

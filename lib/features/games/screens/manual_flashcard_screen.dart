@@ -6,7 +6,8 @@ import 'package:taskquest/features/games/providers/flashcard_provider.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 
 class ManualFlashcardScreen extends ConsumerStatefulWidget {
-  const ManualFlashcardScreen({super.key});
+  final FlashcardDeckModel? deck;
+  const ManualFlashcardScreen({super.key, this.deck});
 
   @override
   ConsumerState<ManualFlashcardScreen> createState() =>
@@ -17,12 +18,10 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   final _titleController = TextEditingController();
   final _titleFocus = FocusNode();
 
-  final List<TextEditingController> _termControllers = [
-    TextEditingController(),
-  ];
-  final List<TextEditingController> _defControllers = [TextEditingController()];
-  final List<FocusNode> _termFocusNodes = [FocusNode()];
-  final List<FocusNode> _defFocusNodes = [FocusNode()];
+  final List<TextEditingController> _termControllers = [];
+  final List<TextEditingController> _defControllers = [];
+  final List<FocusNode> _termFocusNodes = [];
+  final List<FocusNode> _defFocusNodes = [];
 
   final Set<int> _errorIndices = {};
   bool _titleError = false;
@@ -43,8 +42,26 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   void initState() {
     super.initState();
     _titleFocus.addListener(() => setState(() {}));
-    _termFocusNodes[0].addListener(() => setState(() {}));
-    _defFocusNodes[0].addListener(() => setState(() {}));
+    
+    if (widget.deck != null) {
+      _titleController.text = widget.deck!.title;
+      _selectedCategory = widget.deck!.category;
+      for (var card in widget.deck!.cards) {
+        final tc = TextEditingController(text: card.term);
+        final dc = TextEditingController(text: card.definition);
+        final tf = FocusNode();
+        final df = FocusNode();
+        tf.addListener(() => setState(() {}));
+        df.addListener(() => setState(() {}));
+        
+        _termControllers.add(tc);
+        _defControllers.add(dc);
+        _termFocusNodes.add(tf);
+        _defFocusNodes.add(df);
+      }
+    } else {
+      _addCard();
+    }
   }
 
   @override
@@ -98,34 +115,43 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   }
 
   void _clearAll() async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.backgroundLight,
+        backgroundColor: colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
+        title: Text(
           'Clear All?',
-          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
         ),
-        content: const Text(
+        content: Text(
           'This will delete all content you have typed.',
-          style: AppTheme.bodyMono,
+          style: AppTheme.bodyMono.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'CANCEL',
-              style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted),
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'CLEAR',
               style: TextStyle(
                 fontFamily: 'DM Mono',
-                color: Colors.red,
+                color: colorScheme.error,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -163,34 +189,43 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
       return true;
     }
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.backgroundLight,
+        backgroundColor: colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
+        title: Text(
           'Discard Changes?',
-          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
         ),
-        content: const Text(
+        content: Text(
           'You have unsaved cards. Are you sure you want to leave?',
-          style: AppTheme.bodyMono,
+          style: AppTheme.bodyMono.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'KEEP EDITING',
-              style: TextStyle(fontFamily: 'DM Mono', color: AppTheme.muted),
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'DISCARD',
               style: TextStyle(
                 fontFamily: 'DM Mono',
-                color: Colors.red,
+                color: colorScheme.error,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -202,6 +237,10 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   }
 
   void _saveDeck() async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     setState(() {
       _errorIndices.clear();
       _titleError = _titleController.text.trim().isEmpty;
@@ -209,9 +248,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
 
     if (_titleError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a deck title'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Please enter a deck title'),
+          backgroundColor: colorScheme.error,
         ),
       );
       _titleFocus.requestFocus();
@@ -241,9 +280,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
 
     if (hasIncomplete) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete all cards or remove empty ones'),
-          backgroundColor: Colors.orange,
+        SnackBar(
+          content: const Text('Please complete all cards or remove empty ones'),
+          backgroundColor: isDark ? Colors.orangeAccent : Colors.orange,
         ),
       );
       return;
@@ -251,9 +290,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
 
     if (cards.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one complete card'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Please add at least one complete card'),
+          backgroundColor: colorScheme.error,
         ),
       );
       return;
@@ -264,22 +303,28 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
       final user = ref.read(currentUserProvider);
       if (user != null) {
         final deck = FlashcardDeckModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: widget.deck?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
           userId: user.uid,
           title: _titleController.text.trim(),
           type: 'Manual',
           category: _selectedCategory,
           cards: cards,
-          createdAt: DateTime.now(),
+          masteryProgress: 0,
+          createdAt: widget.deck?.createdAt ?? DateTime.now(),
         );
 
-        await ref.read(flashcardServiceProvider).createDeck(deck);
+        if (widget.deck != null) {
+          await ref.read(flashcardServiceProvider).updateDeck(deck);
+        } else {
+          await ref.read(flashcardServiceProvider).createDeck(deck);
+        }
+
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Deck saved to cloud!'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: Text(widget.deck != null ? 'Deck updated!' : 'Deck saved to cloud!'),
+              backgroundColor: isDark ? Colors.lightGreenAccent : Colors.green,
             ),
           );
         }
@@ -299,6 +344,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -311,41 +359,50 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
+        backgroundColor: colorScheme.surface,
         appBar: AppBar(
-          title: const Text(
-            'Create Manually',
-            style: TextStyle(fontFamily: 'Syne', fontSize: 16),
+          backgroundColor: colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
+          title: Text(
+            widget.deck != null ? 'Edit Deck' : 'Create Manually',
+            style: const TextStyle(fontFamily: 'Syne', fontSize: 16),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
+            onPressed: () => Navigator.maybePop(context),
           ),
           actions: [
             if (!_isLoading) ...[
               IconButton(
                 onPressed: _clearAll,
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete_sweep_rounded,
-                  color: AppTheme.muted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(width: 8),
               TextButton(
                 onPressed: _saveDeck,
-                child: const Text(
+                child: Text(
                   'SAVE',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
-                    color: AppTheme.black,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ] else
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
               ),
@@ -390,11 +447,11 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.black : AppTheme.white,
+                          color: isSelected ? colorScheme.onSurface : colorScheme.surface,
                           border: Border.all(
                             color: isSelected
-                                ? AppTheme.black
-                                : AppTheme.borderLight,
+                                ? colorScheme.onSurface
+                                : colorScheme.outline,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -406,7 +463,7 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
-                            color: isSelected ? Colors.white : AppTheme.muted,
+                            color: isSelected ? colorScheme.surface : colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -426,11 +483,11 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
                     margin: const EdgeInsets.only(bottom: 24),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppTheme.white,
+                      color: colorScheme.surface,
                       border: Border.all(
                         color: _errorIndices.contains(index)
-                            ? Colors.red
-                            : AppTheme.borderLight,
+                            ? colorScheme.error
+                            : colorScheme.outline,
                       ),
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -443,15 +500,15 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
                               'CARD ${index + 1}',
                               style: AppTheme.labelMono.copyWith(
                                 color: _errorIndices.contains(index)
-                                    ? Colors.red
-                                    : AppTheme.muted,
+                                    ? colorScheme.error
+                                    : colorScheme.onSurfaceVariant,
                               ),
                             ),
                             if (_termControllers.length > 1)
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.delete_outline_rounded,
-                                  color: Colors.red,
+                                  color: colorScheme.error,
                                   size: 18,
                                 ),
                                 onPressed: () => setState(() {
@@ -492,12 +549,12 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
               Center(
                 child: TextButton.icon(
                   onPressed: _addCard,
-                  icon: const Icon(Icons.add_rounded, color: AppTheme.black),
-                  label: const Text(
+                  icon: Icon(Icons.add_rounded, color: colorScheme.onSurface),
+                  label: Text(
                     'ADD ANOTHER CARD',
                     style: TextStyle(
                       fontFamily: 'DM Mono',
-                      color: AppTheme.black,
+                      color: colorScheme.onSurface,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),

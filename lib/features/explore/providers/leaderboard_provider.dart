@@ -5,7 +5,7 @@ import 'package:taskquest/features/auth/providers/user_provider.dart';
 final leaderboardProvider = StreamProvider<List<UserModel>>((ref) {
   return FirebaseFirestore.instance
       .collection('users')
-      .orderBy('xp', descending: true)
+      .orderBy('streak', descending: true)
       .limit(20)
       .snapshots()
       .map((snapshot) {

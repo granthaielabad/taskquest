@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:taskquest/features/games/models/game_models.dart';
+import 'package:taskquest/features/games/providers/game_engine_provider.dart';
 
 class GameLobbyScreen extends ConsumerStatefulWidget {
   final String title;
@@ -9,6 +11,7 @@ class GameLobbyScreen extends ConsumerStatefulWidget {
   final Map<String, List<String>> configOptions;
   final String startButtonText;
   final Widget gameScreen;
+  final GameType gameType;
 
   const GameLobbyScreen({
     super.key,
@@ -19,6 +22,7 @@ class GameLobbyScreen extends ConsumerStatefulWidget {
     required this.configOptions,
     required this.startButtonText,
     required this.gameScreen,
+    required this.gameType,
   });
 
   @override
@@ -41,6 +45,7 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final gameState = ref.watch(gameEngineProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -58,13 +63,6 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
           ),
         ),
         leadingWidth: 100,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert_rounded),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: Column(
         children: [
@@ -152,32 +150,46 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
               width: double.infinity,
               height: 64,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => widget.gameScreen),
-                  );
+                onPressed: gameState.status == GameSessionStatus.loading 
+                  ? null 
+                  : () async {
+                    final config = GameSessionConfig(
+                      title: widget.title,
+                      type: widget.gameType,
+                      options: _selectedOptions,
+                    );
+                    
+                    await ref.read(gameEngineProvider.notifier).initializeGame(config);
+                    
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => widget.gameScreen),
+                      );
+                    }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.onSurface,
                   foregroundColor: colorScheme.surface,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.play_arrow_rounded, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.startButtonText.toUpperCase(),
-                      style: const TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
+                child: gameState.status == GameSessionStatus.loading
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.play_arrow_rounded, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.startButtonText.toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               ),
             ),
           ),
