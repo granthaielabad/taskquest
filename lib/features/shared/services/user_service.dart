@@ -70,9 +70,8 @@ class UserService {
 
     await updateXp(uid, newTotalXp, newLevel);
 
-    // ── TRIGGER NOTIFICATIONS ───────────────────────────────────
+    // ── GET NOTIFICATION SETTINGS ───────────────────────────────
     final prefs = await SharedPreferences.getInstance();
-    // Standardized to v5 to match the settings screen logic
     final settings = prefs.getStringList('notification_settings_v5') ?? [];
     
     bool isAllOn = true;
@@ -82,31 +81,26 @@ class UserService {
     for (var s in settings) {
       if (s == 'all:false') isAllOn = false;
       if (s == 'xp:true') isXpOn = true;
-      if (s == 'quest:false') isQuestOn = false; // Explicit check for OFF
+      if (s == 'quest:false') isQuestOn = false; 
     }
 
-    if (isAllOn) {
-      if (isXpOn) {
-        if (newLevel > oldLevel) {
-          const title = 'Level Up! 🎉';
-          final body = 'Congratulations! You\'ve reached Level $newLevel.';
-          NotificationService().showNotification(id: 7, title: title, body: body);
-          await _savePersistentNotification(uid, title: title, body: body, type: 'level_up');
-        } else if (nextThreshold - newTotalXp <= 50) {
-          const title = 'Level Up Imminent! ⚡';
-          final body = 'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!';
-          NotificationService().showNotification(id: 4, title: title, body: body);
-          await _savePersistentNotification(uid, title: title, body: body, type: 'info');
-        }
-      }
-
-      if (isQuestOn) {
-        const title = 'Quest Completed! ✅';
-        final body = 'Great job! You earned $xpToAdd XP.';
-        NotificationService().showNotification(id: 3, title: title, body: body);
-        await _savePersistentNotification(uid, title: title, body: body, type: 'quest');
-      }
+    // ── ALWAYS SAVE TO HOME NOTIFICATION SCREEN (PERSISTENT) ───
+    if (newLevel > oldLevel) {
+      const title = 'Level Up! 🎉';
+      final body = 'Congratulations! You\'ve reached Level $newLevel.';
+      if (isAllOn && isXpOn) NotificationService().showNotification(id: 7, title: title, body: body);
+      await _savePersistentNotification(uid, title: title, body: body, type: 'level_up');
+    } else if (nextThreshold - newTotalXp <= 50) {
+      const title = 'Level Up Imminent! ⚡';
+      final body = 'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!';
+      if (isAllOn && isXpOn) NotificationService().showNotification(id: 4, title: title, body: body);
+      await _savePersistentNotification(uid, title: title, body: body, type: 'info');
     }
+
+    const questTitle = 'Quest Completed! ✅';
+    final questBody = 'Great job! You earned $xpToAdd XP.';
+    if (isAllOn && isQuestOn) NotificationService().showNotification(id: 3, title: questTitle, body: questBody);
+    await _savePersistentNotification(uid, title: questTitle, body: questBody, type: 'quest');
   }
 
   Future<void> checkAndCreateProfile(

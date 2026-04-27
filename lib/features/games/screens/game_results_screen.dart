@@ -21,42 +21,8 @@ class GameResultsScreen extends ConsumerStatefulWidget {
 }
 
 class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
-  bool _xpAwarded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _awardXp();
-  }
-
-  void _awardXp() async {
-    if (_xpAwarded) return;
-    
-    final user = ref.read(authStateProvider).value;
-    if (user == null) return;
-
-    // Update XP via UserService
-    final userService = ref.read(userServiceProvider);
-    await userService.addXp(user.uid, widget.result.xpEarned);
-    
-    // Record activity
-    final activityService = ref.read(activityServiceProvider);
-    await activityService.recordActivity(
-      user.uid,
-      ActivityModel(
-        id: const Uuid().v4(),
-        title: 'Completed ${widget.gameTitle}',
-        subtitle: 'Score: ${widget.result.score}/${widget.result.totalQuestions}',
-        xpReward: widget.result.xpEarned,
-        timestamp: DateTime.now(),
-        type: ActivityType.game,
-      ),
-    );
-
-    if (mounted) {
-      setState(() => _xpAwarded = true);
-    }
-  }
+  // Logic removed here as it is now handled correctly by GameEngineNotifier 
+  // to prevent double XP and doubled notifications.
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +38,6 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              // Success Icon
               Container(
                 width: 80,
                 height: 80,
@@ -108,7 +73,6 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
               
               const SizedBox(height: 48),
               
-              // Stats Grid
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -125,7 +89,6 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
                 height: 64,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate back to Games selection
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
