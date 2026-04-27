@@ -5,7 +5,6 @@ import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
-import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
@@ -14,6 +13,7 @@ import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -336,7 +336,7 @@ class HomeScreen extends ConsumerWidget {
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       letterSpacing: 1.44,
-                      color: colorScheme.surface.withValues(alpha: 0.6),
+                      color: colorScheme.surface.withOpacity(0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -361,7 +361,7 @@ class HomeScreen extends ConsumerWidget {
                           fontFamily: 'Syne',
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
-                          color: colorScheme.surface.withValues(alpha: 0.6),
+                          color: colorScheme.surface.withOpacity(0.6),
                         ),
                       ),
                     ],
@@ -382,7 +382,7 @@ class HomeScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: isToday
                                     ? colorScheme.surface
-                                    : colorScheme.surface.withValues(alpha: 0.2),
+                                    : colorScheme.surface.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(7),
                               ),
                               child: Center(
@@ -393,7 +393,7 @@ class HomeScreen extends ConsumerWidget {
                                     fontSize: 9,
                                     color: isToday
                                         ? colorScheme.onSurface
-                                        : colorScheme.surface.withValues(alpha: 0.8),
+                                        : colorScheme.surface.withOpacity(0.8),
                                   ),
                                 ),
                               ),
@@ -428,7 +428,7 @@ class HomeScreen extends ConsumerWidget {
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       letterSpacing: 0.9,
-                      color: colorScheme.surface.withValues(alpha: 0.5),
+                      color: colorScheme.surface.withOpacity(0.5),
                     ),
                     softWrap: false,
                   ),
@@ -440,7 +440,7 @@ class HomeScreen extends ConsumerWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 3,
-                        backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
+                        backgroundColor: colorScheme.surface.withOpacity(0.1),
                         valueColor: AlwaysStoppedAnimation(colorScheme.surface),
                       ),
                     ),
@@ -476,7 +476,7 @@ class HomeScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: colorScheme.surface.withValues(alpha: 0.1),
+                color: colorScheme.surface.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -505,7 +505,7 @@ class HomeScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 9,
-                      color: colorScheme.surface.withValues(alpha: 0.5),
+                      color: colorScheme.surface.withOpacity(0.5),
                     ),
                   ),
                 ],
@@ -513,7 +513,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.surface.withValues(alpha: 0.5),
+              color: colorScheme.surface.withOpacity(0.5),
             ),
           ],
         ),
@@ -544,7 +544,7 @@ class HomeScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
+                color: colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -581,7 +581,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
             ),
           ],
         ),
@@ -788,7 +788,7 @@ class HomeScreen extends ConsumerWidget {
                 fontFamily: 'DM Mono',
                 fontSize: 9,
                 letterSpacing: 1.0,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -993,7 +993,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null
@@ -1024,7 +1024,7 @@ class _GamePill extends StatelessWidget {
                 fontSize: 9,
                 height: 1.4,
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.4)
+                    ? colorScheme.surface.withOpacity(0.4)
                     : colorScheme.onSurfaceVariant,
               ),
             ),
@@ -1033,7 +1033,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -1044,7 +1044,7 @@ class _GamePill extends StatelessWidget {
                   fontSize: 8,
                   letterSpacing: 0.08,
                   color: isFeatured
-                      ? colorScheme.surface.withValues(alpha: 0.6)
+                      ? colorScheme.surface.withOpacity(0.6)
                       : colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -1149,7 +1149,7 @@ class _ActivityItem extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 9,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.5),
                 ),
               ),
             ],

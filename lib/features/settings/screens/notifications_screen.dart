@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taskquest/core/theme/app_theme.dart';
 import '../services/notification_service.dart';
 
 class NotificationSettings {
@@ -264,7 +263,7 @@ class NotificationsScreen extends ConsumerWidget {
                           Switch(
                             value: masterEnabled,
                             onChanged: (v) => ref.read(notificationSettingsProvider.notifier).toggle('all', v),
-                            activeColor: isDark ? colorScheme.primary : Colors.white,
+                            activeThumbColor: isDark ? colorScheme.primary : Colors.white,
                             activeTrackColor: isDark ? colorScheme.primary.withOpacity(0.3) : const Color(0xFF404040),
                           ),
                         ],
@@ -479,7 +478,7 @@ class _NotificationTile extends StatelessWidget {
             Switch(
               value: value,
               onChanged: isEnabled ? onChanged : null,
-              activeColor: Colors.white,
+              activeThumbColor: Colors.white,
               activeTrackColor: iconColor,
             ),
           ],

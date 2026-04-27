@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
@@ -6,12 +7,16 @@ import 'package:flutter/foundation.dart';
 class QuestService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<List<QuestModel>> getDailyQuests(String userId) {
-    // We listen to the global quests collection
+  Stream<List<QuestModel>> getDailyQuests(String userId, {int? seed}) {
+    // We listen to both the quests collection and the current user's profile
+    // to ensure reactivity.
     return _db.collection('quests').snapshots().asyncMap((questsSnap) async {
-      // For every change in global quests, we also fetch the user's completed quests for today
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
+
+      // Use the provided seed (YYYYMMDD) or fallback to today's date
+      final effectiveSeed = seed ?? (now.year * 10000 + now.month * 100 + now.day);
+      final random = Random(effectiveSeed);
 
       final completedSnap = await _db
           .collection('users')
@@ -22,7 +27,8 @@ class QuestService {
 
       final completedIds = completedSnap.docs.map((doc) => doc.id).toSet();
 
-      return questsSnap.docs.map((doc) {
+      // Get all available quests from the database
+      List<QuestModel> allQuests = questsSnap.docs.map((doc) {
         final data = doc.data();
         return QuestModel.fromMap({
           ...data,
@@ -30,12 +36,17 @@ class QuestService {
           'isCompleted': completedIds.contains(doc.id),
         });
       }).toList();
+
+      if (allQuests.isEmpty) return [];
+
+      // Shuffle using the date-based seed and pick 3 random challenges
+      allQuests.shuffle(random);
+      return allQuests.take(3).toList();
     });
   }
 
   Future<void> completeQuest(String userId, QuestModel quest) async {
     try {
-      // 1. Get user to calculate new level
       final userDoc = await _db.collection('users').doc(userId).get();
       if (!userDoc.exists) return;
 
@@ -49,7 +60,6 @@ class QuestService {
 
       final batch = _db.batch();
 
-      // 2. Mark quest as completed
       final userQuestRef = _db
           .collection('users')
           .doc(userId)
@@ -60,11 +70,9 @@ class QuestService {
         'xpEarned': quest.xpReward,
       });
 
-      // 3. Update user profile (XP + Level)
       final userRef = _db.collection('users').doc(userId);
       batch.update(userRef, {'xp': newXp, 'level': newLevel});
 
-      // 4. Check for "First Flight" Badge
       if (!currentUnlockedBadges.contains('first_flight')) {
         batch.update(userRef, {
           'unlockedBadges': FieldValue.arrayUnion(['first_flight']),

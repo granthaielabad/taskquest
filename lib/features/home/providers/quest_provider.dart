@@ -11,7 +11,7 @@ class QuestModel {
   final int xpReward;
   final QuestDifficulty difficulty;
   final bool isCompleted;
-  final String category; // e.g., 'Flashcards', 'Coding', 'Quiz'
+  final String category;
 
   QuestModel({
     required this.id,
@@ -58,5 +58,7 @@ final questServiceProvider = Provider<QuestService>((ref) {
 final dailyQuestsProvider = StreamProvider<List<QuestModel>>((ref) {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return Stream.value([]);
+  
+  // The service logic now automatically shuffles based on the Current Date.
   return ref.watch(questServiceProvider).getDailyQuests(user.uid);
 });

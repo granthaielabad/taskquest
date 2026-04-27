@@ -10,6 +10,7 @@ import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/auth_success_screen.dart';
 import 'features/shared/widgets/main_scaffold.dart';
 import 'features/settings/services/notification_service.dart';
+import 'core/services/database_seed_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,9 @@ void main() async {
 
   // Initialize Notifications
   await NotificationService().init();
+
+  // Run the database seeder to add all the new random challenges
+  await DatabaseSeedService().seedAll();
 
   // Safely initialize Google Sign-In for Web compatibility
   try {
@@ -48,7 +52,7 @@ class TaskQuestApp extends ConsumerWidget {
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScale),
+            textScaler: TextScaler.linear(textScale ?? 1.0),
           ),
           child: child!,
         );
