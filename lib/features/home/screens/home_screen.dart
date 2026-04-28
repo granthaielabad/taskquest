@@ -14,7 +14,7 @@ import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
 import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
-import 'package:taskquest/features/home/screens/notifications_screen.dart'; // Correct import for UserNotificationsScreen
+import 'package:taskquest/features/home/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
@@ -208,7 +208,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Text(
                 'TODAY\'S CHALLENGES',
-                key: WalkthroughKeys.challengesKey, // Targeted specific text
+                key: WalkthroughKeys.challengesKey,
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 10,
@@ -251,21 +251,30 @@ class HomeScreen extends ConsumerWidget {
                           title: q.title,
                           sub: q.description,
                           xp: q.xpReward,
-                          onTap: () async {
-                            if (!q.isCompleted) {
-                              HapticFeedback.mediumImpact();
-                              await ref
-                                  .read(questServiceProvider)
-                                  .completeQuest(user.uid, q);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Quest Completed: +${q.xpReward} XP!',
-                                    ),
-                                  ),
-                                );
-                              }
+                          onTap: () {
+                            if (q.isCompleted) return;
+                            
+                            // Map categories to screens
+                            final cat = q.category.toUpperCase();
+                            if (cat == 'GAMES' || cat == 'CODING' || cat == 'CS BASICS') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const GamesScreen()),
+                              );
+                            } else if (cat == 'STUDY' || cat == 'AI') {
+                              // Standard index for study in main scaffold is usually 1 or similar
+                              // For now we redirect to games hub or a general task area
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const GamesScreen()),
+                              );
+                            } else if (cat == 'SOCIAL') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                              );
+                            } else if (cat == 'EXPLORE') {
+                              // Logic to go to explore tab if possible
                             }
                           },
                         );
@@ -288,7 +297,7 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'GAME MODES',
-            key: WalkthroughKeys.gamesKey, // Targeted specific text
+            key: WalkthroughKeys.gamesKey,
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 10,
@@ -588,7 +597,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -1066,7 +1075,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null

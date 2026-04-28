@@ -9,6 +9,8 @@ import 'package:taskquest/features/profile/editprofile_screen.dart';
 import 'package:taskquest/features/settings/screens/appearance_screen.dart';
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/settings/screens/guide_screen.dart';
+import 'package:taskquest/features/games/screens/games_screen.dart';
+import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -43,7 +45,13 @@ class ProfileScreen extends ConsumerWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: content,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    content,
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
             ),
             Padding(
@@ -140,7 +148,6 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 24),
 
-          // ── Centered Header ─────────────────────────────────────
           Center(
             child: Column(
               children: [
@@ -210,7 +217,6 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 40),
 
-          // ── Stats Row ──────────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -230,7 +236,6 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
-          // ── Level Progress ──────────────────────────────────────
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -269,7 +274,6 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 40),
 
-          // ── Settings Groups ─────────────────────────────────────
           _buildGroupHeader('ACCOUNT'),
           _buildSettingsGroup([
             _SettingsTile(
@@ -334,15 +338,9 @@ class ProfileScreen extends ConsumerWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Last Updated: April 27, 2026',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          const Text('Last Updated: April 27, 2026', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          const Text(
-            'Data Privacy Act Compliance Statement',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          const Text('Data Privacy Act Compliance Statement', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
           Text(
             'In compliance with the Data Privacy Act of 2012 (Republic Act No. 10173) of the Philippines, TaskQuest is committed to protecting your personal data. By using this Android-based gamified learning application, you consent to the collection, processing, and storage of your name, email address, learning progress (quiz scores, puzzle completion, timed challenges), digital badges, and device information solely to provide adaptive difficulty, progress tracking, instant feedback, and improve educational support. We do not sell your data. Your data is stored securely, and in case of a breach, we will notify the National Privacy Commission and affected users within 72 hours. You have the right to access, correct, or delete your data by contacting us. Continued use of the app constitutes your acceptance of this policy.',
@@ -370,15 +368,9 @@ class ProfileScreen extends ConsumerWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Last Updated: April 27, 2026',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          const Text('Last Updated: April 27, 2026', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          const Text(
-            'Terms of Service Statement',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          const Text('Terms of Service Statement', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
           Text(
             'By downloading, installing, or using TaskQuest: A Gamified Learning Application for Android-Based Educational Support, you agree to be bound by these Terms of Service. TaskQuest is a gamified learning tool designed to improve student engagement through quizzes, puzzles, timed challenges, digital badges, progress tracking, and adaptive difficulty. You agree to use the application solely for lawful educational purposes, to provide accurate information during account creation, and to not attempt to hack, reverse-engineer, or disrupt the app\'s functionality. The developers and researchers behind TaskQuest are not liable for any device damage, data loss, or academic outcomes resulting from use of the application. We reserve the right to suspend or terminate accounts that violate these terms or engage in cheating, harassment, or misuse of the gamified system. Continued use of TaskQuest constitutes your acceptance of these terms.',
@@ -406,13 +398,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title, 
-            style: const TextStyle(
-              fontWeight: FontWeight.bold, 
-              fontSize: 16, 
-            )
-          ),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
           Text(content, style: theme.textTheme.bodyMedium?.copyWith(height: 1.6)),
         ],
@@ -421,124 +407,46 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildAvatarImage(UserModel user, String initials) {
-    if (user.photoUrl.isEmpty) {
-      return _buildInitials(initials);
-    }
-
+    if (user.photoUrl.isEmpty) return _buildInitials(initials);
     if (user.photoUrl.startsWith('data:image')) {
       try {
         final base64Part = user.photoUrl.split(',').last;
         return Image.memory(base64Decode(base64Part), fit: BoxFit.cover);
-      } catch (e) {
-        return _buildInitials(initials);
-      }
+      } catch (e) { return _buildInitials(initials); }
     }
-
-    return CachedNetworkImage(
-      imageUrl: user.photoUrl,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-      errorWidget: (context, url, error) => _buildInitials(initials),
-    );
+    return CachedNetworkImage(imageUrl: user.photoUrl, fit: BoxFit.cover, errorWidget: (context, url, error) => _buildInitials(initials));
   }
 
   Widget _buildInitials(String initials) {
-    return Center(
-      child: Text(
-        initials,
-        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 32, color: Colors.white),
-      ),
-    );
+    return Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 32, color: Colors.white)));
   }
 
   Widget _buildGroupHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 12, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.5, fontWeight: FontWeight.bold),
-      ),
-    );
+    return Padding(padding: const EdgeInsets.only(left: 12, bottom: 8), child: Text(title, style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.5, fontWeight: FontWeight.bold)));
   }
 
   Widget _buildSettingsGroup(List<Widget> children) {
     return Builder(builder: (context) {
       final colorScheme = Theme.of(context).colorScheme;
-      return Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          border: Border.all(color: colorScheme.outline),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(children: children),
-      );
+      return Container(decoration: BoxDecoration(color: colorScheme.surface, border: Border.all(color: colorScheme.outline), borderRadius: BorderRadius.circular(24)), child: Column(children: children));
     });
   }
 }
 
 class _StatTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
+  final String label; final String value; final IconData icon;
   const _StatTile({required this.label, required this.value, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
+  @override Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Icon(icon, color: colorScheme.primary, size: 20),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: colorScheme.onSurfaceVariant),
-        ),
-      ],
-    );
+    return Column(children: [Icon(icon, color: colorScheme.primary, size: 20), const SizedBox(height: 8), Text(value, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18)), const SizedBox(height: 2), Text(label, style: TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: colorScheme.onSurfaceVariant))]);
   }
 }
 
 class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-  final Color? iconColor;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  final IconData icon; final String title; final VoidCallback onTap; final Color? iconColor;
+  const _SettingsTile({required this.icon, required this.title, required this.onTap, this.iconColor});
+  @override Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurface),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, size: 18, color: theme.colorScheme.outline),
-          ],
-        ),
-      ),
-    );
+    return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(24), child: Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), child: Row(children: [Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurface), const SizedBox(width: 16), Expanded(child: Text(title, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w600, fontSize: 14))), Icon(Icons.chevron_right_rounded, size: 18, color: theme.colorScheme.outline)])));
   }
 }

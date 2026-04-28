@@ -3,46 +3,85 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:taskquest/features/settings/services/notification_service.dart';
 
 class QuestService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Stream<List<QuestModel>> getDailyQuests(String userId, {int? seed}) {
-    // We listen to both the quests collection and the current user's profile
-    // to ensure reactivity.
-    return _db.collection('quests').snapshots().asyncMap((questsSnap) async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final effectiveSeed = seed ?? (now.year * 10000 + now.month * 100 + now.day);
+
+    final questsStream = _db.collection('quests').snapshots();
+    final completedStream = _db
+        .collection('users')
+        .doc(userId)
+        .collection('completedQuests')
+        .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .snapshots();
+
+    return Rx.combineLatest2<QuerySnapshot, QuerySnapshot, List<QuestModel>>(
+      questsStream,
+      completedStream,
+      (questsSnap, completedSnap) {
+        final completedIds = completedSnap.docs.map((doc) => doc.id).toSet();
+        final random = Random(effectiveSeed);
+
+        List<QuestModel> allQuests = questsSnap.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return QuestModel.fromMap({
+            ...data,
+            'id': doc.id,
+            'isCompleted': completedIds.contains(doc.id),
+          });
+        }).toList();
+
+        if (allQuests.isEmpty) return [];
+
+        allQuests.shuffle(random);
+        return allQuests.take(3).toList();
+      },
+    );
+  }
+
+  Future<void> completeQuestsByType(String userId, String category) async {
+    try {
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
-
-      // Use the provided seed (YYYYMMDD) or fallback to today's date
-      final effectiveSeed = seed ?? (now.year * 10000 + now.month * 100 + now.day);
-      final random = Random(effectiveSeed);
-
-      final completedSnap = await _db
-          .collection('users')
-          .doc(userId)
-          .collection('completedQuests')
+      final seed = now.year * 10000 + now.month * 100 + now.day;
+      
+      final questsSnap = await _db.collection('quests').get();
+      final completedSnap = await _db.collection('users').doc(userId).collection('completedQuests')
           .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
           .get();
-
+          
       final completedIds = completedSnap.docs.map((doc) => doc.id).toSet();
+      final random = Random(seed);
 
-      // Get all available quests from the database
       List<QuestModel> allQuests = questsSnap.docs.map((doc) {
-        final data = doc.data();
-        return QuestModel.fromMap({
-          ...data,
-          'id': doc.id,
-          'isCompleted': completedIds.contains(doc.id),
-        });
+        final data = doc.data() as Map<String, dynamic>;
+        return QuestModel.fromMap({...data, 'id': doc.id, 'isCompleted': completedIds.contains(doc.id)});
       }).toList();
-
-      if (allQuests.isEmpty) return [];
-
-      // Shuffle using the date-based seed and pick 3 random challenges
+      
       allQuests.shuffle(random);
-      return allQuests.take(3).toList();
-    });
+      final dailyQuests = allQuests.take(3).toList();
+
+      for (final quest in dailyQuests) {
+        if (quest.category.toUpperCase() == category.toUpperCase() && !quest.isCompleted) {
+          await completeQuest(userId, quest);
+          // High-priority notification for daily challenge completion
+          NotificationService().showNotification(
+            id: 200 + quest.id.hashCode,
+            title: 'Daily Challenge Done! 🏆',
+            body: '${quest.title}: +${quest.xpReward} XP',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error auto-completing quests: $e');
+    }
   }
 
   Future<void> completeQuest(String userId, QuestModel quest) async {
@@ -65,6 +104,7 @@ class QuestService {
           .doc(userId)
           .collection('completedQuests')
           .doc(quest.id);
+
       batch.set(userQuestRef, {
         'completedAt': FieldValue.serverTimestamp(),
         'xpEarned': quest.xpReward,
@@ -80,6 +120,7 @@ class QuestService {
       }
 
       await batch.commit();
+      debugPrint('QuestService: Daily Quest ${quest.title} committed.');
     } catch (e) {
       debugPrint('Error completing quest: $e');
     }
