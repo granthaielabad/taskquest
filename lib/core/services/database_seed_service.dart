@@ -162,7 +162,7 @@ class DatabaseSeedService {
         description: 'Complete a Code Blocks game',
         xpReward: 150,
         difficulty: QuestDifficulty.medium,
-        category: 'GAMES',
+        category: 'CODING',
       ),
       QuestModel(
         id: 'q3',
@@ -170,7 +170,7 @@ class DatabaseSeedService {
         description: 'Get a perfect score in "Which Lang?"',
         xpReward: 120,
         difficulty: QuestDifficulty.medium,
-        category: 'GAMES',
+        category: 'QUIZ',
       ),
       QuestModel(
         id: 'q4',
@@ -194,7 +194,7 @@ class DatabaseSeedService {
         description: 'Find the error in a Code Blocks challenge',
         xpReward: 130,
         difficulty: QuestDifficulty.medium,
-        category: 'GAMES',
+        category: 'CODING',
       ),
       QuestModel(
         id: 'q7',
@@ -226,7 +226,7 @@ class DatabaseSeedService {
         description: 'Play "Which Lang?" for 5 minutes',
         xpReward: 110,
         difficulty: QuestDifficulty.medium,
-        category: 'GAMES',
+        category: 'QUIZ',
       ),
       QuestModel(
         id: 'q11',
@@ -234,7 +234,7 @@ class DatabaseSeedService {
         description: 'Complete a Hard Code challenge',
         xpReward: 200,
         difficulty: QuestDifficulty.hard,
-        category: 'GAMES',
+        category: 'CODING',
       ),
       QuestModel(
         id: 'q12',

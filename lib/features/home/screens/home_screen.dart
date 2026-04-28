@@ -256,7 +256,7 @@ class HomeScreen extends ConsumerWidget {
                             
                             // Map categories to screens
                             final cat = q.category.toUpperCase();
-                            if (cat == 'GAMES' || cat == 'CODING' || cat == 'CS BASICS') {
+                            if (cat == 'GAMES' || cat == 'CODING' || cat == 'CS BASICS' || cat == 'QUIZ' || cat == 'LOGIC' || cat == 'ARCHITECTURE') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const GamesScreen()),

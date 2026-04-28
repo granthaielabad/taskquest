@@ -40,6 +40,8 @@ class QuestService {
 
         if (allQuests.isEmpty) return [];
 
+        // Sort by ID to ensure deterministic shuffle across different calls
+        allQuests.sort((a, b) => a.id.compareTo(b.id));
         allQuests.shuffle(random);
         return allQuests.take(3).toList();
       },
@@ -65,13 +67,16 @@ class QuestService {
         return QuestModel.fromMap({...data, 'id': doc.id, 'isCompleted': completedIds.contains(doc.id)});
       }).toList();
       
+      // Sort by ID to ensure deterministic shuffle across different calls
+      allQuests.sort((a, b) => a.id.compareTo(b.id));
       allQuests.shuffle(random);
       final dailyQuests = allQuests.take(3).toList();
 
+      final targetCat = category.toUpperCase();
+
       for (final quest in dailyQuests) {
-        if (quest.category.toUpperCase() == category.toUpperCase() && !quest.isCompleted) {
+        if (quest.category.toUpperCase() == targetCat && !quest.isCompleted) {
           await completeQuest(userId, quest);
-          // High-priority notification for daily challenge completion
           NotificationService().showNotification(
             id: 200 + quest.id.hashCode,
             title: 'Daily Challenge Done! 🏆',
@@ -95,7 +100,8 @@ class QuestService {
       );
 
       final newXp = currentXp + quest.xpReward;
-      final newLevel = XpUtils.calculateLevel(newXp);
+      final levelData = XpUtils.getLevelProgress(newXp);
+      final newLevel = levelData['level'] as int;
 
       final batch = _db.batch();
 

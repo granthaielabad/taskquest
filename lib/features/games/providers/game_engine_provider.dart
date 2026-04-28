@@ -213,9 +213,17 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
 
       // 3. COMPLETE RELEVANT QUESTS AUTOMATICALLY
       final questService = ref.read(questServiceProvider);
-      await questService.completeQuestsByType(user.uid, 'GAMES');
-      if (state.config?.title == 'Code Blocks') {
+      
+      final gameType = state.config?.type;
+      if (gameType == GameType.codeBlocks) {
         await questService.completeQuestsByType(user.uid, 'CODING');
+      } else if (gameType == GameType.quiz) {
+        await questService.completeQuestsByType(user.uid, 'QUIZ');
+      } else if (gameType == GameType.sdlc) {
+        await questService.completeQuestsByType(user.uid, 'ARCHITECTURE');
+      } else if (gameType == GameType.algorithm) {
+        await questService.completeQuestsByType(user.uid, 'LOGIC');
+        await questService.completeQuestsByType(user.uid, 'CS BASICS');
       }
     } catch (e) {
       debugPrint('Error saving game results: $e');
