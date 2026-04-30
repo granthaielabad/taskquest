@@ -42,7 +42,7 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
   void initState() {
     super.initState();
     _titleFocus.addListener(() => setState(() {}));
-    
+
     if (widget.deck != null) {
       _titleController.text = widget.deck!.title;
       _selectedCategory = widget.deck!.category;
@@ -53,7 +53,7 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         final df = FocusNode();
         tf.addListener(() => setState(() {}));
         df.addListener(() => setState(() {}));
-        
+
         _termControllers.add(tc);
         _defControllers.add(dc);
         _termFocusNodes.add(tf);
@@ -132,7 +132,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         ),
         content: Text(
           'This will delete all content you have typed.',
-          style: AppTheme.bodyMono.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTheme.bodyMono.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         actions: [
           TextButton(
@@ -206,7 +208,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
         ),
         content: Text(
           'You have unsaved cards. Are you sure you want to leave?',
-          style: AppTheme.bodyMono.copyWith(color: colorScheme.onSurfaceVariant),
+          style: AppTheme.bodyMono.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         actions: [
           TextButton(
@@ -303,7 +307,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
       final user = ref.read(currentUserProvider);
       if (user != null) {
         final deck = FlashcardDeckModel(
-          id: widget.deck?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          id:
+              widget.deck?.id ??
+              DateTime.now().millisecondsSinceEpoch.toString(),
           userId: user.uid,
           title: _titleController.text.trim(),
           type: 'Manual',
@@ -323,7 +329,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(widget.deck != null ? 'Deck updated!' : 'Deck saved to cloud!'),
+              content: Text(
+                widget.deck != null ? 'Deck updated!' : 'Deck saved to cloud!',
+              ),
               backgroundColor: isDark ? Colors.lightGreenAccent : Colors.green,
             ),
           );
@@ -447,7 +455,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: isSelected ? colorScheme.onSurface : colorScheme.surface,
+                          color: isSelected
+                              ? colorScheme.onSurface
+                              : colorScheme.surface,
                           border: Border.all(
                             color: isSelected
                                 ? colorScheme.onSurface
@@ -463,7 +473,9 @@ class _ManualFlashcardScreenState extends ConsumerState<ManualFlashcardScreen> {
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
-                            color: isSelected ? colorScheme.surface : colorScheme.onSurfaceVariant,
+                            color: isSelected
+                                ? colorScheme.surface
+                                : colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),

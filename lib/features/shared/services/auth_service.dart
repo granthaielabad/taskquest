@@ -24,16 +24,20 @@ class AuthService {
     }
   }
 
-  Future<UserCredential> signUpWithEmail(String email, String password, String displayName) async {
+  Future<UserCredential> signUpWithEmail(
+    String email,
+    String password,
+    String displayName,
+  ) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
+
       // Set the display name in Firebase Auth profile immediately
       await credential.user?.updateDisplayName(displayName);
-      
+
       return credential;
     } catch (e) {
       debugPrint('Sign-up Error: $e');
@@ -52,12 +56,14 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      // This will automatically link if the email is the same and 
+      // This will automatically link if the email is the same and
       // "One account per email address" is enabled in Firebase Console.
       return await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        debugPrint('AuthService: Account already exists with a different provider.');
+        debugPrint(
+          'AuthService: Account already exists with a different provider.',
+        );
         // In this case, we could implement a re-auth flow, but Firebase
         // usually handles the email-match automatically if configured.
       }

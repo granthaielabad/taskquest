@@ -8,27 +8,29 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
     if (kIsWeb) return;
-    
+
     tz_data.initializeTimeZones();
-    
+
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    
+
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
 
     await _notificationsPlugin.initialize(
       initializationSettings,
@@ -38,23 +40,29 @@ class NotificationService {
     );
 
     final androidPlugin = _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-        
-    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
-      'taskquest_channel',
-      'TaskQuest Notifications',
-      description: 'Standard TaskQuest alerts',
-      importance: Importance.max,
-    ));
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
-    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
-      'daily_reminder_channel',
-      'Daily Reminders',
-      description: 'Recurring study reminders',
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-    ));
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'taskquest_channel',
+        'TaskQuest Notifications',
+        description: 'Standard TaskQuest alerts',
+        importance: Importance.max,
+      ),
+    );
+
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'daily_reminder_channel',
+        'Daily Reminders',
+        description: 'Recurring study reminders',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      ),
+    );
 
     await requestPermissions();
   }
@@ -64,80 +72,128 @@ class NotificationService {
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          _notificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+          _notificationsPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
       await androidImplementation?.requestNotificationsPermission();
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
     }
   }
 
   Future<void> showNotification({
     int id = 0,
-    String? title, String? body, String? payload,
+    String? title,
+    String? body,
+    String? payload,
   }) async {
     if (kIsWeb) return;
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'taskquest_channel', 'TaskQuest Notifications',
-      importance: Importance.max, priority: Priority.high, showWhen: true,
-    );
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'taskquest_channel',
+          'TaskQuest Notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
     const NotificationDetails details = NotificationDetails(
-      android: androidDetails, iOS: DarwinNotificationDetails(),
+      android: androidDetails,
+      iOS: DarwinNotificationDetails(),
     );
     await _notificationsPlugin.show(id, title, body, details, payload: payload);
   }
 
-  Future<void> scheduleDailyReminder(int hour, int minute, {int id = 1, String? title, String? body}) async {
+  Future<void> scheduleDailyReminder(
+    int hour,
+    int minute, {
+    int id = 1,
+    String? title,
+    String? body,
+  }) async {
     if (kIsWeb) return;
     final tz.TZDateTime scheduledTime = _nextInstanceOfTime(hour, minute);
-    await _scheduleZoned(id, title ?? 'Reminder', body ?? 'Time for TaskQuest!', scheduledTime);
+    await _scheduleZoned(
+      id,
+      title ?? 'Reminder',
+      body ?? 'Time for TaskQuest!',
+      scheduledTime,
+    );
   }
 
-  Future<void> scheduleTestNotification(int seconds, {int id = 1, String? title, String? body}) async {
+  Future<void> scheduleTestNotification(
+    int seconds, {
+    int id = 1,
+    String? title,
+    String? body,
+  }) async {
     if (kIsWeb) return;
-    final tz.TZDateTime scheduledTime = tz.TZDateTime.now(tz.local).add(Duration(seconds: seconds));
+    final tz.TZDateTime scheduledTime = tz.TZDateTime.now(
+      tz.local,
+    ).add(Duration(seconds: seconds));
     debugPrint('SERVICE: Scheduling TEST ID $id for $scheduledTime');
-    await _scheduleZoned(id, title ?? 'Test', body ?? 'Test content', scheduledTime);
+    await _scheduleZoned(
+      id,
+      title ?? 'Test',
+      body ?? 'Test content',
+      scheduledTime,
+    );
   }
 
-  Future<void> _scheduleZoned(int id, String title, String body, tz.TZDateTime scheduledTime) async {
+  Future<void> _scheduleZoned(
+    int id,
+    String title,
+    String body,
+    tz.TZDateTime scheduledTime,
+  ) async {
     if (kIsWeb) return;
     try {
       await _notificationsPlugin.zonedSchedule(
-        id, title, body, scheduledTime,
+        id,
+        title,
+        body,
+        scheduledTime,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'daily_reminder_channel', 'Daily Reminders',
-            importance: Importance.max, priority: Priority.high,
+            'daily_reminder_channel',
+            'Daily Reminders',
+            importance: Importance.max,
+            priority: Priority.high,
             visibility: NotificationVisibility.public,
           ),
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
       );
       debugPrint('SERVICE: Zoned schedule successful for ID $id');
     } catch (e) {
-      debugPrint('SERVICE: Exact alarm failed, falling back to inexact. Error: $e');
+      debugPrint(
+        'SERVICE: Exact alarm failed, falling back to inexact. Error: $e',
+      );
       await _notificationsPlugin.zonedSchedule(
-        id, title, body, scheduledTime,
+        id,
+        title,
+        body,
+        scheduledTime,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'daily_reminder_channel', 'Daily Reminders',
-            importance: Importance.max, priority: Priority.high,
+            'daily_reminder_channel',
+            'Daily Reminders',
+            importance: Importance.max,
+            priority: Priority.high,
           ),
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     }
@@ -150,7 +206,13 @@ class NotificationService {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = DateTime.now();
-    DateTime scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
+    DateTime scheduledDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }

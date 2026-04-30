@@ -54,9 +54,11 @@ class UserService {
     // ── TRIGGER NOTIFICATIONS ───────────────────────────────────
     final prefs = await SharedPreferences.getInstance();
     // We check for all versions of settings keys used
-    final settings = prefs.getStringList('notification_settings_v4') ?? 
-                     prefs.getStringList('notification_settings_v3') ?? [];
-    
+    final settings =
+        prefs.getStringList('notification_settings_v4') ??
+        prefs.getStringList('notification_settings_v3') ??
+        [];
+
     bool isAllOn = true;
     bool isXpOn = false;
     bool isQuestOn = true;
@@ -80,7 +82,8 @@ class UserService {
           NotificationService().showNotification(
             id: 4,
             title: 'Level Up Imminent! ⚡',
-            body: 'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!',
+            body:
+                'You are only ${nextThreshold - newTotalXp} XP away from Level ${newLevel + 1}!',
           );
         }
       }
@@ -90,7 +93,8 @@ class UserService {
         NotificationService().showNotification(
           id: 3,
           title: 'Quest Completed! ✅',
-          body: 'Great job! You earned $xpToAdd XP and moved closer to your goal.',
+          body:
+              'Great job! You earned $xpToAdd XP and moved closer to your goal.',
         );
       }
     }
@@ -146,7 +150,10 @@ class UserService {
           updates['displayName'] = displayName;
         }
 
-        await _db.collection('users').doc(uid).set(updates, SetOptions(merge: true));
+        await _db
+            .collection('users')
+            .doc(uid)
+            .set(updates, SetOptions(merge: true));
         await updateStreak(uid);
       }
     } catch (e) {
@@ -161,7 +168,11 @@ class UserService {
 
       final lastLogin = user.lastLogin;
       final now = DateTime.now();
-      final lastLoginDate = DateTime(lastLogin.year, lastLogin.month, lastLogin.day);
+      final lastLoginDate = DateTime(
+        lastLogin.year,
+        lastLogin.month,
+        lastLogin.day,
+      );
       final todayDate = DateTime(now.year, now.month, now.day);
       final difference = todayDate.difference(lastLoginDate).inDays;
 

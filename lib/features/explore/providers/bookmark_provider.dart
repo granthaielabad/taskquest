@@ -12,7 +12,10 @@ final userBookmarksProvider = StreamProvider<List<BookmarkModel>>((ref) {
   return ref.watch(bookmarkServiceProvider).getBookmarks(user.uid);
 });
 
-final isBookmarkedProvider = FutureProvider.family<bool, String>((ref, id) async {
+final isBookmarkedProvider = FutureProvider.family<bool, String>((
+  ref,
+  id,
+) async {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return false;
   return ref.watch(bookmarkServiceProvider).isBookmarked(user.uid, id);

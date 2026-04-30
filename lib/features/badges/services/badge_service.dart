@@ -40,9 +40,15 @@ class BadgeService {
   }
 
   Future<void> checkPerfectScore(
-      String userId, GameType type, String difficulty) async {
-    final statsRef =
-        _db.collection('users').doc(userId).collection('stats').doc('games');
+    String userId,
+    GameType type,
+    String difficulty,
+  ) async {
+    final statsRef = _db
+        .collection('users')
+        .doc(userId)
+        .collection('stats')
+        .doc('games');
 
     // Increment total perfect scores for Apprentice Archivist
     await statsRef.set({
@@ -106,7 +112,10 @@ class BadgeService {
   }
 
   Future<void> checkArticleRead(
-      String userId, String articleId, String category) async {
+    String userId,
+    String articleId,
+    String category,
+  ) async {
     if (articleId == 'web_history_featured') {
       await unlockBadge(userId, 'web_pioneer');
     }
@@ -164,7 +173,11 @@ class BadgeService {
     }
   }
 
-  Future<void> checkEthicist(String userId, String module, bool isPerfect) async {
+  Future<void> checkEthicist(
+    String userId,
+    String module,
+    bool isPerfect,
+  ) async {
     if (module == 'AI Ethics' && isPerfect) {
       await unlockBadge(userId, 'the_ethicist');
     }

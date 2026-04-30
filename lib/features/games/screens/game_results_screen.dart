@@ -31,14 +31,14 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
 
   void _awardXp() async {
     if (_xpAwarded) return;
-    
+
     final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     // Update XP via UserService
     final userService = ref.read(userServiceProvider);
     await userService.addXp(user.uid, widget.result.xpEarned);
-    
+
     // Record activity
     final activityService = ref.read(activityServiceProvider);
     await activityService.recordActivity(
@@ -46,7 +46,8 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
       ActivityModel(
         id: const Uuid().v4(),
         title: 'Completed ${widget.gameTitle}',
-        subtitle: 'Score: ${widget.result.score}/${widget.result.totalQuestions}',
+        subtitle:
+            'Score: ${widget.result.score}/${widget.result.totalQuestions}',
         xpReward: widget.result.xpEarned,
         timestamp: DateTime.now(),
         type: ActivityType.game,
@@ -80,10 +81,14 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
                   color: colorScheme.onSurface,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.emoji_events_rounded, color: colorScheme.surface, size: 40),
+                child: Icon(
+                  Icons.emoji_events_rounded,
+                  color: colorScheme.surface,
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 32),
-              
+
               Text(
                 'QUEST COMPLETE',
                 style: TextStyle(
@@ -105,21 +110,27 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
                   color: colorScheme.onSurface,
                 ),
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Stats Grid
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildResultStat('SCORE', '${widget.result.score}/${widget.result.totalQuestions}'),
-                  _buildResultStat('ACCURACY', '${(widget.result.accuracy * 100).toInt()}%'),
+                  _buildResultStat(
+                    'SCORE',
+                    '${widget.result.score}/${widget.result.totalQuestions}',
+                  ),
+                  _buildResultStat(
+                    'ACCURACY',
+                    '${(widget.result.accuracy * 100).toInt()}%',
+                  ),
                   _buildResultStat('XP', '+${widget.result.xpEarned}'),
                 ],
               ),
-              
+
               const SizedBox(height: 64),
-              
+
               SizedBox(
                 width: double.infinity,
                 height: 64,
@@ -131,7 +142,9 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.onSurface,
                     foregroundColor: colorScheme.surface,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                   ),
                   child: const Text(
                     'BACK TO GAMES',

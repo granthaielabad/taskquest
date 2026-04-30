@@ -209,7 +209,11 @@ class ExploreContentScreen extends StatelessWidget {
                         _buildFactChip(context, 'Born: June 23, 1912'),
                         _buildFactChip(context, 'Nationality: British'),
                         _buildFactChip(context, 'Field: Mathematics, CS'),
-                        _buildFactChip(context, 'Turing Test · 1950', isHighlight: true),
+                        _buildFactChip(
+                          context,
+                          'Turing Test · 1950',
+                          isHighlight: true,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -254,7 +258,9 @@ class ExploreContentScreen extends StatelessWidget {
                                     fontFamily: 'DM Mono',
                                     fontSize: 10,
                                     letterSpacing: 1.0,
-                                    color: colorScheme.surface.withValues(alpha: 0.6),
+                                    color: colorScheme.surface.withValues(
+                                      alpha: 0.6,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -340,7 +346,9 @@ class ExploreContentScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: const Icon(
                       Icons.share_rounded,
@@ -357,7 +365,11 @@ class ExploreContentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFactChip(BuildContext context, String text, {bool isHighlight = false}) {
+  Widget _buildFactChip(
+    BuildContext context,
+    String text, {
+    bool isHighlight = false,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -373,7 +385,9 @@ class ExploreContentScreen extends StatelessWidget {
         style: TextStyle(
           fontFamily: 'DM Mono',
           fontSize: 10,
-          color: isHighlight ? colorScheme.surface : colorScheme.onSurfaceVariant,
+          color: isHighlight
+              ? colorScheme.surface
+              : colorScheme.onSurfaceVariant,
         ),
       ),
     );

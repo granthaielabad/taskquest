@@ -51,9 +51,11 @@ class BookmarkService {
         .collection('bookmarks')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BookmarkModel.fromMap(doc.id, doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => BookmarkModel.fromMap(doc.id, doc.data()))
+              .toList(),
+        );
   }
 
   Future<void> toggleBookmark(String userId, BookmarkModel bookmark) async {

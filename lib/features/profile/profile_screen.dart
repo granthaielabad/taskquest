@@ -10,6 +10,7 @@ import 'package:taskquest/features/settings/screens/appearance_screen.dart';
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/settings/screens/guide_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:taskquest/core/providers/theme_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -73,16 +74,21 @@ class ProfileScreen extends ConsumerWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           backgroundColor: theme.colorScheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: const Text(
             'Logout',
             style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
           ),
           content: isLoggingOut
-              ? const SizedBox(
+              ? SizedBox(
                   height: 100,
                   child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 )
               : const Text(
@@ -96,12 +102,16 @@ class ProfileScreen extends ConsumerWidget {
                     onPressed: () => Navigator.pop(context),
                     child: Text(
                       'CANCEL',
-                      style: TextStyle(fontFamily: 'DM Mono', color: theme.colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   TextButton(
                     onPressed: () async {
                       setState(() => isLoggingOut = true);
+                      ref.read(navigationIndexProvider.notifier).setIndex(0);
                       await ref.read(authServiceProvider).signOut();
                       if (context.mounted) {
                         Navigator.pop(context);
@@ -124,41 +134,92 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(userProfileProvider);
     final theme = Theme.of(context);
+
+    // ── Optimized Selectors ────────────────────────────────────
+    final displayName = ref.watch(
+      userProfileProvider.select((u) => u.value?.displayName ?? 'Scholar'),
+    );
+    final email = ref.watch(
+      userProfileProvider.select((u) => u.value?.email ?? ''),
+    );
+    final xp = ref.watch(userProfileProvider.select((u) => u.value?.xp ?? 0));
+    final streak = ref.watch(
+      userProfileProvider.select((u) => u.value?.streak ?? 0),
+    );
+    final unlockedCount = ref.watch(
+      userProfileProvider.select((u) => u.value?.unlockedBadges.length ?? 0),
+    );
+    final photoUrl = ref.watch(
+      userProfileProvider.select((u) => u.value?.photoUrl ?? ''),
+    );
+    final photoBg = ref.watch(
+      userProfileProvider.select((u) => u.value?.photoBackground ?? '#1A1A1A'),
+    );
+    final course = ref.watch(
+      userProfileProvider.select((u) => u.value?.course ?? ''),
+    );
+    final school = ref.watch(
+      userProfileProvider.select((u) => u.value?.school ?? ''),
+    );
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: userAsync.when(
-        data: (user) => _buildProfileContent(context, ref, user),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: _buildProfileContent(
+              context,
+              ref,
+              displayName,
+              email,
+              xp,
+              streak,
+              unlockedCount,
+              photoUrl,
+              photoBg,
+              course,
+              school,
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildProfileContent(BuildContext context, WidgetRef ref, UserModel? user) {
-    if (user == null) return const SizedBox.shrink();
-
+  Widget _buildProfileContent(
+    BuildContext context,
+    WidgetRef ref,
+    String displayName,
+    String email,
+    int xp,
+    int streak,
+    int unlockedCount,
+    String photoUrl,
+    String photoBackground,
+    String course,
+    String school,
+  ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final levelData = XpUtils.getLevelProgress(user.xp);
+    final levelData = XpUtils.getLevelProgress(xp);
     final currentLevel = levelData['level'] as int;
     final nextLevelXp = levelData['nextLevelXpThreshold'] as int;
     final progress = (levelData['progress'] as double).clamp(0.0, 1.0);
 
-    final initials = user.displayName.isNotEmpty
-        ? user.displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+    final initials = displayName.isNotEmpty
+        ? displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
         : 'S';
 
-    final bgHex = user.photoBackground.replaceFirst('#', '0xFF');
+    final bgHex = photoBackground.replaceFirst('#', '0xFF');
     final avatarColor = Color(int.parse(bgHex));
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // ── Centered Header ─────────────────────────────────────
           Center(
@@ -180,17 +241,17 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: _buildAvatarImage(user, initials),
+                    child: _buildAvatarImage(photoUrl, initials),
                   ),
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  user.displayName.isNotEmpty ? user.displayName : 'Scholar',
+                  displayName.isNotEmpty ? displayName : 'Scholar',
                   style: theme.textTheme.displayMedium?.copyWith(fontSize: 24),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  user.email,
+                  email,
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 12,
@@ -198,20 +259,25 @@ class ProfileScreen extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                if (user.course.isNotEmpty || user.school.isNotEmpty) ...[
+                if (course.isNotEmpty || school.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
-                    '${user.course}${user.school.isNotEmpty ? " @ ${user.school}" : ""}',
+                    '$course${school.isNotEmpty ? " @ $school" : ""}',
                     style: theme.textTheme.labelSmall,
                   ),
                 ],
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Text(
                     'LEVEL $currentLevel · ${XpUtils.getRankTitle(currentLevel).toUpperCase()}',
@@ -241,9 +307,21 @@ class ProfileScreen extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _StatTile(label: 'TOTAL XP', value: '${user.xp}', icon: Icons.bolt_rounded),
-                _StatTile(label: 'STREAK', value: '${user.streak}d', icon: Icons.local_fire_department_rounded),
-                _StatTile(label: 'BADGES', value: '${user.unlockedBadges.length}', icon: Icons.stars_rounded),
+                _StatTile(
+                  label: 'TOTAL XP',
+                  value: '$xp',
+                  icon: Icons.bolt_rounded,
+                ),
+                _StatTile(
+                  label: 'STREAK',
+                  value: '${streak}d',
+                  icon: Icons.local_fire_department_rounded,
+                ),
+                _StatTile(
+                  label: 'BADGES',
+                  value: '$unlockedCount',
+                  icon: Icons.stars_rounded,
+                ),
               ],
             ),
           ),
@@ -259,11 +337,19 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'LEVEL $currentLevel',
-                    style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     'LEVEL ${currentLevel + 1}',
-                    style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: colorScheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -280,8 +366,12 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Center(
                 child: Text(
-                  '${nextLevelXp - user.xp} XP remaining for next level',
-                  style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: colorScheme.onSurfaceVariant),
+                  '${nextLevelXp - xp} XP remaining for next level',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -295,17 +385,32 @@ class ProfileScreen extends ConsumerWidget {
             _SettingsTile(
               icon: Icons.person_outline_rounded,
               title: 'Edit Profile',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfileScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
+              ),
             ),
             _SettingsTile(
               icon: Icons.palette_outlined,
               title: 'Appearance',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AppearanceScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppearanceScreen(),
+                ),
+              ),
             ),
             _SettingsTile(
               icon: Icons.notifications_none_rounded,
               title: 'Notifications',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              ),
             ),
           ]),
 
@@ -315,17 +420,50 @@ class ProfileScreen extends ConsumerWidget {
             _SettingsTile(
               icon: Icons.help_outline_rounded,
               title: 'How to use TaskQuest',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GuideScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const GuideScreen()),
+              ),
             ),
             _SettingsTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
-              onTap: () => _showInfoModal(context, 'Privacy Policy', 'TaskQuest values your privacy...'),
+              onTap: () => _showInfoModal(
+                context,
+                'Privacy Policy',
+                '''1. Data Collection
+We collect minimal data (email, display name) strictly for account creation and saving your learning progress.
+
+2. Data Usage
+Your data is used to track XP, level, and badge progress. We do not sell your personal information.
+
+3. Analytics
+We collect anonymous crash reports to improve app stability. You can opt-out in Data Controls.
+
+4. Deletion
+You can request account and data deletion at any time via the Danger Zone.''',
+              ),
             ),
             _SettingsTile(
               icon: Icons.description_outlined,
               title: 'Terms of Service',
-              onTap: () => _showInfoModal(context, 'Terms of Service', 'By using TaskQuest...'),
+              onTap: () => _showInfoModal(
+                context,
+                'Terms of Service',
+                '''By using TaskQuest, you agree to:
+
+1. Educational Use
+Use the platform for its intended educational and gamified learning purposes.
+
+2. Fair Play
+Maintain the integrity of the leaderboard. Any attempts to manipulate XP or scores via exploits is prohibited.
+
+3. Account Responsibility
+Maintain the security of your account. TaskQuest is not responsible for unauthorized access.
+
+4. Content Ownership
+All learning content remains the property of TaskQuest and its contributors.''',
+              ),
             ),
           ]),
 
@@ -346,14 +484,14 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAvatarImage(UserModel user, String initials) {
-    if (user.photoUrl.isEmpty) {
+  Widget _buildAvatarImage(String photoUrl, String initials) {
+    if (photoUrl.isEmpty) {
       return _buildInitials(initials);
     }
 
-    if (user.photoUrl.startsWith('data:image')) {
+    if (photoUrl.startsWith('data:image')) {
       try {
-        final base64Part = user.photoUrl.split(',').last;
+        final base64Part = photoUrl.split(',').last;
         return Image.memory(base64Decode(base64Part), fit: BoxFit.cover);
       } catch (e) {
         return _buildInitials(initials);
@@ -361,9 +499,11 @@ class ProfileScreen extends ConsumerWidget {
     }
 
     return CachedNetworkImage(
-      imageUrl: user.photoUrl,
+      imageUrl: photoUrl,
       fit: BoxFit.cover,
-      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+      placeholder: (context, url) => const Center(
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+      ),
       errorWidget: (context, url, error) => _buildInitials(initials),
     );
   }
@@ -372,7 +512,12 @@ class ProfileScreen extends ConsumerWidget {
     return Center(
       child: Text(
         initials,
-        style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 32, color: Colors.white),
+        style: const TextStyle(
+          fontFamily: 'Syne',
+          fontWeight: FontWeight.w800,
+          fontSize: 32,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -382,23 +527,30 @@ class ProfileScreen extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 12, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.5, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 9,
+          letterSpacing: 1.5,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
   Widget _buildSettingsGroup(List<Widget> children) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
-      return Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          border: Border.all(color: colorScheme.outline),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(children: children),
-      );
-    });
+    return Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            border: Border.all(color: colorScheme.outline),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(children: children),
+        );
+      },
+    );
   }
 }
 
@@ -407,7 +559,11 @@ class _StatTile extends StatelessWidget {
   final String value;
   final IconData icon;
 
-  const _StatTile({required this.label, required this.value, required this.icon});
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -418,12 +574,20 @@ class _StatTile extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18),
+          style: const TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: colorScheme.onSurfaceVariant),
+          style: TextStyle(
+            fontFamily: 'DM Mono',
+            fontSize: 8,
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -453,15 +617,27 @@ class _SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurface),
+            Icon(
+              icon,
+              size: 20,
+              color: iconColor ?? theme.colorScheme.onSurface,
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w600, fontSize: 14),
+                style: const TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 18, color: theme.colorScheme.outline),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: theme.colorScheme.outline,
+            ),
           ],
         ),
       ),

@@ -53,7 +53,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      await ref.read(authServiceProvider).signInWithEmail(
+      await ref
+          .read(authServiceProvider)
+          .signInWithEmail(
             _emailController.text.trim(),
             _passwordController.text,
           );
@@ -64,14 +66,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential' || e.code == 'wrong-password') {
-        setState(() => _errorMessage = "Invalid credentials. If you've signed in with Google before, try that!");
+        setState(
+          () => _errorMessage =
+              "Invalid credentials. If you've signed in with Google before, try that!",
+        );
       } else if (e.code == 'account-exists-with-different-credential') {
-        setState(() => _errorMessage = "This email is associated with a different sign-in method. Please use Google.");
+        setState(
+          () => _errorMessage =
+              "This email is associated with a different sign-in method. Please use Google.",
+        );
       } else {
         setState(() => _errorMessage = e.message ?? "Login failed");
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -166,7 +176,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Text(
                     _errorMessage!,
-                    style: TextStyle(color: colorScheme.error, fontFamily: 'DM Mono', fontSize: 11),
+                    style: TextStyle(
+                      color: colorScheme.error,
+                      fontFamily: 'DM Mono',
+                      fontSize: 11,
+                    ),
                   ),
                 ),
 
@@ -178,7 +192,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
-                suffixIcon: Icon(Icons.mail_outline_rounded, size: 16, color: colorScheme.onSurfaceVariant),
+                suffixIcon: Icon(
+                  Icons.mail_outline_rounded,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -190,7 +208,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 hintText: 'password123',
                 obscureText: _obscurePassword,
                 suffixIcon: GestureDetector(
-                  onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onTap: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   child: Icon(
                     _obscurePassword
                         ? Icons.visibility_off_outlined
@@ -207,7 +226,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: TextButton(
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const ForgotPasswordScreen(),
+                    ),
                   ),
                   child: Text(
                     'Forgot password?',
@@ -238,10 +259,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 32),
 
               // Google Login
-              GoogleButton(
-                onTap: _handleGoogleSignIn,
-                isLoading: _isLoading,
-              ),
+              GoogleButton(onTap: _handleGoogleSignIn, isLoading: _isLoading),
 
               const SizedBox(height: 48),
 
@@ -250,11 +268,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
                   ),
                   child: RichText(
                     text: TextSpan(
-                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       children: [
                         const TextSpan(text: "Don't have an account? "),
                         TextSpan(

@@ -106,7 +106,9 @@ class _PioneersListScreenState extends ConsumerState<PioneersListScreen> {
                               icon: const Icon(Icons.close_rounded, size: 18),
                               onPressed: () {
                                 _searchController.clear();
-                                ref.read(pioneersProvider.notifier).setSearchQuery('');
+                                ref
+                                    .read(pioneersProvider.notifier)
+                                    .setSearchQuery('');
                                 setState(() {});
                               },
                             )
@@ -125,8 +127,7 @@ class _PioneersListScreenState extends ConsumerState<PioneersListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: _filterCategories.map((cat) {
-                final isSelected =
-                    pioneersAsync.value?.category == cat['tag'];
+                final isSelected = pioneersAsync.value?.category == cat['tag'];
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
@@ -135,10 +136,9 @@ class _PioneersListScreenState extends ConsumerState<PioneersListScreen> {
                       style: TextStyle(
                         fontFamily: 'DM Mono',
                         fontSize: 10,
-                        color:
-                            isSelected
-                                ? colorScheme.surface
-                                : colorScheme.onSurface,
+                        color: isSelected
+                            ? colorScheme.surface
+                            : colorScheme.onSurface,
                       ),
                     ),
                     selected: isSelected,
@@ -157,10 +157,9 @@ class _PioneersListScreenState extends ConsumerState<PioneersListScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                       side: BorderSide(
-                        color:
-                            isSelected
-                                ? colorScheme.onSurface
-                                : colorScheme.outline,
+                        color: isSelected
+                            ? colorScheme.onSurface
+                            : colorScheme.outline,
                       ),
                     ),
                   ),
@@ -250,7 +249,11 @@ class _PioneerGridCard extends ConsumerWidget {
                     ? CachedNetworkImageProvider(summary!.thumbnailUrl!)
                     : null,
                 child: summary?.thumbnailUrl == null
-                    ? Icon(Icons.person_rounded, size: 40, color: colorScheme.outline)
+                    ? Icon(
+                        Icons.person_rounded,
+                        size: 40,
+                        color: colorScheme.outline,
+                      )
                     : null,
               ),
               const SizedBox(height: 16),

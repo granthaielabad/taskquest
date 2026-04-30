@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:taskquest/core/utils/algorithms.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/explore/providers/explore_provider.dart';
 import 'package:taskquest/features/explore/services/explore_api_service.dart';
@@ -9,6 +10,7 @@ class SearchResult {
   final String type; // 'QUEST', 'CONCEPT', 'ARTICLE', 'WIKI'
   final String? url;
   final dynamic originalData;
+  bool isExactMatch; // New field for algorithm demonstration
 
   SearchResult({
     required this.title,
@@ -16,6 +18,7 @@ class SearchResult {
     required this.type,
     this.url,
     this.originalData,
+    this.isExactMatch = false,
   });
 }
 
@@ -68,7 +71,9 @@ final exploreSearchProvider = FutureProvider<List<SearchResult>>((ref) async {
       allResults.add(
         SearchResult(
           title: article.title,
-          category: article.tags.isNotEmpty ? article.tags.first.toUpperCase() : 'TECH',
+          category: article.tags.isNotEmpty
+              ? article.tags.first.toUpperCase()
+              : 'TECH',
           type: 'ARTICLE',
           url: article.url,
           originalData: article,
@@ -92,7 +97,11 @@ final exploreSearchProvider = FutureProvider<List<SearchResult>>((ref) async {
 
   // 3. Mock some "Learning Concepts"
   final mockConcepts = [
-    {'title': 'Data Structures 101', 'cat': 'COMPUTER SCIENCE', 'type': 'CONCEPT'},
+    {
+      'title': 'Data Structures 101',
+      'cat': 'COMPUTER SCIENCE',
+      'type': 'CONCEPT',
+    },
     {'title': 'Big O Notation Guide', 'cat': 'ALGORITHMS', 'type': 'CONCEPT'},
     {'title': 'Recursion Explained', 'cat': 'PROGRAMMING', 'type': 'CONCEPT'},
     {'title': 'Solid Principles', 'cat': 'ARCHITECTURE', 'type': 'CONCEPT'},
@@ -107,6 +116,34 @@ final exploreSearchProvider = FutureProvider<List<SearchResult>>((ref) async {
           type: concept['type']!,
         ),
       );
+    }
+  }
+
+  // 4. Applying Core Algorithms
+  if (allResults.isNotEmpty) {
+    // Application of Algorithm 1: QUICK SORT (O(N log N))
+    // We sort the results by title alphabetically to prepare for Binary Search
+    TaskQuestAlgorithms.quickSort<SearchResult>(
+      allResults,
+      0,
+      allResults.length - 1,
+      (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+    );
+
+    // Application of Algorithm 2: BINARY SEARCH (O(log N))
+    // We look for an exact title match for the query
+    final target = SearchResult(title: query, category: '', type: '');
+    final matchIndex = TaskQuestAlgorithms.binarySearch<SearchResult>(
+      allResults,
+      target,
+      (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+    );
+
+    if (matchIndex != -1) {
+      allResults[matchIndex].isExactMatch = true;
+      // Move exact match to front
+      final match = allResults.removeAt(matchIndex);
+      allResults.insert(0, match);
     }
   }
 

@@ -23,11 +23,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _checkStatus() async {
     await Future.delayed(const Duration(milliseconds: 2500));
-    
+
     if (!mounted) return;
 
     final authState = ref.read(authStateProvider);
-    
+
     if (authState.value == null) {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
@@ -76,7 +76,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   tag: 'logo',
                   child: SvgPicture.asset(
                     'assets/images/logo.svg',
-                    width: 120, 
+                    width: 120,
                     height: 120,
                     colorFilter: ColorFilter.mode(
                       colorScheme.onSurface,

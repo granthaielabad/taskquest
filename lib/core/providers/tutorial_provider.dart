@@ -40,10 +40,11 @@ class WalkthroughKeys {
   static final streakKey = GlobalKey();
   static final leaderboardCardKey = GlobalKey();
   static final badgesCardKey = GlobalKey();
+  static final bossFightKey = GlobalKey();
   static final challengesKey = GlobalKey();
   static final gamesKey = GlobalKey();
   static final recentActivityKey = GlobalKey();
-  
+
   static final navHomeKey = GlobalKey();
   static final navGamesKey = GlobalKey();
   static final navScanKey = GlobalKey();

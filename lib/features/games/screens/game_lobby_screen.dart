@@ -91,7 +91,11 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
                             color: colorScheme.surface.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(widget.icon, color: colorScheme.surface, size: 24),
+                          child: Icon(
+                            widget.icon,
+                            color: colorScheme.surface,
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(height: 24),
                         Text(
@@ -115,9 +119,19 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
                         ),
                         const SizedBox(height: 32),
                         // Stats Row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: widget.stats.map((s) => _buildStat(s['value']!, s['label']!)).toList(),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: widget.stats
+                                .map(
+                                  (s) => Padding(
+                                    padding: const EdgeInsets.only(right: 24),
+                                    child: _buildStat(s['value']!, s['label']!),
+                                  ),
+                                )
+                                .toList(),
+                          ),
                         ),
                       ],
                     ),
@@ -136,8 +150,10 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
                   const SizedBox(height: 16),
 
                   // Config Options
-                  ...widget.configOptions.entries.map((entry) => _buildConfigSection(entry.key, entry.value)),
-                  
+                  ...widget.configOptions.entries.map(
+                    (entry) => _buildConfigSection(entry.key, entry.value),
+                  ),
+
                   const SizedBox(height: 40),
                 ],
               ),
@@ -150,46 +166,59 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
               width: double.infinity,
               height: 64,
               child: ElevatedButton(
-                onPressed: gameState.status == GameSessionStatus.loading 
-                  ? null 
-                  : () async {
-                    final config = GameSessionConfig(
-                      title: widget.title,
-                      type: widget.gameType,
-                      options: _selectedOptions,
-                    );
-                    
-                    await ref.read(gameEngineProvider.notifier).initializeGame(config);
-                    
-                    if (context.mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => widget.gameScreen),
-                      );
-                    }
-                },
+                onPressed: gameState.status == GameSessionStatus.loading
+                    ? null
+                    : () async {
+                        final config = GameSessionConfig(
+                          title: widget.title,
+                          type: widget.gameType,
+                          options: _selectedOptions,
+                        );
+
+                        await ref
+                            .read(gameEngineProvider.notifier)
+                            .initializeGame(config);
+
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => widget.gameScreen,
+                            ),
+                          );
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.onSurface,
                   foregroundColor: colorScheme.surface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                 ),
                 child: gameState.status == GameSessionStatus.loading
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.play_arrow_rounded, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.startButtonText.toUpperCase(),
-                          style: const TextStyle(
-                            fontFamily: 'Syne',
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                          ),
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.play_arrow_rounded, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget.startButtonText.toUpperCase(),
+                            style: const TextStyle(
+                              fontFamily: 'Syne',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),
@@ -259,8 +288,12 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 10,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? colorScheme.surface : colorScheme.onSurface,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: isSelected
+                        ? colorScheme.surface
+                        : colorScheme.onSurface,
                   ),
                 ),
                 selected: isSelected,
@@ -272,7 +305,9 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                   side: BorderSide(
-                    color: isSelected ? colorScheme.onSurface : colorScheme.outline,
+                    color: isSelected
+                        ? colorScheme.onSurface
+                        : colorScheme.outline,
                   ),
                 ),
                 showCheckmark: false,

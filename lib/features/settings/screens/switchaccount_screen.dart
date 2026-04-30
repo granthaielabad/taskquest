@@ -92,7 +92,9 @@ class SwitchAccountScreen extends ConsumerWidget {
                               color: colorScheme.surface.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: colorScheme.surface.withValues(alpha: 0.2),
+                                color: colorScheme.surface.withValues(
+                                  alpha: 0.2,
+                                ),
                               ),
                             ),
                             child: Center(
@@ -126,7 +128,9 @@ class SwitchAccountScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontFamily: 'DM Mono',
                                     fontSize: 11,
-                                    color: colorScheme.surface.withValues(alpha: 0.6),
+                                    color: colorScheme.surface.withValues(
+                                      alpha: 0.6,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),

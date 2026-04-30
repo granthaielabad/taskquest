@@ -54,27 +54,32 @@ class GuideScreen extends StatelessWidget {
                 children: const [
                   _GuideItem(
                     title: '1. Complete Quests',
-                    description: 'Navigate to the Home tab to view your daily and weekly quests. Complete them to earn XP and level up!',
+                    description:
+                        'Navigate to the Home tab to view your daily and weekly quests. Complete them to earn XP and level up!',
                     icon: Icons.assignment_turned_in_rounded,
                   ),
                   _GuideItem(
                     title: '2. Play Minigames',
-                    description: 'Go to the Games tab to practice your coding skills with interactive challenges like Syntax, Logic, and Architecture minigames.',
+                    description:
+                        'Go to the Games tab to practice your coding skills with interactive challenges like Syntax, Logic, and Architecture minigames.',
                     icon: Icons.gamepad_rounded,
                   ),
                   _GuideItem(
                     title: '3. Scan Flashcards',
-                    description: 'Use the AI Flashcard scanner to quickly turn your study notes into interactive flashcard decks.',
+                    description:
+                        'Use the AI Flashcard scanner to quickly turn your study notes into interactive flashcard decks.',
                     icon: Icons.document_scanner_rounded,
                   ),
                   _GuideItem(
                     title: '4. Earn Badges',
-                    description: 'Check out the Badges tab to track your achievements and show off your progress to other scholars.',
+                    description:
+                        'Check out the Badges tab to track your achievements and show off your progress to other scholars.',
                     icon: Icons.stars_rounded,
                   ),
                   _GuideItem(
                     title: '5. Customize Your Profile',
-                    description: 'Head to the Profile tab to change your avatar, customize the app appearance, and tweak your notification settings.',
+                    description:
+                        'Head to the Profile tab to change your avatar, customize the app appearance, and tweak your notification settings.',
                     icon: Icons.person_rounded,
                   ),
                 ],
@@ -126,10 +131,7 @@ class _GuideItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: theme.textTheme.displaySmall,
-                ),
+                Text(title, style: theme.textTheme.displaySmall),
                 const SizedBox(height: 8),
                 Text(
                   description,

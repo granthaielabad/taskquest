@@ -20,6 +20,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
     final textScale = ref.watch(textScaleProvider);
     final reduceMotion = ref.watch(reduceMotionProvider);
     final fontStyle = ref.watch(fontStyleProvider);
+    final themePreset = ref.watch(themePresetProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -114,6 +115,70 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                     ),
 
                     const SizedBox(height: 32),
+                    const _SectionLabel(label: 'THEME PALETTE'),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 100,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          _PaletteOption(
+                            label: 'TaskQuest',
+                            preset: ThemePreset.taskQuest,
+                            colors: const [
+                              AppTheme.white,
+                              AppTheme.black,
+                              AppTheme.backgroundDark,
+                            ],
+                            isSelected: themePreset == ThemePreset.taskQuest,
+                            onTap: () => ref
+                                .read(themePresetProvider.notifier)
+                                .setPreset(ThemePreset.taskQuest),
+                          ),
+                          _PaletteOption(
+                            label: 'Dracula',
+                            preset: ThemePreset.dracula,
+                            colors: const [
+                              AppTheme.draculaPrimary,
+                              AppTheme.draculaAccent,
+                              AppTheme.draculaBg,
+                            ],
+                            isSelected: themePreset == ThemePreset.dracula,
+                            onTap: () => ref
+                                .read(themePresetProvider.notifier)
+                                .setPreset(ThemePreset.dracula),
+                          ),
+                          _PaletteOption(
+                            label: 'Monokai',
+                            preset: ThemePreset.monokai,
+                            colors: const [
+                              AppTheme.monokaiPrimary,
+                              AppTheme.monokaiAccent,
+                              AppTheme.monokaiBg,
+                            ],
+                            isSelected: themePreset == ThemePreset.monokai,
+                            onTap: () => ref
+                                .read(themePresetProvider.notifier)
+                                .setPreset(ThemePreset.monokai),
+                          ),
+                          _PaletteOption(
+                            label: 'Cyberpunk',
+                            preset: ThemePreset.cyberpunk,
+                            colors: const [
+                              AppTheme.cyberpunkPrimary,
+                              AppTheme.cyberpunkAccent,
+                              AppTheme.cyberpunkBg,
+                            ],
+                            isSelected: themePreset == ThemePreset.cyberpunk,
+                            onTap: () => ref
+                                .read(themePresetProvider.notifier)
+                                .setPreset(ThemePreset.cyberpunk),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
                     const _SectionLabel(label: 'FONT STYLE'),
                     const SizedBox(height: 12),
                     Container(
@@ -127,19 +192,25 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                           _FontOption(
                             label: 'Syne / DM Mono',
                             isSelected: fontStyle == 'Syne / DM Mono',
-                            onTap: () => ref.read(fontStyleProvider.notifier).setFontStyle('Syne / DM Mono'),
+                            onTap: () => ref
+                                .read(fontStyleProvider.notifier)
+                                .setFontStyle('Syne / DM Mono'),
                           ),
                           Divider(color: colorScheme.outline, height: 1),
                           _FontOption(
                             label: 'System Default',
                             isSelected: fontStyle == 'System Default',
-                            onTap: () => ref.read(fontStyleProvider.notifier).setFontStyle('System Default'),
+                            onTap: () => ref
+                                .read(fontStyleProvider.notifier)
+                                .setFontStyle('System Default'),
                           ),
                           Divider(color: colorScheme.outline, height: 1),
                           _FontOption(
                             label: 'Serif',
                             isSelected: fontStyle == 'Serif',
-                            onTap: () => ref.read(fontStyleProvider.notifier).setFontStyle('Serif'),
+                            onTap: () => ref
+                                .read(fontStyleProvider.notifier)
+                                .setFontStyle('Serif'),
                           ),
                         ],
                       ),
@@ -161,7 +232,9 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                             desc: 'Minimize UI animations',
                             value: reduceMotion,
                             onChanged: (v) {
-                              ref.read(reduceMotionProvider.notifier).setReduceMotion(v);
+                              ref
+                                  .read(reduceMotionProvider.notifier)
+                                  .setReduceMotion(v);
                             },
                           ),
                           Divider(color: colorScheme.outline, height: 1),
@@ -224,12 +297,13 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
                     const _SectionLabel(label: 'ANIMATION PREVIEW'),
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () => setState(() => _testAlignment = !_testAlignment),
+                      onTap: () =>
+                          setState(() => _testAlignment = !_testAlignment),
                       child: Container(
                         height: 80,
                         width: double.infinity,
@@ -241,24 +315,38 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                         child: Stack(
                           children: [
                             AnimatedAlign(
-                              duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 600),
+                              duration: reduceMotion
+                                  ? Duration.zero
+                                  : const Duration(milliseconds: 600),
                               curve: Curves.easeInOutCubic,
-                              alignment: _testAlignment ? Alignment.centerRight : Alignment.centerLeft,
+                              alignment: _testAlignment
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
                               child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 20),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
                                   color: colorScheme.primary,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Icon(Icons.bolt, color: colorScheme.onPrimary),
+                                child: Icon(
+                                  Icons.bolt,
+                                  color: colorScheme.onPrimary,
+                                ),
                               ),
                             ),
                             const Center(
                               child: Text(
                                 'TAP TO TEST MOTION',
-                                style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.0, color: AppTheme.muted),
+                                style: TextStyle(
+                                  fontFamily: 'DM Mono',
+                                  fontSize: 9,
+                                  letterSpacing: 1.0,
+                                  color: AppTheme.muted,
+                                ),
                               ),
                             ),
                           ],
@@ -276,17 +364,21 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          await ref.read(walkthroughProvider.notifier).resetWalkthrough();
-                          // Switch to Home tab automatically
-                          ref.read(navigationIndexProvider.notifier).setIndex(0);
-                          
+                          await ref
+                              .read(walkthroughProvider.notifier)
+                              .resetWalkthrough();
+                          ref
+                              .read(navigationIndexProvider.notifier)
+                              .setIndex(0);
                           if (context.mounted) {
-                            // Close settings and go back to MainScaffold (which is now on Home)
-                            Navigator.of(context).popUntil((route) => route.isFirst);
-                            
+                            Navigator.of(
+                              context,
+                            ).popUntil((route) => route.isFirst);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Walkthrough reset! Returning home...'),
+                                content: Text(
+                                  'Walkthrough reset! Returning home...',
+                                ),
                                 backgroundColor: Colors.black,
                                 duration: Duration(seconds: 2),
                               ),
@@ -295,7 +387,10 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
                           child: Row(
                             children: [
                               Icon(Icons.refresh_rounded, size: 20),
@@ -318,6 +413,78 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                     const SizedBox(height: 40),
                   ],
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PaletteOption extends StatelessWidget {
+  final String label;
+  final ThemePreset preset;
+  final List<Color> colors;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _PaletteOption({
+    required this.label,
+    required this.preset,
+    required this.colors,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: colors[2], // Background
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? colors[0] : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: colors[0],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: colors[1],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: Colors.white,
               ),
             ),
           ],

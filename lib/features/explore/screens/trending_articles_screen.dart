@@ -20,7 +20,11 @@ class TrendingArticlesScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: colorScheme.onSurface, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: colorScheme.onSurface,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -89,7 +93,9 @@ class _ArticleListTile extends StatelessWidget {
                   width: 100,
                   height: 100,
                   color: colorScheme.outline.withValues(alpha: 0.1),
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   width: 100,
@@ -105,7 +111,9 @@ class _ArticleListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    article.tags.isNotEmpty ? article.tags.first.toUpperCase() : 'TECH',
+                    article.tags.isNotEmpty
+                        ? article.tags.first.toUpperCase()
+                        : 'TECH',
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 8,

@@ -5,6 +5,7 @@ import 'package:taskquest/features/explore/providers/bookmark_provider.dart';
 import 'package:taskquest/features/explore/services/bookmark_service.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class WikiDetailScreen extends ConsumerWidget {
   final String title;
@@ -35,7 +36,11 @@ class WikiDetailScreen extends ConsumerWidget {
                   color: Colors.black.withValues(alpha: 0.4),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               onPressed: () => Navigator.pop(context),
             ),
@@ -51,8 +56,12 @@ class WikiDetailScreen extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                        color: isBookmarked ? colorScheme.primary : Colors.white,
+                        isBookmarked
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_outline_rounded,
+                        color: isBookmarked
+                            ? colorScheme.primary
+                            : Colors.white,
                         size: 20,
                       ),
                     ),
@@ -68,7 +77,9 @@ class WikiDetailScreen extends ConsumerWidget {
                           coverImage: summary?.thumbnailUrl,
                           createdAt: DateTime.now(),
                         );
-                        await ref.read(bookmarkServiceProvider).toggleBookmark(user.uid, bookmark);
+                        await ref
+                            .read(bookmarkServiceProvider)
+                            .toggleBookmark(user.uid, bookmark);
                         ref.invalidate(isBookmarkedProvider(title));
                       }
                     },
@@ -84,12 +95,24 @@ class WikiDetailScreen extends ConsumerWidget {
                     ? Stack(
                         fit: StackFit.expand,
                         children: [
-                          Image.network(
-                            summary!.thumbnailUrl!,
+                          CachedNetworkImage(
+                            imageUrl: summary!.thumbnailUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
+                            placeholder: (context, url) => Container(
                               color: colorScheme.surface,
-                              child: Icon(Icons.history_edu_rounded, color: colorScheme.outline, size: 48),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: colorScheme.surface,
+                              child: Icon(
+                                Icons.history_edu_rounded,
+                                color: colorScheme.outline,
+                                size: 48,
+                              ),
                             ),
                           ),
                           const DecoratedBox(
@@ -105,7 +128,11 @@ class WikiDetailScreen extends ConsumerWidget {
                       )
                     : Container(
                         color: colorScheme.surface,
-                        child: Icon(Icons.history_edu_rounded, color: colorScheme.outline, size: 48),
+                        child: Icon(
+                          Icons.history_edu_rounded,
+                          color: colorScheme.outline,
+                          size: 48,
+                        ),
                       ),
                 loading: () => Container(color: colorScheme.surface),
                 error: (e, s) => Container(color: colorScheme.surface),
@@ -121,7 +148,10 @@ class WikiDetailScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
                       border: Border.all(color: colorScheme.outline),
@@ -160,7 +190,9 @@ class WikiDetailScreen extends ConsumerWidget {
                                   fontFamily: 'DM Mono',
                                   fontSize: 14,
                                   height: 1.6,
-                                  color: colorScheme.onSurface.withValues(alpha: 0.8),
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.8,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 40),
@@ -174,34 +206,61 @@ class WikiDetailScreen extends ConsumerWidget {
                                         mode: LaunchMode.externalApplication,
                                       );
                                       if (!launched && context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Could not launch Wikipedia.')),
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Could not launch Wikipedia.',
+                                            ),
+                                          ),
                                         );
                                       }
                                     } catch (e) {
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Error launching URL: $e')),
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Error launching URL: $e',
+                                            ),
+                                          ),
                                         );
                                       }
                                     }
                                   },
-                                  icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                                  icon: const Icon(
+                                    Icons.open_in_new_rounded,
+                                    size: 16,
+                                  ),
                                   label: const Text(
                                     'READ FULL ON WIKIPEDIA',
-                                    style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, letterSpacing: 1.2),
+                                    style: TextStyle(
+                                      fontFamily: 'DM Mono',
+                                      fontSize: 10,
+                                      letterSpacing: 1.2,
+                                    ),
                                   ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: colorScheme.onSurface,
                                     foregroundColor: colorScheme.surface,
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           )
-                        : const Text('No summary available.', style: TextStyle(fontFamily: 'DM Mono')),
+                        : const Text(
+                            'No summary available.',
+                            style: TextStyle(fontFamily: 'DM Mono'),
+                          ),
                     loading: () => const Center(
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),

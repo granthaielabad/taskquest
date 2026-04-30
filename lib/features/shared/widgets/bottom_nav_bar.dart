@@ -56,7 +56,9 @@ class TQBottomNav extends StatelessWidget {
                       boxShadow: currentIndex == 2
                           ? [
                               BoxShadow(
-                                color: colorScheme.primary.withValues(alpha: 0.3),
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -122,7 +124,9 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              color: active
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 4),
             Text(
@@ -131,7 +135,9 @@ class _NavItem extends StatelessWidget {
                 fontFamily: 'DM Mono',
                 fontSize: 9,
                 letterSpacing: 0.72,
-                color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                color: active
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ],

@@ -8,6 +8,9 @@ import 'package:taskquest/features/explore/screens/article_detail_screen.dart';
 import 'package:taskquest/features/explore/screens/wiki_detail_screen.dart';
 import 'package:taskquest/features/explore/screens/pioneers_list_screen.dart';
 import 'package:taskquest/features/explore/screens/trending_articles_screen.dart';
+import 'package:taskquest/features/explore/screens/tutorial_detail_screen.dart';
+import 'package:taskquest/features/explore/screens/crash_courses_list_screen.dart';
+import 'package:taskquest/features/explore/providers/tutorial_completion_provider.dart';
 import 'package:taskquest/features/explore/services/explore_api_service.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -62,222 +65,98 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-
-              // ── Header ──────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Learning\nExplorer',
-                            style: TextStyle(
-                              fontFamily: 'Syne',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 32,
-                              height: 0.9,
-                              letterSpacing: -1.2,
-                              color: colorScheme.onSurface,
-                            ),
-                            softWrap: true,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Discover new concepts and expand your knowledge',
-                            style: TextStyle(
-                              fontFamily: 'DM Mono',
-                              fontSize: 10,
-                              letterSpacing: 0.5,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            softWrap: true,
-                          ),
-                        ],
+                    Text(
+                      'Learning\nExplorer',
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 32,
+                        height: 0.9,
+                        letterSpacing: -1.2,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Discover new concepts and expand your knowledge',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-
-              // ── Search Bar ──────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: _buildSearchBar(context),
               ),
-
               const SizedBox(height: 24),
-
               if (_query.isEmpty) ...[
-                // ── Daily Byte Banner ──────────────────────────────────
                 _buildDailyByte(context),
-
                 const SizedBox(height: 32),
+                _buildSectionHeader(
+                  context,
+                  'CRASH COURSES',
+                  Icons.school_rounded,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CrashCoursesListScreen(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-                // ── Trending Categories ──────────────────────────────
+                _buildTutorialsHorizontal(context),
+                const SizedBox(height: 32),
                 _buildCategoryChips(context),
-
                 const SizedBox(height: 12),
-
-                // ── Trending Tech News (Horizontal) ───────────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.trending_up_rounded,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 8),
-                            const Flexible(
-                              child: Text(
-                                'TRENDING IN TECH',
-                                style: TextStyle(
-                                  fontFamily: 'DM Mono',
-                                  fontSize: 10,
-                                  letterSpacing: 1.8,
-                                ),
-                                softWrap: false,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TrendingArticlesScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'SEE MORE',
-                          style: TextStyle(
-                            fontFamily: 'DM Mono',
-                            fontSize: 9,
-                            letterSpacing: 1.0,
-                            color: colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.5,
-                            ),
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
+                _buildSectionHeader(
+                  context,
+                  'TRENDING IN TECH',
+                  Icons.trending_up_rounded,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TrendingArticlesScreen(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 _buildDynamicArticlesHorizontal(context),
-
                 const SizedBox(height: 36),
-
-                // ── Tech Pioneers & History (Horizontal) ──────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.history_edu_rounded,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 8),
-                            const Flexible(
-                              child: Text(
-                                'TECH PIONEERS & HISTORY',
-                                style: TextStyle(
-                                  fontFamily: 'DM Mono',
-                                  fontSize: 10,
-                                  letterSpacing: 1.8,
-                                ),
-                                softWrap: false,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PioneersListScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'SEE MORE',
-                          style: TextStyle(
-                            fontFamily: 'DM Mono',
-                            fontSize: 9,
-                            letterSpacing: 1.0,
-                            color: colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.5,
-                            ),
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
+                _buildSectionHeader(
+                  context,
+                  'TECH PIONEERS & HISTORY',
+                  Icons.history_edu_rounded,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PioneersListScreen(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 _buildTechPioneersList(context),
-
                 const SizedBox(height: 36),
-
-                // ── Computing Timeline (Horizontal) ───────────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.timeline_rounded,
-                            size: 14,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'COMPUTING TIMELINE',
-                            style: TextStyle(
-                              fontFamily: 'DM Mono',
-                              fontSize: 10,
-                              letterSpacing: 1.8,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                _buildSectionHeader(
+                  context,
+                  'COMPUTING TIMELINE',
+                  Icons.timeline_rounded,
+                  null,
                 ),
                 const SizedBox(height: 16),
                 _buildComputingTimeline(context),
-
                 const SizedBox(height: 36),
-
-                // ── Bookmarks (Horizontal) ─────────────────────────────
                 bookmarksAsync.when(
                   data: (bookmarks) {
                     if (bookmarks.isEmpty) return const SizedBox.shrink();
@@ -315,6 +194,56 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    IconData icon,
+    VoidCallback? onTap,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Row(
+              children: [
+                Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      letterSpacing: 1.8,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            GestureDetector(
+              onTap: onTap,
+              child: Text(
+                'SEE MORE',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 9,
+                  letterSpacing: 1.0,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSearchBar(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
@@ -332,16 +261,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           color: theme.colorScheme.onSurface,
         ),
         decoration: InputDecoration(
-          hintText: 'Search concepts, topics, history...',
+          hintText: 'Search concepts, topics...',
           hintStyle: TextStyle(
             fontFamily: 'DM Mono',
             color: theme.colorScheme.onSurfaceVariant,
             fontSize: 13,
           ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: theme.colorScheme.onSurfaceVariant,
-            size: 20,
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 12),
+            child: Icon(
+              Icons.search_rounded,
+              color: theme.colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
           ),
           suffixIcon: _query.isNotEmpty
               ? IconButton(
@@ -357,10 +293,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildDailyByte(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final byteAsync = ref.watch(dailyByteProvider);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -406,7 +340,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   fontSize: 20,
                   color: colorScheme.surface,
                 ),
-                softWrap: true,
               ),
               const SizedBox(height: 8),
               Text(
@@ -417,7 +350,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   height: 1.5,
                   color: colorScheme.surface.withValues(alpha: 0.8),
                 ),
-                softWrap: true,
               ),
             ],
           ),
@@ -439,10 +371,117 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  Widget _buildTutorialsHorizontal(BuildContext context) {
+    final tutorialsAsync = ref.watch(crashCoursesProvider);
+    final completedIds = ref.watch(tutorialCompletionProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return tutorialsAsync.when(
+      data: (tutorials) => SizedBox(
+        height: 180,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          itemCount: tutorials.length,
+          itemBuilder: (context, index) {
+            final t = tutorials[index];
+            final isDone = completedIds.contains(t.id);
+            return GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TutorialDetailScreen(tutorial: t),
+                ),
+              ),
+              child: Container(
+                width: 280,
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  border: Border.all(
+                    color: isDone
+                        ? colorScheme.primary.withValues(alpha: 0.3)
+                        : colorScheme.outline,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            t.topic,
+                            style: TextStyle(
+                              fontFamily: 'DM Mono',
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        if (isDone)
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 16,
+                            color: colorScheme.primary,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      t.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        height: 1.1,
+                      ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          t.difficulty.toUpperCase(),
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 8,
+                            color: colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => const SizedBox.shrink(),
+    );
+  }
+
   Widget _buildCategoryChips(BuildContext context) {
     final selectedTag = ref.watch(trendingCategoryProvider);
     final colorScheme = Theme.of(context).colorScheme;
-
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -491,7 +530,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildDynamicArticlesHorizontal(BuildContext context) {
     final articlesAsync = ref.watch(exploreArticlesProvider);
-
     return articlesAsync.when(
       data: (articles) {
         if (articles.isEmpty) {
@@ -503,18 +541,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           );
         }
         return SizedBox(
-          height: 280, // Increased height for large text
+          height: 280,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24),
             itemCount: articles.length,
-            itemBuilder: (context, index) {
-              final article = articles[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: _buildHorizontalArticleCard(context, article),
-              );
-            },
+            itemBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: _buildHorizontalArticleCard(context, articles[index]),
+            ),
           ),
         );
       },
@@ -532,18 +567,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     BuildContext context,
     ExploreArticle article,
   ) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ArticleDetailScreen(article: article),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ArticleDetailScreen(article: article),
+        ),
+      ),
       child: Container(
         width: 260,
         decoration: BoxDecoration(
@@ -567,7 +598,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   height: 130,
                   width: double.infinity,
                   color: colorScheme.outline.withValues(alpha: 0.1),
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   height: 130,
@@ -580,7 +613,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
               ),
             ),
-            // Text
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -611,7 +643,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         height: 1.2,
                         color: colorScheme.onSurface,
                       ),
-                      softWrap: true,
                     ),
                   ],
                 ),
@@ -625,20 +656,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildTechPioneersList(BuildContext context) {
     final pioneersAsync = ref.watch(pioneersProvider);
-
     return pioneersAsync.when(
       data: (state) => SizedBox(
-        height: 200, // Increased height for large text
+        height: 200,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           itemCount: state.pioneers.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: _WikiPioneerCard(title: state.pioneers[index]),
-            );
-          },
+          itemBuilder: (context, index) => Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: _WikiPioneerCard(title: state.pioneers[index]),
+          ),
         ),
       ),
       loading: () => const SizedBox(
@@ -658,11 +686,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildBookmarksList(BuildContext context, List bookmarks) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
-      height: 200, // Increased height for large text
+      height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -711,11 +737,27 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       top: Radius.circular(18),
                     ),
                     child: b.coverImage != null
-                        ? Image.network(
-                            b.coverImage!,
+                        ? CachedNetworkImage(
+                            imageUrl: b.coverImage!,
                             height: 100,
                             width: 140,
                             fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              height: 100,
+                              width: 140,
+                              color: colorScheme.outline.withValues(alpha: 0.1),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              height: 100,
+                              width: 140,
+                              color: colorScheme.outline.withValues(alpha: 0.1),
+                              child: const Icon(Icons.bookmark_rounded),
+                            ),
                           )
                         : Container(
                             height: 100,
@@ -741,7 +783,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               fontSize: 11,
                               height: 1.1,
                             ),
-                            softWrap: true,
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -770,9 +811,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildSearchResultsWidget(BuildContext context) {
     final resultsAsync = ref.watch(exploreSearchProvider);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: resultsAsync.when(
@@ -812,7 +851,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 12,
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               )
             else
@@ -835,7 +874,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (result.type == 'WIKI') typeIcon = Icons.account_balance_rounded;
 
     return GestureDetector(
-      onTap: () async {
+      onTap: () {
         if (result.type == 'ARTICLE' && result.originalData is ExploreArticle) {
           Navigator.push(
             context,
@@ -895,7 +934,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       fontSize: 14,
                       color: colorScheme.onSurface,
                     ),
-                    softWrap: true,
                   ),
                 ],
               ),
@@ -913,7 +951,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildComputingTimeline(BuildContext context) {
     final timelineAsync = ref.watch(computingTimelineProvider);
-
     return timelineAsync.when(
       data: (items) => SizedBox(
         height: 200,
@@ -921,9 +958,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           itemCount: items.length,
-          itemBuilder: (context, index) {
-            return _TimelineCard(item: items[index]);
-          },
+          itemBuilder: (context, index) => _TimelineCard(item: items[index]),
         ),
       ),
       loading: () => const SizedBox(
@@ -945,23 +980,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
 class _TimelineCard extends StatelessWidget {
   final WikiTimelineItem item;
-
   const _TimelineCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WikiDetailScreen(title: item.title),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WikiDetailScreen(title: item.title),
+        ),
+      ),
       child: Container(
         width: 200,
         margin: const EdgeInsets.only(right: 16),
@@ -987,18 +1017,21 @@ class _TimelineCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.onSurface.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(
+                  child: const Text(
                     'MILESTONE',
                     style: TextStyle(
                       fontFamily: 'DM Mono',
                       fontSize: 7,
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -1016,7 +1049,6 @@ class _TimelineCard extends StatelessWidget {
                 height: 1.1,
                 color: colorScheme.onSurface,
               ),
-              softWrap: true,
             ),
             const SizedBox(height: 6),
             if (item.description != null)
@@ -1031,7 +1063,6 @@ class _TimelineCard extends StatelessWidget {
                     height: 1.3,
                     color: colorScheme.onSurfaceVariant,
                   ),
-                  softWrap: true,
                 ),
               ),
             const SizedBox(height: 8),
@@ -1063,7 +1094,6 @@ class _TimelineCard extends StatelessWidget {
 
 class _WikiPioneerCard extends ConsumerWidget {
   final String title;
-
   const _WikiPioneerCard({required this.title});
 
   @override
@@ -1073,14 +1103,10 @@ class _WikiPioneerCard extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WikiDetailScreen(title: title),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => WikiDetailScreen(title: title)),
+      ),
       child: Container(
         width: 140,
         decoration: BoxDecoration(
@@ -1089,57 +1115,54 @@ class _WikiPioneerCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: summaryAsync.when(
-          data: (summary) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 36,
-                  backgroundColor: theme.scaffoldBackgroundColor,
-                  backgroundImage: summary?.thumbnailUrl != null
-                      ? NetworkImage(summary!.thumbnailUrl!)
-                      : null,
-                  child: summary?.thumbnailUrl == null
-                      ? Icon(
-                          Icons.person_rounded,
-                          size: 36,
-                          color: colorScheme.outline,
-                        )
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      height: 1.1,
-                      color: colorScheme.onSurface,
-                    ),
-                    softWrap: true,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'HISTORY',
+          data: (summary) => Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: theme.scaffoldBackgroundColor,
+                backgroundImage: summary?.thumbnailUrl != null
+                    ? CachedNetworkImageProvider(summary!.thumbnailUrl!)
+                    : null,
+                child: summary?.thumbnailUrl == null
+                    ? Icon(
+                        Icons.person_rounded,
+                        size: 36,
+                        color: colorScheme.outline,
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 8,
-                    letterSpacing: 1.0,
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    height: 1.1,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'HISTORY',
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 8,
+                  letterSpacing: 1.0,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, s) => const Center(child: Icon(Icons.error_outline)),
         ),

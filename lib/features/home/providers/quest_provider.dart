@@ -12,6 +12,7 @@ class QuestModel {
   final QuestDifficulty difficulty;
   final bool isCompleted;
   final String category; // e.g., 'Flashcards', 'Coding', 'Quiz'
+  final int estimatedMinutes; // Used for algorithm weights
 
   QuestModel({
     required this.id,
@@ -21,6 +22,7 @@ class QuestModel {
     required this.difficulty,
     this.isCompleted = false,
     required this.category,
+    this.estimatedMinutes = 10,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +34,7 @@ class QuestModel {
       'difficulty': difficulty.name,
       'isCompleted': isCompleted,
       'category': category,
+      'estimatedMinutes': estimatedMinutes,
     };
   }
 
@@ -47,6 +50,7 @@ class QuestModel {
       ),
       isCompleted: map['isCompleted'] ?? false,
       category: map['category'] ?? '',
+      estimatedMinutes: map['estimatedMinutes'] ?? 10,
     );
   }
 }

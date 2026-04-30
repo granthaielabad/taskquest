@@ -62,6 +62,25 @@ class NavigationIndexNotifier extends Notifier<int> {
   }
 }
 
-final navigationIndexProvider = NotifierProvider<NavigationIndexNotifier, int>(() {
-  return NavigationIndexNotifier();
-});
+enum ThemePreset { taskQuest, dracula, monokai, cyberpunk }
+
+class ThemePresetNotifier extends Notifier<ThemePreset> {
+  @override
+  ThemePreset build() => ThemePreset.taskQuest;
+
+  void setPreset(ThemePreset preset) {
+    state = preset;
+  }
+}
+
+final themePresetProvider = NotifierProvider<ThemePresetNotifier, ThemePreset>(
+  () {
+    return ThemePresetNotifier();
+  },
+);
+
+final navigationIndexProvider = NotifierProvider<NavigationIndexNotifier, int>(
+  () {
+    return NavigationIndexNotifier();
+  },
+);

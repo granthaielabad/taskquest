@@ -44,10 +44,7 @@ class AIScanService {
         ]);
       } else if (['png', 'jpg', 'jpeg'].contains(extension)) {
         response = await _executeWithFallback([
-          Content.multi([
-            TextPart(prompt),
-            DataPart('image/jpeg', bytes),
-          ]),
+          Content.multi([TextPart(prompt), DataPart('image/jpeg', bytes)]),
         ]);
       } else {
         throw Exception('Unsupported file format: $extension');
@@ -61,7 +58,9 @@ class AIScanService {
     } catch (e) {
       debugPrint('AI Generation Error: $e');
       if (e.toString().contains('403')) {
-        throw Exception('API Key invalid or restricted. Check your AI Studio settings.');
+        throw Exception(
+          'API Key invalid or restricted. Check your AI Studio settings.',
+        );
       }
       throw Exception('Failed to generate cards: ${e.toString()}');
     }
@@ -76,18 +75,17 @@ class AIScanService {
       return await _primaryModel.generateContent(content);
     } catch (e) {
       final errorStr = e.toString().toLowerCase();
-      
+
       // 2. Check if it's a "High Demand" or "Overloaded" error (503)
-      if (errorStr.contains('503') || 
-          errorStr.contains('demand') || 
+      if (errorStr.contains('503') ||
+          errorStr.contains('demand') ||
           errorStr.contains('overloaded') ||
           errorStr.contains('temporary')) {
-        
         debugPrint('Primary model busy. Falling back to gemini-1.5-flash...');
-        
+
         // 3. Small wait before retry
         await Future.delayed(const Duration(seconds: 2));
-        
+
         // 4. Attempt with Fallback Model
         try {
           return await _fallbackModel.generateContent(content);
@@ -96,7 +94,7 @@ class AIScanService {
           rethrow;
         }
       }
-      
+
       // If it's a different kind of error, just rethrow
       rethrow;
     }
@@ -118,15 +116,17 @@ class AIScanService {
   /// ── Parser ─────────────────────────────────────────────────
   List<FlashcardModel> _parseResponse(String? text) {
     if (text == null) return [];
-    
+
     String jsonString = text.trim();
-    
+
     // Robust extraction: Find the first '[' and last ']' to isolate the JSON array
     try {
       final firstBracket = jsonString.indexOf('[');
       final lastBracket = jsonString.lastIndexOf(']');
-      
-      if (firstBracket != -1 && lastBracket != -1 && lastBracket > firstBracket) {
+
+      if (firstBracket != -1 &&
+          lastBracket != -1 &&
+          lastBracket > firstBracket) {
         jsonString = jsonString.substring(firstBracket, lastBracket + 1);
       }
 

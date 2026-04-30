@@ -1,7 +1,13 @@
+enum GameSessionStatus {
+  idle,
+  loading,
+  playing,
+  paused,
+  showingFeedback,
+  finished,
+}
 
-enum GameSessionStatus { idle, loading, playing, paused, showingFeedback, finished }
-
-enum GameType { quiz, codeBlocks, sdlc, algorithm }
+enum GameType { quiz, codeBlocks, sdlc, algorithm, syntaxSniper }
 
 class GameSessionConfig {
   final String title;
@@ -51,7 +57,8 @@ class QuizQuestion extends GameQuestion {
 }
 
 class CodeBlockPuzzle extends GameQuestion {
-  final List<String> codeSegments; // e.g., ["for (int i=0; i < ", "slot", "; i++)"]
+  final List<String>
+  codeSegments; // e.g., ["for (int i=0; i < ", "slot", "; i++)"]
   final List<String> availableBlocks;
   final Map<int, String> correctAnswers; // map index of "slot" to correct block
 
@@ -119,6 +126,25 @@ class AlgorithmProblem extends GameQuestion {
 
   @override
   bool validate(dynamic answer) => answer == correctAnswer;
+}
+
+class SyntaxQuestion extends GameQuestion {
+  final String codeSnippet;
+  final bool hasError;
+  final String? errorLine; // The specific line or part that is wrong
+
+  SyntaxQuestion({
+    required super.id,
+    required super.instruction,
+    required super.explanation,
+    required this.codeSnippet,
+    required this.hasError,
+    this.errorLine,
+    super.xpReward,
+  });
+
+  @override
+  bool validate(dynamic answer) => answer == hasError;
 }
 
 class GameResult {

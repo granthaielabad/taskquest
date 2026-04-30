@@ -19,7 +19,11 @@ class LeaderboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'Global Ranking',
-          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 16),
+          style: TextStyle(
+            fontFamily: 'Syne',
+            fontWeight: FontWeight.w800,
+            fontSize: 16,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
@@ -66,7 +70,12 @@ class LeaderboardScreen extends ConsumerWidget {
                       final rank = index + 4;
                       final isCurrent = user.uid == currentUser?.uid;
 
-                      return _buildLeaderboardTile(context, user, rank, isCurrent);
+                      return _buildLeaderboardTile(
+                        context,
+                        user,
+                        rank,
+                        isCurrent,
+                      );
                     },
                   ),
                 ),
@@ -105,9 +114,18 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPodiumItem(BuildContext context, UserModel user, int rank, double size) {
+  Widget _buildPodiumItem(
+    BuildContext context,
+    UserModel user,
+    int rank,
+    double size,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
-    final colors = [Colors.amber, const Color(0xFFC0C0C0), Colors.orange.shade300];
+    final colors = [
+      Colors.amber,
+      const Color(0xFFC0C0C0),
+      Colors.orange.shade300,
+    ];
     final color = colors[rank - 1];
 
     return Column(
@@ -187,13 +205,20 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLeaderboardTile(BuildContext context, UserModel user, int rank, bool isCurrent) {
+  Widget _buildLeaderboardTile(
+    BuildContext context,
+    UserModel user,
+    int rank,
+    bool isCurrent,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isCurrent ? colorScheme.onSurface.withValues(alpha: 0.05) : Colors.transparent,
+        color: isCurrent
+            ? colorScheme.onSurface.withValues(alpha: 0.05)
+            : Colors.transparent,
         border: Border.all(
           color: isCurrent ? colorScheme.onSurface : colorScheme.outline,
         ),

@@ -13,7 +13,10 @@ class AllActivityScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Activity History', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
+        title: const Text(
+          'Activity History',
+          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.chevron_left_rounded),
           onPressed: () => Navigator.pop(context),
@@ -23,7 +26,10 @@ class AllActivityScreen extends ConsumerWidget {
         data: (activities) {
           if (activities.isEmpty) {
             return const Center(
-              child: Text('No activity yet.', style: TextStyle(fontFamily: 'DM Mono')),
+              child: Text(
+                'No activity yet.',
+                style: TextStyle(fontFamily: 'DM Mono'),
+              ),
             );
           }
           return ListView.builder(
@@ -33,12 +39,16 @@ class AllActivityScreen extends ConsumerWidget {
               final activity = activities[index];
               IconData icon = Icons.bolt_rounded;
               bool isDark = false;
-              if (activity.type == ActivityType.scan) icon = Icons.document_scanner_rounded;
+              if (activity.type == ActivityType.scan) {
+                icon = Icons.document_scanner_rounded;
+              }
               if (activity.type == ActivityType.game) {
                 icon = Icons.videogame_asset_rounded;
                 isDark = true;
               }
-              if (activity.type == ActivityType.study) icon = Icons.menu_book_rounded;
+              if (activity.type == ActivityType.study) {
+                icon = Icons.menu_book_rounded;
+              }
 
               final diff = DateTime.now().difference(activity.timestamp);
               String timeStr = 'Just now';
@@ -100,27 +110,61 @@ class _ActivityListItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isDarkIcon ? colorScheme.onSurface : theme.scaffoldBackgroundColor,
+              color: isDarkIcon
+                  ? colorScheme.onSurface
+                  : theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 18, color: isDarkIcon ? colorScheme.surface : colorScheme.onSurface),
+            child: Icon(
+              icon,
+              size: 18,
+              color: isDarkIcon ? colorScheme.surface : colorScheme.onSurface,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(sub, style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  sub,
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(xp, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 14)),
-              Text(time, style: TextStyle(fontFamily: 'DM Mono', fontSize: 8, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5))),
+              Text(
+                xp,
+                style: const TextStyle(
+                  fontFamily: 'Syne',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                time,
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 8,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
+              ),
             ],
           ),
         ],

@@ -69,7 +69,9 @@ class PioneersState {
   }) {
     return PioneersState(
       pioneers: pioneers ?? this.pioneers,
-      continueToken: clearContinueToken ? null : (continueToken ?? this.continueToken),
+      continueToken: clearContinueToken
+          ? null
+          : (continueToken ?? this.continueToken),
       category: category ?? this.category,
       searchQuery: searchQuery ?? this.searchQuery,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
@@ -85,7 +87,7 @@ class PioneersNotifier extends AsyncNotifier<PioneersState> {
     final response = await ref
         .read(exploreApiServiceProvider)
         .fetchPioneersPaginated();
-    
+
     ref.onDispose(() {
       _debounce?.cancel();
     });
@@ -168,7 +170,7 @@ class PioneersNotifier extends AsyncNotifier<PioneersState> {
         final results = await ref
             .read(exploreApiServiceProvider)
             .searchPioneers(query);
-        
+
         state = AsyncData(
           PioneersState(
             pioneers: results,
@@ -184,30 +186,33 @@ class PioneersNotifier extends AsyncNotifier<PioneersState> {
   }
 }
 
-final pioneersProvider =
-    AsyncNotifierProvider<PioneersNotifier, PioneersState>(() {
-      return PioneersNotifier();
-    });
+final pioneersProvider = AsyncNotifierProvider<PioneersNotifier, PioneersState>(
+  () {
+    return PioneersNotifier();
+  },
+);
 
-final computingTimelineProvider =
-    FutureProvider<List<WikiTimelineItem>>((ref) async {
-      try {
-        final items =
-            await ref.watch(exploreApiServiceProvider).fetchComputingTimeline();
-        if (items.isNotEmpty) return items;
-      } catch (_) {}
+final computingTimelineProvider = FutureProvider<List<WikiTimelineItem>>((
+  ref,
+) async {
+  try {
+    final items = await ref
+        .watch(exploreApiServiceProvider)
+        .fetchComputingTimeline();
+    if (items.isNotEmpty) return items;
+  } catch (_) {}
 
-      // Fallback timeline
-      return [
-        WikiTimelineItem(title: 'World Wide Web', date: '1990-12-25'),
-        WikiTimelineItem(title: 'C++ Release', date: '1985-10-01'),
-        WikiTimelineItem(title: 'Apple I', date: '1976-04-11'),
-        WikiTimelineItem(title: 'C Programming Language', date: '1972-01-01'),
-        WikiTimelineItem(title: 'ARPANET', date: '1969-10-29'),
-        WikiTimelineItem(title: 'COBOL', date: '1959-01-01'),
-        WikiTimelineItem(title: 'ENIAC', date: '1946-02-15'),
-      ];
-    });
+  // Fallback timeline
+  return [
+    WikiTimelineItem(title: 'World Wide Web', date: '1990-12-25'),
+    WikiTimelineItem(title: 'C++ Release', date: '1985-10-01'),
+    WikiTimelineItem(title: 'Apple I', date: '1976-04-11'),
+    WikiTimelineItem(title: 'C Programming Language', date: '1972-01-01'),
+    WikiTimelineItem(title: 'ARPANET', date: '1969-10-29'),
+    WikiTimelineItem(title: 'COBOL', date: '1959-01-01'),
+    WikiTimelineItem(title: 'ENIAC', date: '1946-02-15'),
+  ];
+});
 
 // ── Daily Byte Data (Dynamic via Wikidata) ──────────────────
 final dailyByteProvider = FutureProvider<WikiHistoryEvent>((ref) async {
@@ -234,7 +239,52 @@ final dailyByteProvider = FutureProvider<WikiHistoryEvent>((ref) async {
       fact: 'Tim Berners-Lee wrote the first web server and browser in 1990.',
       year: '1990',
     ),
+    WikiHistoryEvent(
+      title: 'Linux Kernel',
+      fact:
+          'Linus Torvalds posted his famous message about a "hobby" OS in 1991.',
+      year: '1991',
+    ),
+    WikiHistoryEvent(
+      title: 'Python Released',
+      fact:
+          'Guido van Rossum released the first version of Python in February 1991.',
+      year: '1991',
+    ),
+    WikiHistoryEvent(
+      title: 'Apple I Computer',
+      fact: 'The Apple I was released in 1976, designed by Steve Wozniak.',
+      year: '1976',
+    ),
+    WikiHistoryEvent(
+      title: 'First Email Sent',
+      fact:
+          'Ray Tomlinson sent the first network email in 1971, using the @ symbol.',
+      year: '1971',
+    ),
+    WikiHistoryEvent(
+      title: 'Game Boy Launch',
+      fact:
+          'Nintendo released the Game Boy in 1989, revolutionizing mobile gaming.',
+      year: '1989',
+    ),
+    WikiHistoryEvent(
+      title: 'COBOL Created',
+      fact:
+          'Grace Hopper and her team developed COBOL, a pioneering business language.',
+      year: '1959',
+    ),
+    WikiHistoryEvent(
+      title: 'Bitcoin Genesis',
+      fact:
+          'Satoshi Nakamoto mined the first block of Bitcoin in January 2009.',
+      year: '2009',
+    ),
   ];
   final day = DateTime.now().difference(DateTime(2024, 1, 1)).inDays;
   return fallbacks[day % fallbacks.length];
+});
+
+final crashCoursesProvider = FutureProvider<List<TutorialCourse>>((ref) async {
+  return ref.watch(exploreApiServiceProvider).fetchCrashCourses();
 });

@@ -41,7 +41,8 @@ class DatabaseSeedService {
       {
         'id': 'knowledge_seeker',
         'title': 'Knowledge Seeker',
-        'description': 'Use the Search Bar to find and complete a specific topic.',
+        'description':
+            'Use the Search Bar to find and complete a specific topic.',
         'icon': 'search_rounded',
       },
       {
@@ -53,13 +54,15 @@ class DatabaseSeedService {
       {
         'id': 'the_chronologist',
         'title': 'The Chronologist',
-        'description': 'Read at least 5 articles in the "Notable Individuals" section.',
+        'description':
+            'Read at least 5 articles in the "Notable Individuals" section.',
         'icon': 'history_rounded',
       },
       {
         'id': 'the_ethicist',
         'title': 'The Ethicist',
-        'description': 'Complete the "AI Ethics" module with a perfect quiz score.',
+        'description':
+            'Complete the "AI Ethics" module with a perfect quiz score.',
         'icon': 'gavel_rounded',
       },
       {
@@ -131,7 +134,9 @@ class DatabaseSeedService {
     ];
 
     for (var badge in initialBadges) {
-      await badgesRef.doc(badge['id'] as String).set(badge, SetOptions(merge: true));
+      await badgesRef
+          .doc(badge['id'] as String)
+          .set(badge, SetOptions(merge: true));
     }
     debugPrint('Successfully seeded/updated ${initialBadges.length} badges.');
   }
@@ -153,6 +158,7 @@ class DatabaseSeedService {
         xpReward: 50,
         difficulty: QuestDifficulty.easy,
         category: 'ALGORITHMS',
+        estimatedMinutes: 10,
       ),
       QuestModel(
         id: 'q2',
@@ -161,6 +167,7 @@ class DatabaseSeedService {
         xpReward: 120,
         difficulty: QuestDifficulty.medium,
         category: 'CODING',
+        estimatedMinutes: 25,
       ),
       QuestModel(
         id: 'q3',
@@ -169,6 +176,34 @@ class DatabaseSeedService {
         xpReward: 80,
         difficulty: QuestDifficulty.easy,
         category: 'CS BASICS',
+        estimatedMinutes: 15,
+      ),
+      QuestModel(
+        id: 'q4',
+        title: 'Complexity Analysis',
+        description: 'Analyze 5 code snippets',
+        xpReward: 200,
+        difficulty: QuestDifficulty.hard,
+        category: 'ALGORITHMS',
+        estimatedMinutes: 40,
+      ),
+      QuestModel(
+        id: 'q5',
+        title: 'Shell Master',
+        description: 'Perform 10 CLI operations',
+        xpReward: 100,
+        difficulty: QuestDifficulty.medium,
+        category: 'TOOLS',
+        estimatedMinutes: 20,
+      ),
+      QuestModel(
+        id: 'q6',
+        title: 'Quick Sort Challenge',
+        description: 'Trace the partition logic',
+        xpReward: 150,
+        difficulty: QuestDifficulty.medium,
+        category: 'ALGORITHMS',
+        estimatedMinutes: 30,
       ),
     ];
 

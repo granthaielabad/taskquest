@@ -23,9 +23,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   bool _isLoading = false;
   bool _hasChanges = false;
-  
+
   // Local states for instant preview
-  String? _currentPhotoUrl; 
+  String? _currentPhotoUrl;
   Uint8List? _previewImageBytes;
   String _selectedBackground = '#111111';
 
@@ -43,7 +43,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.initState();
     final user = ref.read(userProfileProvider).value;
 
-    _displayNameController = TextEditingController(text: user?.displayName ?? '');
+    _displayNameController = TextEditingController(
+      text: user?.displayName ?? '',
+    );
     _usernameController = TextEditingController(text: user?.username ?? '');
     _bioController = TextEditingController(text: user?.bio ?? '');
     _schoolController = TextEditingController(text: user?.school ?? '');
@@ -83,12 +85,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     if (result != null && result.files.single.bytes != null) {
       final bytes = result.files.single.bytes!;
-      
+
       // Firestore limit check (1MB)
-      if (bytes.length > 800000) { // Using 800kb as a safe margin for base64 overhead
+      if (bytes.length > 800000) {
+        // Using 800kb as a safe margin for base64 overhead
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image is too large! Please pick a smaller photo (under 800KB).')),
+            const SnackBar(
+              content: Text(
+                'Image is too large! Please pick a smaller photo (under 800KB).',
+              ),
+            ),
           );
         }
         return;
@@ -142,9 +149,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -160,16 +167,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Delete Account?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold)),
-        content: const Text('This will permanently delete your profile and all your data. This action cannot be undone.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
+        title: const Text(
+          'Delete Account?',
+          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'This will permanently delete your profile and all your data. This action cannot be undone.',
+          style: TextStyle(fontFamily: 'DM Mono', fontSize: 13),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('CANCEL', style: TextStyle(fontFamily: 'DM Mono', color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            child: Text(
+              'CANCEL',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('DELETE', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'DELETE',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -181,9 +207,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         await ref.read(userServiceProvider).deleteUserAccount(user.uid);
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
           setState(() => _isLoading = false);
         }
       }
@@ -197,11 +223,33 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Discard Changes?', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800)),
-        content: const Text('You have unsaved changes. Are you sure you want to leave?', style: TextStyle(fontFamily: 'DM Mono', fontSize: 13)),
+        title: const Text(
+          'Discard Changes?',
+          style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800),
+        ),
+        content: const Text(
+          'You have unsaved changes. Are you sure you want to leave?',
+          style: TextStyle(fontFamily: 'DM Mono', fontSize: 13),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('KEEP EDITING', style: TextStyle(fontFamily: 'DM Mono'))),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('DISCARD', style: TextStyle(fontFamily: 'DM Mono', color: Colors.red, fontWeight: FontWeight.bold))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'KEEP EDITING',
+              style: TextStyle(fontFamily: 'DM Mono'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'DISCARD',
+              style: TextStyle(
+                fontFamily: 'DM Mono',
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -215,7 +263,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final colorScheme = theme.colorScheme;
 
     final initials = user?.displayName.isNotEmpty == true
-        ? user!.displayName.split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        ? user!.displayName
+              .split(' ')
+              .map((e) => e[0])
+              .take(2)
+              .join()
+              .toUpperCase()
         : 'S';
 
     final displayPhotoUrl = _currentPhotoUrl ?? '';
@@ -232,13 +285,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
                       onTap: () async {
-                        if (await _confirmDiscard() && context.mounted) Navigator.pop(context);
+                        if (await _confirmDiscard() && context.mounted) {
+                          Navigator.pop(context);
+                        }
                       },
                       child: Container(
                         width: 42,
@@ -248,7 +306,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           border: Border.all(color: colorScheme.outline),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(Icons.chevron_left_rounded, color: colorScheme.onSurface),
+                        child: Icon(
+                          Icons.chevron_left_rounded,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -268,14 +329,36 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     GestureDetector(
                       onTap: _isLoading || !_hasChanges ? null : _saveProfile,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: _hasChanges ? colorScheme.onSurface : colorScheme.outline,
+                          color: _hasChanges
+                              ? colorScheme.onSurface
+                              : colorScheme.outline,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: _isLoading
-                            ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.surface))
-                            : Text('Save', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 12, color: _hasChanges ? colorScheme.surface : colorScheme.onSurfaceVariant)),
+                            ? SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colorScheme.surface,
+                                ),
+                              )
+                            : Text(
+                                'Save',
+                                style: TextStyle(
+                                  fontFamily: 'Syne',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color: _hasChanges
+                                      ? colorScheme.surface
+                                      : colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                       ),
                     ),
                   ],
@@ -299,23 +382,78 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   width: 80,
                                   height: 80,
                                   decoration: BoxDecoration(
-                                    color: Color(int.parse(_selectedBackground.replaceFirst('#', '0xFF'))),
+                                    color: Color(
+                                      int.parse(
+                                        _selectedBackground.replaceFirst(
+                                          '#',
+                                          '0xFF',
+                                        ),
+                                      ),
+                                    ),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20),
                                     child: _previewImageBytes != null
-                                        ? Image.memory(_previewImageBytes!, fit: BoxFit.cover)
+                                        ? Image.memory(
+                                            _previewImageBytes!,
+                                            fit: BoxFit.cover,
+                                          )
                                         : displayPhotoUrl.isNotEmpty
-                                            ? (displayPhotoUrl.startsWith('data:image') 
-                                                ? Image.memory(base64Decode(displayPhotoUrl.split(',').last), fit: BoxFit.cover)
-                                                : CachedNetworkImage(
-                                                    imageUrl: displayPhotoUrl,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                                    errorWidget: (context, url, error) => Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
-                                                  ))
-                                            : Center(child: Text(initials, style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white))),
+                                        ? (displayPhotoUrl.startsWith(
+                                                'data:image',
+                                              )
+                                              ? Image.memory(
+                                                  base64Decode(
+                                                    displayPhotoUrl
+                                                        .split(',')
+                                                        .last,
+                                                  ),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : CachedNetworkImage(
+                                                  imageUrl: displayPhotoUrl,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (context, url) =>
+                                                      const Center(
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            ),
+                                                      ),
+                                                  errorWidget:
+                                                      (
+                                                        context,
+                                                        url,
+                                                        error,
+                                                      ) => Center(
+                                                        child: Text(
+                                                          initials,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontFamily:
+                                                                    'Syne',
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                fontSize: 24,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                ))
+                                        : Center(
+                                            child: Text(
+                                              initials,
+                                              style: const TextStyle(
+                                                fontFamily: 'Syne',
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 24,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
                                   ),
                                 ),
                                 Positioned(
@@ -323,8 +461,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   right: 0,
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(color: colorScheme.onSurface, shape: BoxShape.circle, border: Border.all(color: colorScheme.surface, width: 2)),
-                                    child: Icon(Icons.camera_alt_outlined, color: colorScheme.surface, size: 14),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.onSurface,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: colorScheme.surface,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.camera_alt_outlined,
+                                      color: colorScheme.surface,
+                                      size: 14,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -335,24 +484,51 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(user?.displayName ?? 'Scholar', style: const TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 20), softWrap: true,),
-                                Text(user?.username.isNotEmpty == true ? '@${user!.username}' : '@scholar', style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant), softWrap: true,),
+                                Text(
+                                  user?.displayName ?? 'Scholar',
+                                  style: const TextStyle(
+                                    fontFamily: 'Syne',
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 20,
+                                  ),
+                                  softWrap: true,
+                                ),
+                                Text(
+                                  user?.username.isNotEmpty == true
+                                      ? '@${user!.username}'
+                                      : '@scholar',
+                                  style: TextStyle(
+                                    fontFamily: 'DM Mono',
+                                    fontSize: 12,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                  softWrap: true,
+                                ),
                                 const SizedBox(height: 12),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
-                                    children: _backgroundOptions.map((hex) => GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedBackground = hex;
-                                          _hasChanges = true;
-                                        });
-                                      },
-                                      child: _ColorOption(
-                                        color: Color(int.parse(hex.replaceFirst('#', '0xFF'))),
-                                        isSelected: _selectedBackground == hex,
-                                      ),
-                                    )).toList(),
+                                    children: _backgroundOptions
+                                        .map(
+                                          (hex) => GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedBackground = hex;
+                                                _hasChanges = true;
+                                              });
+                                            },
+                                            child: _ColorOption(
+                                              color: Color(
+                                                int.parse(
+                                                  hex.replaceFirst('#', '0xFF'),
+                                                ),
+                                              ),
+                                              isSelected:
+                                                  _selectedBackground == hex,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
                                   ),
                                 ),
                               ],
@@ -364,26 +540,64 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const _SectionLabel(label: 'PERSONAL INFO'),
                       const SizedBox(height: 12),
                       Container(
-                        decoration: BoxDecoration(color: colorScheme.surface, border: Border.all(color: colorScheme.outline), borderRadius: BorderRadius.circular(16)),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          border: Border.all(color: colorScheme.outline),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Column(
                           children: [
-                            _EditField(label: 'DISPLAY NAME', controller: _displayNameController, hint: 'Your Full Name'),
+                            _EditField(
+                              label: 'DISPLAY NAME',
+                              controller: _displayNameController,
+                              hint: 'Your Full Name',
+                            ),
                             Divider(color: colorScheme.outline, height: 1),
-                            _EditField(label: 'USERNAME', controller: _usernameController, hint: 'charlie_quest'),
+                            _EditField(
+                              label: 'USERNAME',
+                              controller: _usernameController,
+                              hint: 'charlie_quest',
+                            ),
                             Divider(color: colorScheme.outline, height: 1),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('EMAIL ADDRESS', style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.0, color: colorScheme.onSurfaceVariant.withOpacity(0.7))),
+                                  Text(
+                                    'EMAIL ADDRESS',
+                                    style: TextStyle(
+                                      fontFamily: 'DM Mono',
+                                      fontSize: 9,
+                                      letterSpacing: 1.0,
+                                      color: colorScheme.onSurfaceVariant
+                                          .withValues(alpha: 0.7),
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text(user?.email ?? '', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 15, color: colorScheme.onSurfaceVariant), softWrap: true,),
+                                  Text(
+                                    user?.email ?? '',
+                                    style: TextStyle(
+                                      fontFamily: 'Syne',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                    softWrap: true,
+                                  ),
                                 ],
                               ),
                             ),
                             Divider(color: colorScheme.outline, height: 1),
-                            _EditField(label: 'BIO', controller: _bioController, hint: 'Add a short bio...', maxLines: 3),
+                            _EditField(
+                              label: 'BIO',
+                              controller: _bioController,
+                              hint: 'Add a short bio...',
+                              maxLines: 3,
+                            ),
                           ],
                         ),
                       ),
@@ -391,14 +605,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const _SectionLabel(label: 'LEARNING PROFILE'),
                       const SizedBox(height: 12),
                       Container(
-                        decoration: BoxDecoration(color: colorScheme.surface, border: Border.all(color: colorScheme.outline), borderRadius: BorderRadius.circular(16)),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          border: Border.all(color: colorScheme.outline),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Column(
                           children: [
-                            _EditField(label: 'SCHOOL / INSTITUTION', controller: _schoolController, hint: 'e.g. PLM Manila'),
+                            _EditField(
+                              label: 'SCHOOL / INSTITUTION',
+                              controller: _schoolController,
+                              hint: 'e.g. PLM Manila',
+                            ),
                             Divider(color: colorScheme.outline, height: 1),
-                            _EditField(label: 'COURSE / PROGRAM', controller: _courseController, hint: 'e.g. BS Computer Science'),
+                            _EditField(
+                              label: 'COURSE / PROGRAM',
+                              controller: _courseController,
+                              hint: 'e.g. BS Computer Science',
+                            ),
                             Divider(color: colorScheme.outline, height: 1),
-                            _EditField(label: 'YEAR LEVEL', controller: _yearLevelController, hint: 'e.g. 3rd Year'),
+                            _EditField(
+                              label: 'YEAR LEVEL',
+                              controller: _yearLevelController,
+                              hint: 'e.g. 3rd Year',
+                            ),
                           ],
                         ),
                       ),
@@ -408,13 +638,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         child: Container(
                           width: double.infinity,
                           height: 56,
-                          decoration: BoxDecoration(color: _hasChanges ? colorScheme.onSurface : colorScheme.outline, borderRadius: BorderRadius.circular(14)),
+                          decoration: BoxDecoration(
+                            color: _hasChanges
+                                ? colorScheme.onSurface
+                                : colorScheme.outline,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check, color: colorScheme.surface, size: 20),
+                              Icon(
+                                Icons.check,
+                                color: colorScheme.surface,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
-                              Text(_isLoading ? 'Saving...' : 'Save Changes', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 16, color: colorScheme.surface)),
+                              Text(
+                                _isLoading ? 'Saving...' : 'Save Changes',
+                                style: TextStyle(
+                                  fontFamily: 'Syne',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                  color: colorScheme.surface,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -426,13 +673,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         onTap: _deleteAccount,
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(color: Colors.red.withOpacity(0.05), border: Border.all(color: Colors.red.withOpacity(0.1)), borderRadius: BorderRadius.circular(16)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.05),
+                            border: Border.all(
+                              color: Colors.red.withValues(alpha: 0.1),
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: const [
-                              Text('Delete Account', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.red)),
-                              Icon(Icons.chevron_right_rounded, color: Colors.red, size: 20),
+                              Text(
+                                'Delete Account',
+                                style: TextStyle(
+                                  fontFamily: 'Syne',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: Colors.red,
+                                size: 20,
+                              ),
                             ],
                           ),
                         ),
@@ -464,7 +732,12 @@ class _ColorOption extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(6),
-        border: isSelected ? Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2) : null,
+        border: isSelected
+            ? Border.all(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 2,
+              )
+            : null,
       ),
     );
   }
@@ -478,7 +751,12 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, letterSpacing: 1.2, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      style: TextStyle(
+        fontFamily: 'DM Mono',
+        fontSize: 10,
+        letterSpacing: 1.2,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }
@@ -489,7 +767,12 @@ class _EditField extends StatelessWidget {
   final String hint;
   final int maxLines;
 
-  const _EditField({required this.label, required this.controller, required this.hint, this.maxLines = 1});
+  const _EditField({
+    required this.label,
+    required this.controller,
+    required this.hint,
+    this.maxLines = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -499,13 +782,32 @@ class _EditField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, letterSpacing: 1.0, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7))),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 9,
+              letterSpacing: 1.0,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
+          ),
           const SizedBox(height: 4),
           TextField(
             controller: controller,
             maxLines: maxLines,
-            style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 15, color: theme.colorScheme.onSurface),
-            decoration: InputDecoration(isDense: true, contentPadding: EdgeInsets.zero, hintText: hint, hintStyle: TextStyle(color: theme.colorScheme.outline), border: InputBorder.none),
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: theme.colorScheme.onSurface,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+              hintText: hint,
+              hintStyle: TextStyle(color: theme.colorScheme.outline),
+              border: InputBorder.none,
+            ),
           ),
         ],
       ),

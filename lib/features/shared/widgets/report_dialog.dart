@@ -78,7 +78,9 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         attachmentName: _attachedFileName,
       );
 
-      debugPrint('Submitting report with attachment: ${_attachedFileName ?? "None"}');
+      debugPrint(
+        'Submitting report with attachment: ${_attachedFileName ?? "None"}',
+      );
       await ref.read(reportServiceProvider).submitReport(report);
     }
 
@@ -126,7 +128,9 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
               ),
               decoration: InputDecoration(
                 hintText: 'e.g. Inaccurate answer, typo, bug...',
-                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: colorScheme.surface,
                 border: OutlineInputBorder(
@@ -156,13 +160,18 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: colorScheme.outline, style: BorderStyle.solid),
+                  border: Border.all(
+                    color: colorScheme.outline,
+                    style: BorderStyle.solid,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _attachedFileName != null ? Icons.image_rounded : Icons.add_photo_alternate_outlined,
+                      _attachedFileName != null
+                          ? Icons.image_rounded
+                          : Icons.add_photo_alternate_outlined,
                       size: 20,
                       color: colorScheme.primary,
                     ),
@@ -175,7 +184,9 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                         style: TextStyle(
                           fontFamily: 'DM Mono',
                           fontSize: 11,
-                          color: _attachedFileName != null ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+                          color: _attachedFileName != null
+                              ? colorScheme.onSurface
+                              : colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -186,7 +197,11 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                             _attachedFileName = null;
                           });
                         },
-                        child: Icon(Icons.close_rounded, size: 16, color: colorScheme.error),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: colorScheme.error,
+                        ),
                       ),
                   ],
                 ),
@@ -200,7 +215,10 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text(
             'CANCEL',
-            style: TextStyle(fontFamily: 'DM Mono', color: colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         ElevatedButton(

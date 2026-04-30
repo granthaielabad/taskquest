@@ -65,7 +65,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      await ref.read(authServiceProvider).signUpWithEmail(
+      await ref
+          .read(authServiceProvider)
+          .signUpWithEmail(
             _emailController.text.trim(),
             _passwordController.text,
             _nameController.text.trim(),
@@ -77,12 +79,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        setState(() => _errorMessage = "Email already exists. You can log in or use Google to link this account.");
+        setState(
+          () => _errorMessage =
+              "Email already exists. You can log in or use Google to link this account.",
+        );
       } else {
         setState(() => _errorMessage = e.message ?? "Registration failed");
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -130,7 +137,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onTap: () => Navigator.pop(context),
                     child: Row(
                       children: [
-                        Icon(Icons.chevron_left_rounded, color: colorScheme.onSurface, size: 20),
+                        Icon(
+                          Icons.chevron_left_rounded,
+                          color: colorScheme.onSurface,
+                          size: 20,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Back',
@@ -184,7 +195,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Text(
                     _errorMessage!,
-                    style: TextStyle(color: colorScheme.error, fontFamily: 'DM Mono', fontSize: 11),
+                    style: TextStyle(
+                      color: colorScheme.error,
+                      fontFamily: 'DM Mono',
+                      fontSize: 11,
+                    ),
                   ),
                 ),
 
@@ -195,7 +210,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 controller: _nameController,
                 focusNode: _nameFocus,
                 hintText: 'John Doe',
-                suffixIcon: Icon(Icons.person_outline_rounded, size: 16, color: colorScheme.onSurfaceVariant),
+                suffixIcon: Icon(
+                  Icons.person_outline_rounded,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -206,7 +225,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
-                suffixIcon: Icon(Icons.mail_outline_rounded, size: 16, color: colorScheme.onSurfaceVariant),
+                suffixIcon: Icon(
+                  Icons.mail_outline_rounded,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -218,7 +241,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 hintText: 'min. 8 characters',
                 obscureText: _obscurePassword,
                 suffixIcon: GestureDetector(
-                  onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onTap: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   child: Icon(
                     _obscurePassword
                         ? Icons.visibility_off_outlined
@@ -239,27 +263,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     width: 24,
                     child: Checkbox(
                       value: _agreeToTerms,
-                      onChanged: (v) => setState(() => _agreeToTerms = v ?? false),
+                      onChanged: (v) =>
+                          setState(() => _agreeToTerms = v ?? false),
                       activeColor: colorScheme.onSurface,
                       checkColor: colorScheme.surface,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: TextStyle(fontFamily: 'DM Mono', fontSize: 11, color: colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 11,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                         children: [
                           const TextSpan(text: 'I agree to the '),
                           TextSpan(
                             text: 'Terms of Service',
-                            style: TextStyle(color: colorScheme.onSurface, decoration: TextDecoration.underline),
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
                             text: 'Privacy Policy',
-                            style: TextStyle(color: colorScheme.onSurface, decoration: TextDecoration.underline),
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ],
                       ),
@@ -285,10 +322,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const SizedBox(height: 32),
 
               // Google Login
-              GoogleButton(
-                onTap: _handleGoogleSignIn,
-                isLoading: _isLoading,
-              ),
+              GoogleButton(onTap: _handleGoogleSignIn, isLoading: _isLoading),
 
               const SizedBox(height: 48),
 
@@ -297,11 +331,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   ),
                   child: RichText(
                     text: TextSpan(
-                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       children: [
                         const TextSpan(text: "Already have an account? "),
                         TextSpan(

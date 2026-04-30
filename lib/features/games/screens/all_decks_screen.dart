@@ -78,20 +78,29 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
           Expanded(
             child: userDecksAsync.when(
               data: (decks) {
-                final filtered = decks.where((d) => 
-                  d.title.toLowerCase().contains(_query) || 
-                  d.category.toLowerCase().contains(_query)
-                ).toList();
+                final filtered = decks
+                    .where(
+                      (d) =>
+                          d.title.toLowerCase().contains(_query) ||
+                          d.category.toLowerCase().contains(_query),
+                    )
+                    .toList();
 
                 if (filtered.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.style_outlined, size: 48, color: colorScheme.outline),
+                        Icon(
+                          Icons.style_outlined,
+                          size: 48,
+                          color: colorScheme.outline,
+                        ),
                         const SizedBox(height: 16),
                         Text(
-                          _query.isEmpty ? 'Your library is empty' : 'No matches found',
+                          _query.isEmpty
+                              ? 'Your library is empty'
+                              : 'No matches found',
                           style: TextStyle(
                             fontFamily: 'DM Mono',
                             fontSize: 12,
@@ -136,7 +145,9 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => StudyFlashcardScreen(deck: deck)),
+            MaterialPageRoute(
+              builder: (context) => StudyFlashcardScreen(deck: deck),
+            ),
           );
         },
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -148,7 +159,9 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
-            deck.type == 'AI' ? Icons.auto_awesome_motion_rounded : Icons.style_rounded,
+            deck.type == 'AI'
+                ? Icons.auto_awesome_motion_rounded
+                : Icons.style_rounded,
             color: colorScheme.surface,
             size: 20,
           ),
@@ -175,7 +188,11 @@ class _AllDecksScreenState extends ConsumerState<AllDecksScreen> {
           children: [
             if (deck.type == 'Manual')
               IconButton(
-                icon: Icon(Icons.edit_outlined, size: 18, color: colorScheme.onSurfaceVariant),
+                icon: Icon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: colorScheme.onSurfaceVariant,
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,

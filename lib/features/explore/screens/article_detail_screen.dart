@@ -8,6 +8,7 @@ import 'package:taskquest/features/explore/providers/bookmark_provider.dart';
 import 'package:taskquest/features/explore/services/bookmark_service.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ArticleDetailScreen extends ConsumerWidget {
   final ExploreArticle article;
@@ -16,28 +17,60 @@ class ArticleDetailScreen extends ConsumerWidget {
 
   /// ── HTML to Markdown Converter ─────────────────────────────
   String _processContent(String raw) {
-    // If it's already clean markdown (no major HTML tags), return it trimmed
     if (!raw.contains('<h1') && !raw.contains('<p>') && !raw.contains('<div')) {
       return raw.trim();
     }
 
-    // Convert basic HTML tags to Markdown
     String processed = raw
         .replaceAll(RegExp(r'<!--.*?-->', dotAll: true), '')
         .replaceAll(RegExp(r'<script.*?>.*?</script>', dotAll: true), '')
         .replaceAll(RegExp(r'<style.*?>.*?</style>', dotAll: true), '');
 
     processed = processed
-        .replaceAllMapped(RegExp(r'<h1.*?>(.*?)</h1>', dotAll: true, caseSensitive: false), (m) => '# ${m[1]}\n\n')
-        .replaceAllMapped(RegExp(r'<h2.*?>(.*?)</h2>', dotAll: true, caseSensitive: false), (m) => '## ${m[1]}\n\n')
-        .replaceAllMapped(RegExp(r'<h3.*?>(.*?)</h3>', dotAll: true, caseSensitive: false), (m) => '### ${m[1]}\n\n')
-        .replaceAllMapped(RegExp(r'<p.*?>(.*?)</p>', dotAll: true, caseSensitive: false), (m) => '${m[1]}\n\n')
-        .replaceAllMapped(RegExp(r'<li.*?>(.*?)</li>', dotAll: true, caseSensitive: false), (m) => '* ${m[1]}\n')
-        .replaceAllMapped(RegExp(r'<code.*?>(.*?)</code>', dotAll: true, caseSensitive: false), (m) => '`${m[1]}`')
-        .replaceAllMapped(RegExp(r'<strong.*?>(.*?)</strong>', dotAll: true, caseSensitive: false), (m) => '**${m[1]}**')
-        .replaceAllMapped(RegExp(r'<b.*?>(.*?)</b>', dotAll: true, caseSensitive: false), (m) => '**${m[1]}**')
-        .replaceAllMapped(RegExp(r'<em.*?>(.*?)</em>', dotAll: true, caseSensitive: false), (m) => '*${m[1]}*')
-        .replaceAllMapped(RegExp(r'<i.*?>(.*?)</i>', dotAll: true, caseSensitive: false), (m) => '*${m[1]}*')
+        .replaceAllMapped(
+          RegExp(r'<h1.*?>(.*?)</h1>', dotAll: true, caseSensitive: false),
+          (m) => '# ${m[1]}\n\n',
+        )
+        .replaceAllMapped(
+          RegExp(r'<h2.*?>(.*?)</h2>', dotAll: true, caseSensitive: false),
+          (m) => '## ${m[1]}\n\n',
+        )
+        .replaceAllMapped(
+          RegExp(r'<h3.*?>(.*?)</h3>', dotAll: true, caseSensitive: false),
+          (m) => '### ${m[1]}\n\n',
+        )
+        .replaceAllMapped(
+          RegExp(r'<p.*?>(.*?)</p>', dotAll: true, caseSensitive: false),
+          (m) => '${m[1]}\n\n',
+        )
+        .replaceAllMapped(
+          RegExp(r'<li.*?>(.*?)</li>', dotAll: true, caseSensitive: false),
+          (m) => '* ${m[1]}\n',
+        )
+        .replaceAllMapped(
+          RegExp(r'<code.*?>(.*?)</code>', dotAll: true, caseSensitive: false),
+          (m) => '`${m[1]}`',
+        )
+        .replaceAllMapped(
+          RegExp(
+            r'<strong.*?>(.*?)</strong>',
+            dotAll: true,
+            caseSensitive: false,
+          ),
+          (m) => '**${m[1]}**',
+        )
+        .replaceAllMapped(
+          RegExp(r'<b.*?>(.*?)</b>', dotAll: true, caseSensitive: false),
+          (m) => '**${m[1]}**',
+        )
+        .replaceAllMapped(
+          RegExp(r'<em.*?>(.*?)</em>', dotAll: true, caseSensitive: false),
+          (m) => '*${m[1]}*',
+        )
+        .replaceAllMapped(
+          RegExp(r'<i.*?>(.*?)</i>', dotAll: true, caseSensitive: false),
+          (m) => '*${m[1]}*',
+        )
         .replaceAll('&nbsp;', ' ')
         .replaceAll('&lt;', '<')
         .replaceAll('&gt;', '>')
@@ -45,11 +78,12 @@ class ArticleDetailScreen extends ConsumerWidget {
         .replaceAll('&quot;', '"')
         .replaceAll('&#39;', "'");
 
-    // Remove remaining structural tags but keep the text
     processed = processed.replaceAll(RegExp(r'<[^>]*>'), '');
-    
-    // CRITICAL: Remove leading indentation that forces Markdown to think the entire article is a code block
-    return processed.split('\n').map((line) => line.trimLeft()).join('\n').trim();
+    return processed
+        .split('\n')
+        .map((line) => line.trimLeft())
+        .join('\n')
+        .trim();
   }
 
   @override
@@ -58,7 +92,9 @@ class ArticleDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final bookmarkAsync = ref.watch(isBookmarkedProvider(article.id.toString()));
+    final bookmarkAsync = ref.watch(
+      isBookmarkedProvider(article.id.toString()),
+    );
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -76,7 +112,11 @@ class ArticleDetailScreen extends ConsumerWidget {
                   color: Colors.black.withValues(alpha: 0.4),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               onPressed: () => Navigator.pop(context),
             ),
@@ -92,8 +132,12 @@ class ArticleDetailScreen extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                        color: isBookmarked ? colorScheme.primary : Colors.white,
+                        isBookmarked
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_outline_rounded,
+                        color: isBookmarked
+                            ? colorScheme.primary
+                            : Colors.white,
                         size: 20,
                       ),
                     ),
@@ -108,8 +152,12 @@ class ArticleDetailScreen extends ConsumerWidget {
                           coverImage: article.coverImage,
                           createdAt: DateTime.now(),
                         );
-                        await ref.read(bookmarkServiceProvider).toggleBookmark(user.uid, bookmark);
-                        ref.invalidate(isBookmarkedProvider(article.id.toString()));
+                        await ref
+                            .read(bookmarkServiceProvider)
+                            .toggleBookmark(user.uid, bookmark);
+                        ref.invalidate(
+                          isBookmarkedProvider(article.id.toString()),
+                        );
                       }
                     },
                   ),
@@ -122,12 +170,21 @@ class ArticleDetailScreen extends ConsumerWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    article.coverImage,
+                  CachedNetworkImage(
+                    imageUrl: article.coverImage,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    placeholder: (context, url) => Container(
                       color: colorScheme.surface,
-                      child: Icon(Icons.image_not_supported_rounded, color: colorScheme.outline),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: colorScheme.surface,
+                      child: Icon(
+                        Icons.image_not_supported_rounded,
+                        color: colorScheme.outline,
+                      ),
                     ),
                   ),
                   const DecoratedBox(
@@ -135,10 +192,7 @@ class ArticleDetailScreen extends ConsumerWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black54,
-                        ],
+                        colors: [Colors.transparent, Colors.black54],
                       ),
                     ),
                   ),
@@ -146,7 +200,6 @@ class ArticleDetailScreen extends ConsumerWidget {
               ),
             ),
           ),
-
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -155,25 +208,31 @@ class ArticleDetailScreen extends ConsumerWidget {
                 children: [
                   Wrap(
                     spacing: 8,
-                    children: article.tags.map((tag) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        border: Border.all(color: colorScheme.outline),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '#$tag',
-                        style: TextStyle(
-                          fontFamily: 'DM Mono',
-                          fontSize: 9,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    )).toList(),
+                    children: article.tags
+                        .map(
+                          (tag) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surface,
+                              border: Border.all(color: colorScheme.outline),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: TextStyle(
+                                fontFamily: 'DM Mono',
+                                fontSize: 9,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                   const SizedBox(height: 16),
-
                   Text(
                     article.title,
                     style: TextStyle(
@@ -185,22 +244,21 @@ class ArticleDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   contentAsync.when(
                     data: (rawMarkdown) {
                       final processedContent = _processContent(rawMarkdown);
-                      
                       return MarkdownBody(
                         data: processedContent,
                         selectable: true,
-                        builders: {
-                          'code': CodeBlockBuilder(isDark: isDark),
-                        },
+                        builders: {'code': CodeBlockBuilder(isDark: isDark)},
                         onTapLink: (text, href, title) async {
                           if (href != null) {
                             final uri = Uri.parse(href);
                             if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
+                              );
                             }
                           }
                         },
@@ -209,7 +267,9 @@ class ArticleDetailScreen extends ConsumerWidget {
                             fontFamily: 'DM Mono',
                             fontSize: 14,
                             height: 1.6,
-                            color: colorScheme.onSurface.withValues(alpha: 0.85),
+                            color: colorScheme.onSurface.withValues(
+                              alpha: 0.85,
+                            ),
                           ),
                           h1: TextStyle(
                             fontFamily: 'Syne',
@@ -228,7 +288,9 @@ class ArticleDetailScreen extends ConsumerWidget {
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: colorScheme.primary,
-                            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                            backgroundColor: colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
                           ),
                         ),
                       );
@@ -241,9 +303,7 @@ class ArticleDetailScreen extends ConsumerWidget {
                     ),
                     error: (e, s) => Center(child: Text('Error: $e')),
                   ),
-
                   const SizedBox(height: 40),
-                  
                   Center(
                     child: TextButton.icon(
                       onPressed: () async {
@@ -255,13 +315,19 @@ class ArticleDetailScreen extends ConsumerWidget {
                           );
                           if (!launched && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Could not launch original article.')),
+                              const SnackBar(
+                                content: Text(
+                                  'Could not launch original article.',
+                                ),
+                              ),
                             );
                           }
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error launching URL: $e')),
+                              SnackBar(
+                                content: Text('Error launching URL: $e'),
+                              ),
                             );
                           }
                         }
@@ -269,7 +335,11 @@ class ArticleDetailScreen extends ConsumerWidget {
                       icon: const Icon(Icons.open_in_new_rounded, size: 16),
                       label: const Text(
                         'READ ORIGINAL ARTICLE',
-                        style: TextStyle(fontFamily: 'DM Mono', fontSize: 10, letterSpacing: 1.2),
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 10,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
                   ),
@@ -290,17 +360,9 @@ class CodeBlockBuilder extends MarkdownElementBuilder {
   @override
   Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
     final String content = element.textContent;
-
-    // A real code block usually has multiple lines AND doesn't look like a markdown header
-    final bool looksLikeMarkdownText = content.startsWith('#') || content.startsWith('*') || content.length > 500;
     final bool isMultiLine = content.contains('\n');
-
-    if (!isMultiLine || looksLikeMarkdownText) {
-      return null; // Let the default styleSheet handle standard text
-    }
-
+    if (!isMultiLine) return null;
     final String language = element.attributes['class'] ?? '';
-
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 16),
       width: double.infinity,

@@ -51,8 +51,9 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     if (_isFinishing) return;
     setState(() => _isFinishing = true);
 
-    final sessionScore =
-        ((_correctCount / widget.deck.cards.length) * 100).round().clamp(0, 100);
+    final sessionScore = ((_correctCount / widget.deck.cards.length) * 100)
+        .round()
+        .clamp(0, 100);
 
     // Prevent mastery from ever going down
     final finalMastery = max(widget.deck.masteryProgress, sessionScore);
@@ -109,7 +110,9 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
               Text(
                 'Overall Mastery: $finalMastery%',
                 style: AppTheme.labelMono.copyWith(
-                  color: finalMastery >= 100 ? Colors.green : colorScheme.onSurface,
+                  color: finalMastery >= 100
+                      ? Colors.green
+                      : colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -184,14 +187,16 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.flag_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+            icon: Icon(
+              Icons.flag_outlined,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (context) => ReportDialog(
-                  gameType: 'flashcards',
-                  contentId: card.id,
-                ),
+                builder: (context) =>
+                    ReportDialog(gameType: 'flashcards', contentId: card.id),
               );
             },
           ),
@@ -200,7 +205,9 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
             child: Center(
               child: Text(
                 '${_currentIndex + 1}/${widget.deck.cards.length}',
-                style: AppTheme.labelMono.copyWith(color: colorScheme.onSurfaceVariant),
+                style: AppTheme.labelMono.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -231,7 +238,9 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                       child: Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: isBack ? colorScheme.onSurface : colorScheme.surface,
+                          color: isBack
+                              ? colorScheme.onSurface
+                              : colorScheme.surface,
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
                             color: colorScheme.outline,
@@ -262,7 +271,9 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
                                     fontWeight: isBack
                                         ? FontWeight.w400
                                         : FontWeight.w800,
-                                    color: isBack ? colorScheme.surface : colorScheme.onSurface,
+                                    color: isBack
+                                        ? colorScheme.surface
+                                        : colorScheme.onSurface,
                                   ),
                                 ),
                               ),

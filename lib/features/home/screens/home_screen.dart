@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/games/models/game_models.dart';
@@ -15,9 +15,12 @@ import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
 import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
 import 'package:taskquest/features/settings/screens/notifications_screen.dart';
+
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
+
+import 'package:taskquest/features/shared/widgets/scale_on_tap.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -25,22 +28,40 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final questsAsync = ref.watch(dailyQuestsProvider);
-    final userProfileAsync = ref.watch(userProfileProvider);
     final theme = Theme.of(context);
 
-    // ── Listen for Level Up ─────────────────────────────────────
-    ref.listen<AsyncValue<UserModel?>>(userProfileProvider, (previous, next) {
-      final oldLevel = previous?.value?.level;
-      final newLevel = next.value?.level;
+    // ── Optimized Selectors ────────────────────────────────────
+    final displayName = ref.watch(
+      userProfileProvider.select((u) => u.value?.displayName ?? 'Scholar'),
+    );
+    final xp = ref.watch(userProfileProvider.select((u) => u.value?.xp ?? 0));
+    final streak = ref.watch(
+      userProfileProvider.select((u) => u.value?.streak ?? 0),
+    );
+    final level = ref.watch(
+      userProfileProvider.select((u) => u.value?.level ?? 1),
+    );
+    final unlockedCount = ref.watch(
+      userProfileProvider.select((u) => u.value?.unlockedBadges.length ?? 0),
+    );
+    final userEmail = ref.watch(
+      userProfileProvider.select((u) => u.value?.email ?? ''),
+    );
+    final userId = ref.watch(
+      userProfileProvider.select((u) => u.value?.uid ?? ''),
+    );
 
-      if (oldLevel != null && newLevel != null && newLevel > oldLevel) {
+    // ── Listen for Level Up ─────────────────────────────────────
+    ref.listen<int?>(userProfileProvider.select((u) => u.value?.level), (
+      previous,
+      next,
+    ) {
+      if (previous != null && next != null && next > previous) {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => LevelUpDialog(
-            newLevel: newLevel,
-            rank: XpUtils.getRankTitle(newLevel),
-          ),
+          builder: (context) =>
+              LevelUpDialog(newLevel: next, rank: XpUtils.getRankTitle(next)),
         );
       }
     });
@@ -48,25 +69,30 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-
-              userProfileAsync.when(
-                data: (user) =>
-                    _buildUserContent(context, ref, user, questsAsync),
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 100),
-                    child: CircularProgressIndicator(),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  _buildUserContent(
+                    context,
+                    ref,
+                    displayName,
+                    xp,
+                    streak,
+                    level,
+                    unlockedCount,
+                    userEmail,
+                    userId,
+                    questsAsync,
                   ),
-                ),
-                error: (e, s) => Center(child: Text('Error: $e')),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -76,39 +102,19 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildUserContent(
     BuildContext context,
     WidgetRef ref,
-    UserModel? user,
+    String displayName,
+    int xp,
+    int streak,
+    int level,
+    int unlockedCount,
+    String email,
+    String userId,
     AsyncValue<List<QuestModel>> questsAsync,
   ) {
-    if (user == null) {
-      final theme = Theme.of(context);
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 100),
-          child: Column(
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                'Setting up your profile...',
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 12,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final displayName = user.displayName.isNotEmpty
-        ? user.displayName.split(' ').first
-        : 'Scholar';
 
-    final levelData = XpUtils.getLevelProgress(user.xp);
+    final levelData = XpUtils.getLevelProgress(xp);
     final progress = (levelData['progress'] as double).clamp(0.0, 1.0);
 
     final hour = DateTime.now().hour;
@@ -161,11 +167,16 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(width: 12),
               IconButton(
                 key: WalkthroughKeys.notificationKey,
-                icon: Icon(Icons.notifications_none_rounded, color: colorScheme.onSurface),
+                icon: Icon(
+                  Icons.notifications_none_rounded,
+                  color: colorScheme.onSurface,
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
                   );
                 },
               ),
@@ -176,13 +187,7 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 24),
 
         // ── Streak Banner ───────────────────────────────────────
-        _buildStreakBanner(
-          context,
-          user.streak,
-          user.level,
-          user.xp,
-          progress,
-        ),
+        _buildStreakBanner(context, streak, level, xp, progress),
 
         const SizedBox(height: 32),
 
@@ -199,7 +204,7 @@ class HomeScreen extends ConsumerWidget {
         Padding(
           key: WalkthroughKeys.badgesCardKey,
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: _buildBadgesCard(context, user.unlockedBadges.length),
+          child: _buildBadgesCard(context, unlockedCount),
         ),
 
         const SizedBox(height: 40),
@@ -255,23 +260,7 @@ class HomeScreen extends ConsumerWidget {
                           title: q.title,
                           sub: q.description,
                           xp: q.xpReward,
-                          onTap: () async {
-                            if (!q.isCompleted) {
-                              HapticFeedback.mediumImpact();
-                              await ref
-                                  .read(questServiceProvider)
-                                  .completeQuest(user.uid, q);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Quest Completed: +${q.xpReward} XP!',
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          },
+                          onTap: () {}, // Quests are now automated, not manual
                         );
                       }).toList(),
                     );
@@ -328,136 +317,145 @@ class HomeScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         key: WalkthroughKeys.streakKey,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: colorScheme.onSurface,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(28),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
           children: [
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'CURRENT STREAK',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 9,
-                      letterSpacing: 1.44,
-                      color: colorScheme.surface.withValues(alpha: 0.6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left: Streak Info
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CURRENT STREAK',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        letterSpacing: 1.44,
+                        color: colorScheme.surface.withValues(alpha: 0.6),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        '$streak',
-                        style: TextStyle(
-                          fontFamily: 'Syne',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 26,
-                          color: colorScheme.surface,
-                          letterSpacing: -0.78,
+                    const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          '$streak',
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 32,
+                            color: colorScheme.surface,
+                            letterSpacing: -0.78,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'days',
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: colorScheme.surface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                // Right: Level & XP Progress
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Lvl $level',
+                      style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        color: colorScheme.surface,
+                        letterSpacing: -0.32,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    TweenAnimationBuilder<int>(
+                      duration: const Duration(seconds: 1),
+                      tween: IntTween(begin: 0, end: xp),
+                      curve: Curves.easeOutExpo,
+                      builder: (context, value, child) {
+                        return Text(
+                          '$value XP',
+                          style: TextStyle(
+                            fontFamily: 'DM Mono',
+                            fontSize: 10,
+                            letterSpacing: 0.9,
+                            color: colorScheme.surface.withValues(alpha: 0.5),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: 90,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 4,
+                          backgroundColor: colorScheme.surface.withValues(
+                            alpha: 0.1,
+                          ),
+                          valueColor: AlwaysStoppedAnimation(
+                            colorScheme.surface,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'days',
-                        style: TextStyle(
-                          fontFamily: 'Syne',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                          color: colorScheme.surface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                          .asMap()
-                          .entries
-                          .map((e) {
-                            final isToday = e.key == DateTime.now().weekday - 1;
-                            return Container(
-                              width: 26,
-                              height: 26,
-                              margin: const EdgeInsets.only(right: 5),
-                              decoration: BoxDecoration(
-                                color: isToday
-                                    ? colorScheme.surface
-                                    : colorScheme.surface.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(7),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  e.value,
-                                  style: TextStyle(
-                                    fontFamily: 'DM Mono',
-                                    fontSize: 9,
-                                    color: isToday
-                                        ? colorScheme.onSurface
-                                        : colorScheme.surface.withValues(alpha: 0.8),
-                                  ),
-                                ),
-                              ),
-                            );
-                          })
-                          .toList(),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Lvl $level',
-                    style: TextStyle(
-                      fontFamily: 'Syne',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                      color: colorScheme.surface,
-                      letterSpacing: -0.32,
+            const SizedBox(height: 24),
+            // Bottom: Days Row (Fully visible, no scroll)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: ['M', 'T', 'W', 'T', 'F', 'S', 'S'].asMap().entries.map(
+                (e) {
+                  final isToday = e.key == DateTime.now().weekday - 1;
+                  return Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isToday
+                          ? colorScheme.surface
+                          : colorScheme.surface.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    softWrap: false,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$xp XP',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 9,
-                      letterSpacing: 0.9,
-                      color: colorScheme.surface.withValues(alpha: 0.5),
-                    ),
-                    softWrap: false,
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: 80,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 3,
-                        backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
-                        valueColor: AlwaysStoppedAnimation(colorScheme.surface),
+                    child: Center(
+                      child: Text(
+                        e.value,
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 10,
+                          fontWeight: isToday
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isToday
+                              ? colorScheme.onSurface
+                              : colorScheme.surface.withValues(alpha: 0.7),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  );
+                },
+              ).toList(),
             ),
           ],
         ),
@@ -468,7 +466,7 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildLeaderboardCard(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return GestureDetector(
+    return ScaleOnTap(
       onTap: () {
         Navigator.push(
           context,
@@ -535,7 +533,7 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildBadgesCard(BuildContext context, int unlockedCount) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return GestureDetector(
+    return ScaleOnTap(
       onTap: () {
         Navigator.push(
           context,
@@ -714,25 +712,28 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const GameLobbyScreen(
-                  title: 'Code Blocks',
-                  description: 'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!',
-                  icon: Icons.code_rounded,
-                  stats: [
-                    {'value': '6', 'label': 'PUZZLES'},
-                    {'value': '190', 'label': 'BEST XP'},
-                    {'value': '+150', 'label': 'XP REWARD'},
-                    {'value': '6m', 'label': 'EST. TIME'},
-                  ],
-                  configOptions: {
-                    'Language': ['Python', 'JavaScript', 'Java', 'C++'],
-                    'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
-                    'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
-                  },
-                  startButtonText: 'Start Coding',
-                  gameScreen: CodeBlocksGameplayScreen(),
-                  gameType: GameType.codeBlocks,
-                )),
+                MaterialPageRoute(
+                  builder: (context) => const GameLobbyScreen(
+                    title: 'Code Blocks',
+                    description:
+                        'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!',
+                    icon: Icons.code_rounded,
+                    stats: [
+                      {'value': '6', 'label': 'PUZZLES'},
+                      {'value': '190', 'label': 'BEST XP'},
+                      {'value': '+150', 'label': 'XP REWARD'},
+                      {'value': '6m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: {
+                      'Language': ['Python', 'JavaScript', 'Java', 'C++'],
+                      'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
+                      'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
+                    },
+                    startButtonText: 'Start Coding',
+                    gameScreen: CodeBlocksGameplayScreen(),
+                    gameType: GameType.codeBlocks,
+                  ),
+                ),
               );
             },
           ),
@@ -745,25 +746,37 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const GameLobbyScreen(
-                  title: 'Which Lang?',
-                  description: 'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?',
-                  icon: Icons.quiz_rounded,
-                  stats: [
-                    {'value': '10', 'label': 'QUESTIONS'},
-                    {'value': '8/10', 'label': 'BEST SCORE'},
-                    {'value': '+100', 'label': 'XP REWARD'},
-                    {'value': '4m', 'label': 'EST. TIME'},
-                  ],
-                  configOptions: {
-                    'Clue Type': ['Mix of All', 'Syntax Only', 'Description', 'Fun Facts'],
-                    'Language Pool': ['All (20 langs)', 'Popular 10', 'Beginner Set'],
-                    'Time per Question': ['45s', '30s', '15s'],
-                  },
-                  startButtonText: 'Start Quiz',
-                  gameScreen: QuizGameplayScreen(),
-                  gameType: GameType.quiz,
-                )),
+                MaterialPageRoute(
+                  builder: (context) => const GameLobbyScreen(
+                    title: 'Which Lang?',
+                    description:
+                        'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?',
+                    icon: Icons.quiz_rounded,
+                    stats: [
+                      {'value': '10', 'label': 'QUESTIONS'},
+                      {'value': '8/10', 'label': 'BEST SCORE'},
+                      {'value': '+100', 'label': 'XP REWARD'},
+                      {'value': '4m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: {
+                      'Clue Type': [
+                        'Mix of All',
+                        'Syntax Only',
+                        'Description',
+                        'Fun Facts',
+                      ],
+                      'Language Pool': [
+                        'All (20 langs)',
+                        'Popular 10',
+                        'Beginner Set',
+                      ],
+                      'Time per Question': ['45s', '30s', '15s'],
+                    },
+                    startButtonText: 'Start Quiz',
+                    gameScreen: QuizGameplayScreen(),
+                    gameType: GameType.quiz,
+                  ),
+                ),
               );
             },
           ),
@@ -776,23 +789,26 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => GameLobbyScreen(
-                  title: 'SDLC Sequence',
-                  description: 'Master the Software Development Life Cycle by arranging phases in the correct logical order for different methodologies.',
-                  icon: Icons.reorder_rounded,
-                  stats: const [
-                    {'value': '5', 'label': 'SEQUENCES'},
-                    {'value': '4/5', 'label': 'ACCURACY'},
-                    {'value': '+120', 'label': 'XP REWARD'},
-                    {'value': '5m', 'label': 'EST. TIME'},
-                  ],
-                  configOptions: const {
-                    'Complexity': ['Standard', 'Advanced', 'Industry'],
-                  },
-                  startButtonText: 'Start Sorting',
-                  gameScreen: SdlcGameplayScreen(),
-                  gameType: GameType.sdlc,
-                )),
+                MaterialPageRoute(
+                  builder: (context) => GameLobbyScreen(
+                    title: 'SDLC Sequence',
+                    description:
+                        'Master the Software Development Life Cycle by arranging phases in the correct logical order for different methodologies.',
+                    icon: Icons.reorder_rounded,
+                    stats: const [
+                      {'value': '5', 'label': 'SEQUENCES'},
+                      {'value': '4/5', 'label': 'ACCURACY'},
+                      {'value': '+120', 'label': 'XP REWARD'},
+                      {'value': '5m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: const {
+                      'Complexity': ['Standard', 'Advanced', 'Industry'],
+                    },
+                    startButtonText: 'Start Sorting',
+                    gameScreen: SdlcGameplayScreen(),
+                    gameType: GameType.sdlc,
+                  ),
+                ),
               );
             },
           ),
@@ -805,24 +821,32 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => GameLobbyScreen(
-                  title: 'Algorithm Trace',
-                  description: 'Analyze pseudocode and determine the output or time complexity. Perfect for technical interview prep!',
-                  icon: Icons.functions_rounded,
-                  stats: const [
-                    {'value': '8', 'label': 'PROBLEMS'},
-                    {'value': '12ms', 'label': 'AVG SPEED'},
-                    {'value': '+200', 'label': 'XP REWARD'},
-                    {'value': '8m', 'label': 'EST. TIME'},
-                  ],
-                  configOptions: const {
-                    'Difficulty': ['Beginner', 'Advanced'],
-                    'Topic': ['All', 'Data Structures', 'Sort/Search', 'Recursion'],
-                  },
-                  startButtonText: 'Start Solving',
-                  gameScreen: SolveAlgorithmGameplayScreen(),
-                  gameType: GameType.algorithm,
-                )),
+                MaterialPageRoute(
+                  builder: (context) => GameLobbyScreen(
+                    title: 'Algorithm Trace',
+                    description:
+                        'Analyze pseudocode and determine the output or time complexity. Perfect for technical interview prep!',
+                    icon: Icons.functions_rounded,
+                    stats: const [
+                      {'value': '8', 'label': 'PROBLEMS'},
+                      {'value': '12ms', 'label': 'AVG SPEED'},
+                      {'value': '+200', 'label': 'XP REWARD'},
+                      {'value': '8m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: const {
+                      'Difficulty': ['Beginner', 'Advanced'],
+                      'Topic': [
+                        'All',
+                        'Data Structures',
+                        'Sort/Search',
+                        'Recursion',
+                      ],
+                    },
+                    startButtonText: 'Start Solving',
+                    gameScreen: SolveAlgorithmGameplayScreen(),
+                    gameType: GameType.algorithm,
+                  ),
+                ),
               );
             },
           ),
@@ -853,7 +877,9 @@ class HomeScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AllActivityScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const AllActivityScreen(),
+                ),
               );
             },
             borderRadius: BorderRadius.circular(4),

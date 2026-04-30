@@ -110,7 +110,9 @@ class _LevelUpDialogState extends State<LevelUpDialog> {
                       onPressed: _shareAchievement,
                       icon: Icon(
                         Icons.ios_share_rounded,
-                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
                         size: 20,
                       ),
                     ),

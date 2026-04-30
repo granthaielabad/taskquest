@@ -144,7 +144,9 @@ class BadgesScreen extends ConsumerWidget {
                 child: CircularProgressIndicator(
                   value: total > 0 ? unlocked / total : 0,
                   strokeWidth: 6,
-                  backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.1),
+                  backgroundColor: theme.colorScheme.surface.withValues(
+                    alpha: 0.1,
+                  ),
                   valueColor: AlwaysStoppedAnimation(theme.colorScheme.surface),
                 ),
               ),
@@ -172,7 +174,8 @@ class _BadgeCard extends StatelessWidget {
   void _shareBadge() {
     SharePlus.instance.share(
       ShareParams(
-        text: 'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
+        text:
+            'I just unlocked the "${badge.title}" badge on TaskQuest! 🏆 ${badge.description} #TaskQuest #CS #Achievement',
         subject: 'TaskQuest Achievement!',
       ),
     );
@@ -215,7 +218,9 @@ class _BadgeCard extends StatelessWidget {
                   badge.isUnlocked
                       ? Icons.verified_rounded
                       : Icons.lock_outline_rounded,
-                  color: badge.isUnlocked ? colorScheme.surface : colorScheme.onSurface.withValues(alpha: 0.2),
+                  color: badge.isUnlocked
+                      ? colorScheme.surface
+                      : colorScheme.onSurface.withValues(alpha: 0.2),
                   size: 24,
                 ),
               ),
@@ -229,7 +234,10 @@ class _BadgeCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: colorScheme.onSurface,
                         shape: BoxShape.circle,
-                        border: Border.all(color: colorScheme.surface, width: 2),
+                        border: Border.all(
+                          color: colorScheme.surface,
+                          width: 2,
+                        ),
                       ),
                       child: Icon(
                         Icons.share_rounded,
@@ -249,7 +257,9 @@ class _BadgeCard extends StatelessWidget {
               fontFamily: 'Syne',
               fontWeight: FontWeight.w700,
               fontSize: 13,
-              color: badge.isUnlocked ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+              color: badge.isUnlocked
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),

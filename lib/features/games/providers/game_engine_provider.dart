@@ -62,8 +62,8 @@ class GameSessionState {
 
   GameQuestion? get currentQuestion =>
       questions.isNotEmpty && currentQuestionIndex < questions.length
-          ? questions[currentQuestionIndex]
-          : null;
+      ? questions[currentQuestionIndex]
+      : null;
 }
 
 class GameEngineNotifier extends Notifier<GameSessionState> {
@@ -102,7 +102,12 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
   }
 
   int _calculateInitialTime(GameSessionConfig config) {
-    final timeStr = config.options['Time per Question'] ?? '30s';
+    // Check various common keys used for time limits across different modes
+    final timeStr =
+        config.options['Time'] ??
+        config.options['Time Limit'] ??
+        config.options['Time per Question'] ??
+        '30s';
     final seconds = int.tryParse(timeStr.replaceAll('s', '')) ?? 30;
     return seconds;
   }
@@ -210,7 +215,9 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
         type: ActivityType.game,
         timestamp: DateTime.now(),
       );
-      await ref.read(activityServiceProvider).recordActivity(user.uid, activity);
+      await ref
+          .read(activityServiceProvider)
+          .recordActivity(user.uid, activity);
     } catch (e) {
       debugPrint('Error saving game results: $e');
     }
@@ -218,21 +225,20 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
 
   GameResult calculateResult() {
     final totalXp = state.questions.fold<int>(0, (sum, q) => sum + q.xpReward);
-    final xpEarned =
-        state.questions.isEmpty
-            ? 0
-            : (totalXp * (state.score / state.questions.length)).round();
-    final accuracy =
-        state.questions.isEmpty ? 0.0 : state.score / state.questions.length;
+    final xpEarned = state.questions.isEmpty
+        ? 0
+        : (totalXp * (state.score / state.questions.length)).round();
+    final accuracy = state.questions.isEmpty
+        ? 0.0
+        : state.score / state.questions.length;
 
     return GameResult(
       score: state.score,
       totalQuestions: state.questions.length,
       xpEarned: xpEarned,
-      timeTaken:
-          state.startTime != null
-              ? DateTime.now().difference(state.startTime!)
-              : Duration.zero,
+      timeTaken: state.startTime != null
+          ? DateTime.now().difference(state.startTime!)
+          : Duration.zero,
       accuracy: accuracy,
     );
   }

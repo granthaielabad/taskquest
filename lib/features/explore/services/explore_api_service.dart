@@ -119,7 +119,291 @@ class WikiCategoryResponse {
   WikiCategoryResponse({required this.members, this.continueToken});
 }
 
+class TutorialCourse {
+  final String id;
+  final String title;
+  final String topic;
+  final String description;
+  final String difficulty;
+  final String estimatedTime;
+  final String contentMarkdown;
+
+  TutorialCourse({
+    required this.id,
+    required this.title,
+    required this.topic,
+    required this.description,
+    required this.difficulty,
+    required this.estimatedTime,
+    required this.contentMarkdown,
+  });
+}
+
 class ExploreApiService {
+  // ── Crash Courses (Mock Data) ──────────────────────────────
+  Future<List<TutorialCourse>> fetchCrashCourses() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return [
+      TutorialCourse(
+        id: 'tc_git_1',
+        title: 'Git Version Control 101',
+        topic: 'TOOLS',
+        description:
+            'Learn the essential commands to save your code and collaborate with others.',
+        difficulty: 'Beginner',
+        estimatedTime: '5m',
+        contentMarkdown: '''
+# Git Version Control 101
+
+Welcome to your first step into professional software development! **Git** is the industry standard for version control. Think of it as a time machine for your code.
+
+## Why use Git?
+Imagine working on an essay and saving it as `essay_final.doc`, `essay_final_v2.doc`, `essay_really_final.doc`. It gets messy quickly. Git solves this by tracking changes automatically.
+
+## Core Commands
+
+### 1. The Setup
+Before doing anything, you need to tell Git to start tracking your folder:
+```bash
+git init
+```
+This creates a hidden `.git` folder. Your time machine is now online.
+
+### 2. Staging Changes
+When you change files, Git knows, but it doesn't save them to the timeline yet. You must "stage" them:
+```bash
+git add .
+```
+*(The `.` means "add everything in this folder")*
+
+### 3. Saving the Snapshot
+Once staged, you create a "Commit" (a permanent snapshot):
+```bash
+git commit -m "Added the login screen"
+```
+Always use descriptive messages!
+
+### 4. Pushing to the Cloud
+To back up your code to GitHub, you "push" it:
+```bash
+git push origin main
+```
+
+## Summary
+1. Change code.
+2. `git add .`
+3. `git commit -m "message"`
+4. `git push`
+
+You are now a Git user!
+''',
+      ),
+      TutorialCourse(
+        id: 'tc_ds_1',
+        title: 'Data Structures 101',
+        topic: 'CONCEPTS',
+        description:
+            'Learn about Arrays, Linked Lists, Stacks, and Queues conceptually.',
+        difficulty: 'Beginner',
+        estimatedTime: '6m',
+        contentMarkdown: '''
+# Data Structures 101
+
+A **Data Structure** is a specialized way of organizing and storing data in a computer so that it can be accessed and modified efficiently.
+
+## 1. Arrays
+The most basic structure. A collection of items stored at contiguous memory locations.
+* **Pros:** Fast access via index.
+* **Cons:** Fixed size (in many languages) and slow insertions/deletions.
+
+## 2. Linked Lists
+A linear collection of data elements called nodes, where each node points to the next.
+* **Pros:** Dynamic size and fast insertions/deletions.
+* **Cons:** Slow access (must traverse from the start).
+
+## 3. Stacks (LIFO)
+Think of a stack of plates. **Last-In, First-Out**.
+* **Push:** Add an item to the top.
+* **Pop:** Remove the top item.
+
+## 4. Queues (FIFO)
+Think of a line at a grocery store. **First-In, First-Out**.
+* **Enqueue:** Add an item to the back.
+* **Dequeue:** Remove the front item.
+
+## 5. Hash Maps (Dictionaries)
+Stores data in key-value pairs. Uses a "hash function" to map keys to specific locations.
+* **Pros:** Extremely fast lookups, insertions, and deletions.
+
+## Summary
+* **Array:** Indexed list.
+* **Linked List:** Chain of nodes.
+* **Stack:** LIFO (Last In, First Out).
+* **Queue:** FIFO (First In, First Out).
+* **Hash Map:** Key-Value mapping.
+''',
+      ),
+      TutorialCourse(
+        id: 'tc_algo_1',
+        title: 'Algorithms & Big O',
+        topic: 'CONCEPTS',
+        description:
+            'Understand what algorithms are and how to measure their efficiency.',
+        difficulty: 'Intermediate',
+        estimatedTime: '7m',
+        contentMarkdown: '''
+# Algorithms & Big O
+
+An **Algorithm** is simply a step-by-step procedure for solving a problem. **Big O Notation** is the language we use to describe how long an algorithm takes to run (time complexity) or how much memory it uses (space complexity).
+
+## Common Time Complexities
+
+### 1. O(1) - Constant Time
+The algorithm takes the same amount of time regardless of the input size.
+* *Example:* Accessing an array element by index.
+
+### 2. O(N) - Linear Time
+The time grows proportionally with the size of the input.
+* *Example:* Searching for a value in an unsorted array (you might have to check every item).
+
+### 3. O(N²) - Quadratic Time
+The time grows proportionally to the square of the input size. Often seen in algorithms with nested loops.
+* *Example:* Bubble Sort.
+
+### 4. O(log N) - Logarithmic Time
+The input size is halved at each step. Extremely efficient for large datasets.
+* *Example:* Binary Search.
+
+## Why it matters
+As data grows, the difference between O(N) and O(N²) becomes massive. A million items in O(N) might take a second, while O(N²) could take weeks!
+
+## Summary
+* **O(1):** Instant.
+* **O(log N):** Fast.
+* **O(N):** Fair.
+* **O(N²):** Slow for large data.
+''',
+      ),
+      TutorialCourse(
+        id: 'tc_oop_1',
+        title: 'Object-Oriented Programming',
+        topic: 'CONCEPTS',
+        description:
+            'Explore the 4 pillars of OOP: Encapsulation, Abstraction, Inheritance, and Polymorphism.',
+        difficulty: 'Beginner',
+        estimatedTime: '6m',
+        contentMarkdown: '''
+# Object-Oriented Programming (OOP)
+
+OOP is a programming paradigm based on the concept of "objects," which can contain data and code. It helps organize large software projects.
+
+## The 4 Pillars of OOP
+
+### 1. Encapsulation
+Bundling data and the methods that operate on that data into a single unit (a class). It hides the internal state from the outside world.
+* *Analogy:* A capsule hides the medicine inside.
+
+### 2. Abstraction
+Hiding complex implementation details and showing only the necessary features of an object.
+* *Analogy:* You know how to drive a car by using the steering wheel and pedals, without knowing how the engine works internally.
+
+### 3. Inheritance
+The mechanism where one class (child) acquires the properties and behaviors of another class (parent).
+* *Analogy:* A "Car" and a "Truck" both inherit traits from a "Vehicle."
+
+### 4. Polymorphism
+The ability of different objects to respond to the same message (method call) in their own way.
+* *Analogy:* A `Shape` class might have a `draw()` method. A `Circle` draws a circle, while a `Square` draws a square.
+
+## Summary
+OOP makes code more modular, reusable, and easier to maintain.
+''',
+      ),
+      TutorialCourse(
+        id: 'tc_cli_1',
+        title: 'Command Line Basics',
+        topic: 'TOOLS',
+        description:
+            'Master essential CLI navigation and file management commands.',
+        difficulty: 'Beginner',
+        estimatedTime: '5m',
+        contentMarkdown: '''
+# Command Line Basics
+
+The Command Line Interface (CLI) is a powerful way to interact with your computer using text commands instead of a mouse.
+
+## Essential Commands
+
+### 1. Navigation
+* `pwd` (Print Working Directory): Shows you exactly where you are.
+* `ls` (List): Lists files and folders in your current location.
+* `cd <folder>` (Change Directory): Moves you into a folder.
+* `cd ..`: Moves you back one folder.
+
+### 2. File Management
+* `mkdir <name>` (Make Directory): Creates a new folder.
+* `touch <file>`: Creates a new empty file.
+* `rm <file>` (Remove): Deletes a file. **Be careful!**
+* `cp <source> <dest>` (Copy): Copies a file or folder.
+* `mv <source> <dest>` (Move): Moves or renames a file or folder.
+
+### 3. Useful Shortcuts
+* **Tab Completion:** Type the first few letters of a filename and hit `Tab` to auto-fill it.
+* **Up/Down Arrows:** Cycle through your previous commands.
+* `clear`: Clears the terminal screen.
+
+## Summary
+The CLI is faster and more precise than a GUI once you learn the "language" of your computer.
+''',
+      ),
+      TutorialCourse(
+        id: 'tc_web_1',
+        title: 'How the Web Works',
+        topic: 'NETWORKING',
+        description:
+            'Understand HTTP, Requests, Responses, and how your browser talks to servers.',
+        difficulty: 'Beginner',
+        estimatedTime: '4m',
+        contentMarkdown: '''
+# How the Web Works
+
+Every time you type a URL into your browser, a massive, invisible conversation happens across the globe. Let's break it down.
+
+## The Client and the Server
+* **The Client:** Your web browser (Chrome, Safari, or this app!).
+* **The Server:** A powerful computer sitting in a data center somewhere, waiting to give you files.
+
+## The Request-Response Cycle
+1. **The Request:** You type `google.com`. Your browser sends an **HTTP Request** into the internet asking for that page.
+2. **The Processing:** The server receives the request, gathers the HTML, CSS, and Images.
+3. **The Response:** The server sends an **HTTP Response** back to your browser.
+
+## HTTP Status Codes
+When the server responds, it includes a 3-digit code telling you how it went:
+* **200 OK:** Everything is great! Here is your page.
+* **301 Redirect:** This page moved somewhere else.
+* **404 Not Found:** I have no idea what page you are asking for.
+* **500 Server Error:** My code broke. It's not you, it's me.
+
+## JSON: The Language of APIs
+When apps talk to servers (like TaskQuest fetching your quests), they don't send HTML. They send raw data using **JSON** (JavaScript Object Notation).
+```json
+{
+  "status": 200,
+  "message": "Success",
+  "data": {
+    "user": "Scholar",
+    "xp": 500
+  }
+}
+```
+
+Now you know how the internet talks!
+''',
+      ),
+    ];
+  }
+
   // ── Wikipedia REST API Base URLs ───────────────────────────
   static const String _wikiRestUrl = 'https://en.wikipedia.org/api/rest_v1';
   static const String _wikiActionUrl = 'https://en.wikipedia.org/w/api.php';
@@ -265,9 +549,13 @@ class ExploreApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final events = data['selected'] as List?;
+        final selected = data['selected'] as List? ?? [];
+        final allEvents = data['events'] as List? ?? [];
 
-        if (events != null && events.isNotEmpty) {
+        // Combine curated 'selected' events with the broader 'events' list
+        final events = [...selected, ...allEvents];
+
+        if (events.isNotEmpty) {
           // Stricter keywords to ensure relevance to Computer Science/Tech
           final techKeywords = [
             'computer',
@@ -348,11 +636,10 @@ class ExploreApiService {
         final nextToken = data['continue']?['cmcontinue'] as String?;
 
         if (members != null) {
-          final names =
-              members
-                  .map((m) => m['title'] as String)
-                  .where((name) => !name.contains('Category:'))
-                  .toList();
+          final names = members
+              .map((m) => m['title'] as String)
+              .where((name) => !name.contains('Category:'))
+              .toList();
           return WikiCategoryResponse(members: names, continueToken: nextToken);
         }
       }

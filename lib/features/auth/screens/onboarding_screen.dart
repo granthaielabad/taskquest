@@ -425,7 +425,9 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                       ),
                       TextSpan(
                         text: '(name) {\n  ',
-                        style: TextStyle(color: colorScheme.surface.withValues(alpha: 0.8)),
+                        style: TextStyle(
+                          color: colorScheme.surface.withValues(alpha: 0.8),
+                        ),
                       ),
                       const TextSpan(
                         text: 'return ',
@@ -445,7 +447,9 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                       ),
                       TextSpan(
                         text: ' + name;\n}',
-                        style: TextStyle(color: colorScheme.surface.withValues(alpha: 0.8)),
+                        style: TextStyle(
+                          color: colorScheme.surface.withValues(alpha: 0.8),
+                        ),
                       ),
                     ],
                   ),
@@ -482,7 +486,10 @@ class _Slide2State extends State<_Slide2> with AutomaticKeepAliveClientMixin {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
-                    border: Border.all(color: colorScheme.onSurface, width: 1.5),
+                    border: Border.all(
+                      color: colorScheme.onSurface,
+                      width: 1.5,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -888,11 +895,15 @@ class _GameCard extends StatelessWidget {
     final bg = isDark ? colorScheme.onSurface : colorScheme.surface;
     final border = isDark ? colorScheme.onSurface : colorScheme.outline;
     final titleColor = isDark ? colorScheme.surface : colorScheme.onSurface;
-    final subColor = isDark ? colorScheme.surface.withValues(alpha: 0.45) : colorScheme.onSurfaceVariant;
+    final subColor = isDark
+        ? colorScheme.surface.withValues(alpha: 0.45)
+        : colorScheme.onSurfaceVariant;
     final tagBg = isDark
         ? colorScheme.surface.withValues(alpha: 0.12)
         : theme.scaffoldBackgroundColor;
-    final tagColor = isDark ? colorScheme.surface.withValues(alpha: 0.55) : colorScheme.onSurfaceVariant;
+    final tagColor = isDark
+        ? colorScheme.surface.withValues(alpha: 0.55)
+        : colorScheme.onSurfaceVariant;
     final iconBg = isDark
         ? colorScheme.surface.withValues(alpha: 0.12)
         : theme.scaffoldBackgroundColor;
@@ -1147,9 +1158,7 @@ class _AchievementBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: unlocked ? colorScheme.onSurface : colorScheme.surface,
             border: Border.all(
-              color: unlocked
-                  ? colorScheme.onSurface
-                  : colorScheme.outline,
+              color: unlocked ? colorScheme.onSurface : colorScheme.outline,
             ),
             borderRadius: BorderRadius.circular(13),
           ),
@@ -1168,9 +1177,7 @@ class _AchievementBadge extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'DM Mono',
               fontSize: 9,
-              color: unlocked
-                  ? colorScheme.onSurface
-                  : colorScheme.outline,
+              color: unlocked ? colorScheme.onSurface : colorScheme.outline,
               height: 1.4,
             ),
           ),

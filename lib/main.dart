@@ -21,7 +21,8 @@ void main() async {
 
   // Initialize Google Sign-In as required by the package
   try {
-    const clientId = '910396668792-5qatv8m0g9i1um66pso655qfvud90vr8.apps.googleusercontent.com';
+    const clientId =
+        '910396668792-5qatv8m0g9i1um66pso655qfvud90vr8.apps.googleusercontent.com';
     await GoogleSignIn.instance.initialize(
       serverClientId: clientId,
       clientId: kIsWeb ? clientId : null,
@@ -43,19 +44,28 @@ class TaskQuestApp extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider);
     final textScale = ref.watch(textScaleProvider);
     final fontStyle = ref.watch(fontStyleProvider);
+    final themePreset = ref.watch(themePresetProvider);
 
     return MaterialApp(
       key: ValueKey(authState.value?.uid ?? 'unauthenticated'),
       title: 'TaskQuest',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.createTheme(brightness: Brightness.light, fontStyle: fontStyle),
-      darkTheme: AppTheme.createTheme(brightness: Brightness.dark, fontStyle: fontStyle),
+      theme: AppTheme.createTheme(
+        brightness: Brightness.light,
+        fontStyle: fontStyle,
+        preset: themePreset,
+      ),
+      darkTheme: AppTheme.createTheme(
+        brightness: Brightness.dark,
+        fontStyle: fontStyle,
+        preset: themePreset,
+      ),
       themeMode: themeMode,
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScale),
-          ),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
           child: child!,
         );
       },
