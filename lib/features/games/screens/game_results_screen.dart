@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:taskquest/features/auth/providers/auth_provider.dart';
-import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/games/models/game_models.dart';
-import 'package:taskquest/features/home/providers/activity_provider.dart';
-import 'package:uuid/uuid.dart';
 
 class GameResultsScreen extends ConsumerStatefulWidget {
   final GameResult result;

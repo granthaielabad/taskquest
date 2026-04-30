@@ -8,6 +8,8 @@ import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
 import 'package:taskquest/core/services/sound_service.dart';
 import 'package:taskquest/features/shared/widgets/report_dialog.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
+import 'package:taskquest/features/home/providers/quest_provider.dart';
 
 class StudyFlashcardScreen extends ConsumerStatefulWidget {
   final FlashcardDeckModel deck;
@@ -47,7 +49,7 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
     }
   }
 
-  void _finishStudy() {
+  Future<void> _finishStudy() async {
     if (_isFinishing) return;
     setState(() => _isFinishing = true);
 
@@ -71,6 +73,20 @@ class _StudyFlashcardScreenState extends ConsumerState<StudyFlashcardScreen> {
       xpReward = 50;
       ref.read(userServiceProvider).addXp(widget.deck.userId, xpReward);
     }
+
+    // Record Activity
+    final activity = ActivityModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: 'Studied ${widget.deck.title}',
+      subtitle: 'Reviewed ${widget.deck.cards.length} cards.',
+      xpReward: xpReward,
+      type: ActivityType.study,
+      timestamp: DateTime.now(),
+    );
+    await ref.read(activityServiceProvider).recordActivity(widget.deck.userId, activity);
+
+    // Complete Relevant Quests
+    await ref.read(questServiceProvider).completeQuestsByType(widget.deck.userId, 'STUDY');
 
     ref
         .read(badgeServiceProvider)

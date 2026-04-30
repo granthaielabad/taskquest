@@ -11,6 +11,8 @@ import 'package:taskquest/features/games/screens/study_flashcard_screen.dart';
 import 'package:taskquest/features/games/screens/manual_flashcard_screen.dart';
 import 'package:taskquest/features/games/screens/all_decks_screen.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
+import 'package:taskquest/features/home/providers/quest_provider.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
 
 class FlashcardScanScreen extends ConsumerStatefulWidget {
   const FlashcardScanScreen({super.key});
@@ -59,7 +61,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     final fileName = result.files.single.name;
     
     if (fileBytes == null) {
-      // Fallback for non-web if bytes are null (though withData should provide them)
       if (result.files.single.path != null) {
         final file = File(result.files.single.path!);
         final bytes = await file.readAsBytes();
@@ -95,12 +96,26 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           userId: user.uid,
           title: fileName.split('.').first,
           type: 'AI',
-          category: 'AI Generated', // AI decks get this category by default
+          category: 'AI Generated',
           cards: flashcards,
           createdAt: DateTime.now(),
         );
         await ref.read(flashcardServiceProvider).createDeck(deck);
         await ref.read(badgeServiceProvider).checkFlashAI(user.uid);
+
+        // Record Activity for Quest Tracking
+        final activity = ActivityModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: 'Generated AI Deck',
+          subtitle: 'Generated ${flashcards.length} cards from $fileName',
+          xpReward: 20,
+          type: ActivityType.scan,
+          timestamp: DateTime.now(),
+        );
+        await ref.read(activityServiceProvider).recordActivity(user.uid, activity);
+
+        // Complete AI Quests
+        await ref.read(questServiceProvider).completeQuestsByType(user.uid, 'AI');
       }
 
       setState(() => _progress = 1.0);
@@ -221,7 +236,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   ),
                 );
               }
-              // Only show the first 3 in the preview
               final previewDecks = filtered.take(3).toList();
               return Column(
                 children: previewDecks
@@ -291,7 +305,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   Widget _buildScanningView() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       key: const ValueKey('scanning'),
@@ -906,12 +919,10 @@ class _DashedRectPainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
-
     const dashSpace = 4.0;
     const cornerLength = 12.0;
 
     final path = Path();
-
     path.moveTo(0, cornerLength);
     path.lineTo(0, 0);
     path.lineTo(cornerLength, 0);

@@ -215,15 +215,17 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
       final questService = ref.read(questServiceProvider);
       
       final gameType = state.config?.type;
+      final difficulty = state.config?.options['Difficulty'];
+
       if (gameType == GameType.codeBlocks) {
-        await questService.completeQuestsByType(user.uid, 'CODING');
+        await questService.completeQuestsByType(user.uid, 'CODING', accuracy: result.accuracy, difficulty: difficulty);
       } else if (gameType == GameType.quiz) {
-        await questService.completeQuestsByType(user.uid, 'QUIZ');
+        await questService.completeQuestsByType(user.uid, 'QUIZ', accuracy: result.accuracy, difficulty: difficulty);
       } else if (gameType == GameType.sdlc) {
-        await questService.completeQuestsByType(user.uid, 'ARCHITECTURE');
+        await questService.completeQuestsByType(user.uid, 'ARCHITECTURE', accuracy: result.accuracy, difficulty: difficulty);
       } else if (gameType == GameType.algorithm) {
-        await questService.completeQuestsByType(user.uid, 'LOGIC');
-        await questService.completeQuestsByType(user.uid, 'CS BASICS');
+        await questService.completeQuestsByType(user.uid, 'LOGIC', accuracy: result.accuracy, difficulty: difficulty);
+        await questService.completeQuestsByType(user.uid, 'CS BASICS', accuracy: result.accuracy, difficulty: difficulty);
       }
     } catch (e) {
       debugPrint('Error saving game results: $e');

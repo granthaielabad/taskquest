@@ -15,8 +15,10 @@ class NotificationService {
     
     tz_data.initializeTimeZones();
     
+    // Using @mipmap/launcher_icon to ensure the custom TaskQuest logo is used
+    // instead of the default Flutter/system icon.
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
     
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
@@ -87,6 +89,7 @@ class NotificationService {
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'taskquest_channel', 'TaskQuest Notifications',
       importance: Importance.max, priority: Priority.high, showWhen: true,
+      icon: '@mipmap/launcher_icon', // Explicitly set the app icon for notifications
     );
     const NotificationDetails details = NotificationDetails(
       android: androidDetails, iOS: DarwinNotificationDetails(),
@@ -117,6 +120,7 @@ class NotificationService {
             'daily_reminder_channel', 'Daily Reminders',
             importance: Importance.max, priority: Priority.high,
             visibility: NotificationVisibility.public,
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),
@@ -133,6 +137,7 @@ class NotificationService {
           android: AndroidNotificationDetails(
             'daily_reminder_channel', 'Daily Reminders',
             importance: Importance.max, priority: Priority.high,
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),

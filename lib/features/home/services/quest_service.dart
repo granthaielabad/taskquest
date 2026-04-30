@@ -5,6 +5,7 @@ import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:taskquest/features/settings/services/notification_service.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
 
 class QuestService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -40,7 +41,6 @@ class QuestService {
 
         if (allQuests.isEmpty) return [];
 
-        // Sort by ID to ensure deterministic shuffle across different calls
         allQuests.sort((a, b) => a.id.compareTo(b.id));
         allQuests.shuffle(random);
         return allQuests.take(3).toList();
@@ -48,7 +48,7 @@ class QuestService {
     );
   }
 
-  Future<void> completeQuestsByType(String userId, String category) async {
+  Future<void> completeQuestsByType(String userId, String category, {double accuracy = 0.0, String? difficulty}) async {
     try {
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
@@ -59,6 +59,11 @@ class QuestService {
           .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
           .get();
           
+      final activitiesSnap = await _db.collection('users').doc(userId).collection('activities')
+          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .get();
+
+      final activities = activitiesSnap.docs.map((doc) => ActivityModel.fromMap(doc.data())).toList();
       final completedIds = completedSnap.docs.map((doc) => doc.id).toSet();
       final random = Random(seed);
 
@@ -67,21 +72,74 @@ class QuestService {
         return QuestModel.fromMap({...data, 'id': doc.id, 'isCompleted': completedIds.contains(doc.id)});
       }).toList();
       
-      // Sort by ID to ensure deterministic shuffle across different calls
       allQuests.sort((a, b) => a.id.compareTo(b.id));
       allQuests.shuffle(random);
       final dailyQuests = allQuests.take(3).toList();
 
-      final targetCat = category.toUpperCase();
+      final targetCat = category.trim().toUpperCase();
 
       for (final quest in dailyQuests) {
-        if (quest.category.toUpperCase() == targetCat && !quest.isCompleted) {
-          await completeQuest(userId, quest);
-          NotificationService().showNotification(
-            id: 200 + quest.id.hashCode,
-            title: 'Daily Challenge Done! 🏆',
-            body: '${quest.title}: +${quest.xpReward} XP',
-          );
+        if (quest.category.trim().toUpperCase() == targetCat && !quest.isCompleted) {
+          bool meetsRequirement = true;
+          final descLower = quest.description.toLowerCase();
+          final titleLower = quest.title.toLowerCase();
+          
+          // 1. Accuracy Check
+          if (descLower.contains('100%') || descLower.contains('perfect')) {
+            meetsRequirement = accuracy >= 1.0;
+          }
+
+          // 2. Difficulty Check (Strictly require HARD for specific quests)
+          if (quest.id == 'q11' || quest.id == 'q14' || 
+              descLower.contains('hard challenge') || 
+              descLower.contains('advanced algorithm')) {
+             meetsRequirement = meetsRequirement && (difficulty?.toUpperCase() == 'HARD');
+          }
+
+          // 3. Accumulation Check: Memory Master
+          if (quest.id == 'q15' || titleLower.contains('memory master')) {
+            int totalReviewed = 0;
+            for (var act in activities) {
+              if (act.type == ActivityType.study && act.subtitle.contains('Reviewed')) {
+                final match = RegExp(r'Reviewed (\d+) cards').firstMatch(act.subtitle);
+                if (match != null) {
+                  totalReviewed += int.parse(match.group(1)!);
+                }
+              }
+            }
+            meetsRequirement = totalReviewed >= 50;
+          }
+
+          // 4. Accumulation Check: Polyglot Trial
+          if (quest.id == 'q10' || titleLower.contains('polyglot trial')) {
+            int playCount = 0;
+            for (var act in activities) {
+              if (act.type == ActivityType.game && act.title.contains('Which Lang?')) {
+                playCount++;
+              }
+            }
+            meetsRequirement = playCount >= 3;
+          }
+
+          if (meetsRequirement) {
+            await completeQuest(userId, quest);
+            
+            final title = 'Daily Challenge Done! 🏆';
+            final body = '${quest.title}: +${quest.xpReward} XP';
+            
+            NotificationService().showNotification(
+              id: 200 + quest.id.hashCode,
+              title: title,
+              body: body,
+            );
+
+            await _db.collection('users').doc(userId).collection('notifications').add({
+              'title': title,
+              'body': body,
+              'timestamp': FieldValue.serverTimestamp(),
+              'type': 'quest',
+            });
+          }
         }
       }
     } catch (e) {
