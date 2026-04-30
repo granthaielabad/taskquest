@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 class AppConstants {
   // AI Configuration
   // Get your free key at: https://aistudio.google.com/app/apikey

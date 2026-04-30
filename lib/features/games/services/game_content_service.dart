@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'package:taskquest/features/games/models/game_models.dart';
 
 class GameContentService {

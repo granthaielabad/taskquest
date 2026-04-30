@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'package:flutter/material.dart';
 
 /// A reusable dialog to confirm if the user wants to exit a game session.

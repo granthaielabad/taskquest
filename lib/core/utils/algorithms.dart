@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 /// A utility class containing core algorithms.
 class TaskQuestAlgorithms {
   // ─── 1. QUICK SORT (O(N log N)) ────────────────────────────────────────────

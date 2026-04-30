@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum BookmarkType { article, wiki }

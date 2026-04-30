@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/core/utils/algorithms.dart';
 import 'package:taskquest/features/home/providers/quest_provider.dart';

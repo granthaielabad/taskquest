@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
 import 'package:taskquest/features/games/models/game_models.dart';

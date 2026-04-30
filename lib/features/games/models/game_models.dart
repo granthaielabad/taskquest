@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 enum GameSessionStatus {
   idle,
   loading,

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:flutter/material.dart';

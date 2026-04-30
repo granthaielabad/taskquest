@@ -1,3 +1,5 @@
+// Copyright (c) 2026 TaskQuest. All rights reserved.
+
 import 'package:flutter/material.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
 
