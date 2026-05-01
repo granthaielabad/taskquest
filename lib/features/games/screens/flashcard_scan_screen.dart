@@ -173,29 +173,31 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AI\nFlashcards',
-                    style: AppTheme.headingXL.copyWith(
-                      fontSize: 32,
-                      height: 0.9,
-                      letterSpacing: -1.2,
-                      color: colorScheme.onSurface,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI\nFlashcards',
+                      style: AppTheme.headingXL.copyWith(
+                        fontSize: 32,
+                        height: 0.9,
+                        letterSpacing: -1.2,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Scan a doc, get a full deck instantly',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 10,
-                      letterSpacing: 0.5,
-                      color: colorScheme.onSurfaceVariant,
+                    const SizedBox(height: 12),
+                    Text(
+                      'Scan a doc, get a full deck instantly',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(width: 12),
               _buildAIBadge(),
@@ -306,116 +308,119 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Container(
+    return SingleChildScrollView( // Changed Container to SingleChildScrollView for safety
       key: const ValueKey('scanning'),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          const SizedBox(height: 60),
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.file_present_rounded,
-                    color: colorScheme.surface,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'AI IS WORKING',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 1.8,
-                    color: colorScheme.surface.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Scanning your\ndocument...',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Syne',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 28,
-                    height: 1.0,
-                    color: colorScheme.surface,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Reading content, identifying key\nconcepts, and generating flashcards for\nyou.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 10,
-                    height: 1.6,
-                    color: colorScheme.surface.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 48),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'PROCESSING',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 9,
-                        color: colorScheme.surface.withValues(alpha: 0.5),
-                      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 60),
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface,
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    Text(
-                      '${(_progress * 100).round()}%',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: colorScheme.surface,
-                      ),
+                    child: Icon(
+                      Icons.file_present_rounded,
+                      color: colorScheme.surface,
+                      size: 28,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: _progress,
-                    minHeight: 6,
-                    backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation(colorScheme.surface),
                   ),
-                ),
-                const SizedBox(height: 40),
-                _buildStatusRow('Document uploaded', _progress >= 0.3),
-                const SizedBox(height: 12),
-                _buildStatusRow('Text extracted', _progress >= 0.7),
-                const SizedBox(height: 12),
-                _buildStatusRow(
-                  'Generating flashcards...',
-                  _progress >= 1.0,
-                  isLast: true,
-                ),
-              ],
+                  const SizedBox(height: 32),
+                  Text(
+                    'AI IS WORKING',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      letterSpacing: 1.8,
+                      color: colorScheme.surface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Scanning your\ndocument...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 28,
+                      height: 1.0,
+                      color: colorScheme.surface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Reading content, identifying key\nconcepts, and generating flashcards for\nyou.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      height: 1.6,
+                      color: colorScheme.surface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'PROCESSING',
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 9,
+                          color: colorScheme.surface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      Text(
+                        '${(_progress * 100).round()}%',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          color: colorScheme.surface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: _progress,
+                      minHeight: 6,
+                      backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
+                      valueColor: AlwaysStoppedAnimation(colorScheme.surface),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildStatusRow('Document uploaded', _progress >= 0.3),
+                  const SizedBox(height: 12),
+                  _buildStatusRow('Text extracted', _progress >= 0.7),
+                  const SizedBox(height: 12),
+                  _buildStatusRow(
+                    'Generating flashcards...',
+                    _progress >= 1.0,
+                    isLast: true,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          _buildFileFooter(),
-        ],
+            const SizedBox(height: 24),
+            _buildFileFooter(),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
@@ -441,12 +446,14 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
               : null,
         ),
         const SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'DM Mono',
-            fontSize: 11,
-            color: isDone ? colorScheme.surface : colorScheme.surface.withValues(alpha: 0.4),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 11,
+              color: isDone ? colorScheme.surface : colorScheme.surface.withValues(alpha: 0.4),
+            ),
           ),
         ),
       ],
@@ -617,12 +624,14 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 children: [
                   Icon(Icons.info_outline, size: 14, color: warningColor),
                   const SizedBox(width: 8),
-                  Text(
-                    'Limit: 5 Scans/Day (Generates 10 cards each)',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 9,
-                      color: warningColor,
+                  Flexible(
+                    child: Text(
+                      'Limit: 5 Scans/Day (Generates 10 cards each)',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        color: warningColor,
+                      ),
                     ),
                   ),
                 ],
@@ -705,13 +714,15 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
             children: [
               Icon(Icons.style_outlined, size: 18, color: colorScheme.onSurface),
               const SizedBox(width: 12),
-              Text(
-                'Create Cards Manually',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: colorScheme.onSurface,
+              Flexible(
+                child: Text(
+                  'Create Cards Manually',
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -822,6 +833,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
