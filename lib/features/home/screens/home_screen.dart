@@ -3,22 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
-import 'package:taskquest/features/games/models/game_models.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
-import 'package:taskquest/features/games/screens/games_screen.dart';
-import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
-import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
-import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
-import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
-import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
-import 'package:taskquest/features/settings/screens/notifications_screen.dart';
-
+import 'package:taskquest/features/home/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
+import 'package:taskquest/core/providers/theme_provider.dart';
 
 import 'package:taskquest/features/shared/widgets/scale_on_tap.dart';
 
@@ -174,9 +167,7 @@ class HomeScreen extends ConsumerWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const UserNotificationsScreen()),
                   );
                 },
               ),
@@ -260,7 +251,28 @@ class HomeScreen extends ConsumerWidget {
                           title: q.title,
                           sub: q.description,
                           xp: q.xpReward,
-                          onTap: () {}, // Quests are now automated, not manual
+                          onTap: () {
+                            if (q.isCompleted) return;
+                            
+                            // Map categories to Tab Indices to keep BottomNav visible
+                            final cat = q.category.toUpperCase();
+                            final nav = ref.read(navigationIndexProvider.notifier);
+
+                            if (cat == 'GAMES' || cat == 'CODING' || cat == 'CS BASICS' || cat == 'QUIZ' || cat == 'LOGIC' || cat == 'ARCHITECTURE') {
+                              nav.setIndex(1); // Switch to Games Tab
+                            } else if (cat == 'STUDY' || cat == 'AI') {
+                              nav.setIndex(2); // Switch to Scan/AI Tab
+                            } else if (cat == 'SOCIAL') {
+                              // Switch to Explore Tab AND show Leaderboard overlay
+                              nav.setIndex(3); 
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                              );
+                            } else if (cat == 'EXPLORE') {
+                              nav.setIndex(3); // Switch to Explore Tab
+                            }
+                          },
                         );
                       }).toList(),
                     );
@@ -291,7 +303,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildGameModes(context),
+        _buildGameModes(context, ref),
 
         const SizedBox(height: 40),
 
@@ -683,7 +695,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGameModes(BuildContext context) {
+  Widget _buildGameModes(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -697,10 +709,7 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.style,
             isFeatured: true,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const GamesScreen()),
-              );
+              ref.read(navigationIndexProvider.notifier).setIndex(1);
             },
           ),
           const SizedBox(width: 10),
@@ -710,31 +719,7 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Interactive',
             icon: Icons.code,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const GameLobbyScreen(
-                    title: 'Code Blocks',
-                    description:
-                        'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!',
-                    icon: Icons.code_rounded,
-                    stats: [
-                      {'value': '6', 'label': 'PUZZLES'},
-                      {'value': '190', 'label': 'BEST XP'},
-                      {'value': '+150', 'label': 'XP REWARD'},
-                      {'value': '6m', 'label': 'EST. TIME'},
-                    ],
-                    configOptions: {
-                      'Language': ['Python', 'JavaScript', 'Java', 'C++'],
-                      'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
-                      'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
-                    },
-                    startButtonText: 'Start Coding',
-                    gameScreen: CodeBlocksGameplayScreen(),
-                    gameType: GameType.codeBlocks,
-                  ),
-                ),
-              );
+              ref.read(navigationIndexProvider.notifier).setIndex(1);
             },
           ),
           const SizedBox(width: 10),
@@ -744,40 +729,7 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Quiz',
             icon: Icons.question_mark_rounded,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const GameLobbyScreen(
-                    title: 'Which Lang?',
-                    description:
-                        'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?',
-                    icon: Icons.quiz_rounded,
-                    stats: [
-                      {'value': '10', 'label': 'QUESTIONS'},
-                      {'value': '8/10', 'label': 'BEST SCORE'},
-                      {'value': '+100', 'label': 'XP REWARD'},
-                      {'value': '4m', 'label': 'EST. TIME'},
-                    ],
-                    configOptions: {
-                      'Clue Type': [
-                        'Mix of All',
-                        'Syntax Only',
-                        'Description',
-                        'Fun Facts',
-                      ],
-                      'Language Pool': [
-                        'All (20 langs)',
-                        'Popular 10',
-                        'Beginner Set',
-                      ],
-                      'Time per Question': ['45s', '30s', '15s'],
-                    },
-                    startButtonText: 'Start Quiz',
-                    gameScreen: QuizGameplayScreen(),
-                    gameType: GameType.quiz,
-                  ),
-                ),
-              );
+              ref.read(navigationIndexProvider.notifier).setIndex(1);
             },
           ),
           const SizedBox(width: 10),
@@ -787,29 +739,7 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Logic',
             icon: Icons.reorder_rounded,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GameLobbyScreen(
-                    title: 'SDLC Sequence',
-                    description:
-                        'Master the Software Development Life Cycle by arranging phases in the correct logical order for different methodologies.',
-                    icon: Icons.reorder_rounded,
-                    stats: const [
-                      {'value': '5', 'label': 'SEQUENCES'},
-                      {'value': '4/5', 'label': 'ACCURACY'},
-                      {'value': '+120', 'label': 'XP REWARD'},
-                      {'value': '5m', 'label': 'EST. TIME'},
-                    ],
-                    configOptions: const {
-                      'Complexity': ['Standard', 'Advanced', 'Industry'],
-                    },
-                    startButtonText: 'Start Sorting',
-                    gameScreen: SdlcGameplayScreen(),
-                    gameType: GameType.sdlc,
-                  ),
-                ),
-              );
+              ref.read(navigationIndexProvider.notifier).setIndex(1);
             },
           ),
           const SizedBox(width: 10),
@@ -819,35 +749,7 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Advanced',
             icon: Icons.functions_rounded,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GameLobbyScreen(
-                    title: 'Algorithm Trace',
-                    description:
-                        'Analyze pseudocode and determine the output or time complexity. Perfect for technical interview prep!',
-                    icon: Icons.functions_rounded,
-                    stats: const [
-                      {'value': '8', 'label': 'PROBLEMS'},
-                      {'value': '12ms', 'label': 'AVG SPEED'},
-                      {'value': '+200', 'label': 'XP REWARD'},
-                      {'value': '8m', 'label': 'EST. TIME'},
-                    ],
-                    configOptions: const {
-                      'Difficulty': ['Beginner', 'Advanced'],
-                      'Topic': [
-                        'All',
-                        'Data Structures',
-                        'Sort/Search',
-                        'Recursion',
-                      ],
-                    },
-                    startButtonText: 'Start Solving',
-                    gameScreen: SolveAlgorithmGameplayScreen(),
-                    gameType: GameType.algorithm,
-                  ),
-                ),
-              );
+              ref.read(navigationIndexProvider.notifier).setIndex(1);
             },
           ),
         ],
@@ -1097,7 +999,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null
@@ -1137,7 +1039,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),

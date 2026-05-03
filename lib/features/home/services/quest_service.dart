@@ -95,7 +95,7 @@ class QuestService {
       final random = Random(seed);
 
       List<QuestModel> allQuests = questsSnap.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
         return QuestModel.fromMap({
           ...data,
           'id': doc.id,
@@ -162,7 +162,7 @@ class QuestService {
           if (meetsRequirement) {
             await completeQuest(userId, quest);
 
-            const title = 'Daily Challenge Done! 🏆';
+            final title = 'Daily Challenge Done! 🏆';
             final body = '${quest.title}: +${quest.xpReward} XP';
 
             NotificationService().showNotification(

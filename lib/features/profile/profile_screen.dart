@@ -15,7 +15,7 @@ import 'package:taskquest/core/providers/theme_provider.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  void _showInfoModal(BuildContext context, String title, String content) {
+  void _showInfoModal(BuildContext context, String title, Widget content) {
     final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
@@ -44,9 +44,12 @@ class ProfileScreen extends ConsumerWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Text(
-                  content,
-                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    content,
+                    const SizedBox(height: 30),
+                  ],
                 ),
               ),
             ),
@@ -221,7 +224,6 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 32),
 
-          // ── Centered Header ─────────────────────────────────────
           Center(
             child: Column(
               children: [
@@ -296,7 +298,6 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 40),
 
-          // ── Stats Row ──────────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -328,7 +329,6 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
-          // ── Level Progress ──────────────────────────────────────
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -379,7 +379,6 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 40),
 
-          // ── Settings Groups ─────────────────────────────────────
           _buildGroupHeader('ACCOUNT'),
           _buildSettingsGroup([
             _SettingsTile(
@@ -428,42 +427,12 @@ class ProfileScreen extends ConsumerWidget {
             _SettingsTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
-              onTap: () => _showInfoModal(
-                context,
-                'Privacy Policy',
-                '''1. Data Collection
-We collect minimal data (email, display name) strictly for account creation and saving your learning progress.
-
-2. Data Usage
-Your data is used to track XP, level, and badge progress. We do not sell your personal information.
-
-3. Analytics
-We collect anonymous crash reports to improve app stability. You can opt-out in Data Controls.
-
-4. Deletion
-You can request account and data deletion at any time via the Danger Zone.''',
-              ),
+              onTap: () => _showPrivacyPolicy(context),
             ),
             _SettingsTile(
               icon: Icons.description_outlined,
               title: 'Terms of Service',
-              onTap: () => _showInfoModal(
-                context,
-                'Terms of Service',
-                '''By using TaskQuest, you agree to:
-
-1. Educational Use
-Use the platform for its intended educational and gamified learning purposes.
-
-2. Fair Play
-Maintain the integrity of the leaderboard. Any attempts to manipulate XP or scores via exploits is prohibited.
-
-3. Account Responsibility
-Maintain the security of your account. TaskQuest is not responsible for unauthorized access.
-
-4. Content Ownership
-All learning content remains the property of TaskQuest and its contributors.''',
-              ),
+              onTap: () => _showTermsOfService(context),
             ),
           ]),
 
@@ -479,6 +448,82 @@ All learning content remains the property of TaskQuest and its contributors.''',
           ]),
 
           const SizedBox(height: 60),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    final theme = Theme.of(context);
+    _showInfoModal(
+      context, 
+      'Privacy Policy', 
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Last Updated: April 27, 2026', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          const Text('Data Privacy Act Compliance Statement', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(
+            'In compliance with the Data Privacy Act of 2012 (Republic Act No. 10173) of the Philippines, TaskQuest is committed to protecting your personal data. By using this Android-based gamified learning application, you consent to the collection, processing, and storage of your name, email address, learning progress (quiz scores, puzzle completion, timed challenges), digital badges, and device information solely to provide adaptive difficulty, progress tracking, instant feedback, and improve educational support. We do not sell your data. Your data is stored securely, and in case of a breach, we will notify the National Privacy Commission and affected users within 72 hours. You have the right to access, correct, or delete your data by contacting us. Continued use of the app constitutes your acceptance of this policy.',
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+          ),
+          const SizedBox(height: 24),
+          _policySection('1. Information We Collect', 'We collect your name, email address, learning progress (quizzes, puzzles, challenges), digital badges, and device information.', theme),
+          _policySection('2. How We Use Your Data', 'We use your data to deliver gamified learning, track progress, adjust difficulty, provide feedback, award badges, and improve the app.', theme),
+          _policySection('3. Data Sharing', 'We do not sell your data. We may share anonymized progress reports with educational institutions for research purposes.', theme),
+          _policySection('4. Data Security', 'We use encryption and restricted access to protect your data. Only authorized researchers and developers can view records.', theme),
+          _policySection('5. Your Rights', 'Under the Data Privacy Act, you have the right to access, correct, erase, object, withdraw consent, and request a copy of your data.', theme),
+          _policySection('6. Data Retention', 'We keep your data only as long as needed for this study. You may request deletion of your account at any time.', theme),
+          _policySection('7. Contact Us', 'For privacy concerns or to exercise your rights, email us at: taskquest.support@gmail.com', theme),
+          const SizedBox(height: 40),
+        ],
+      )
+    );
+  }
+
+  void _showTermsOfService(BuildContext context) {
+    final theme = Theme.of(context);
+    _showInfoModal(
+      context, 
+      'Terms of Service', 
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Last Updated: April 27, 2026', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          const Text('Terms of Service Statement', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(
+            'By downloading, installing, or using TaskQuest: A Gamified Learning Application for Android-Based Educational Support, you agree to be bound by these Terms of Service. TaskQuest is a gamified learning tool designed to improve student engagement through quizzes, puzzles, timed challenges, digital badges, progress tracking, and adaptive difficulty. You agree to use the application solely for lawful educational purposes, to provide accurate information during account creation, and to not attempt to hack, reverse-engineer, or disrupt the app\'s functionality. The developers and researchers behind TaskQuest are not liable for any device damage, data loss, or academic outcomes resulting from use of the application. We reserve the right to suspend or terminate accounts that violate these terms or engage in cheating, harassment, or misuse of the gamified system. Continued use of TaskQuest constitutes your acceptance of these terms.',
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+          ),
+          const SizedBox(height: 24),
+          _policySection('1. Account Registration', 'You must provide a valid name and email address to create an account. You are responsible for keeping your login credentials confidential.', theme),
+          _policySection('2. Acceptable Use', 'You agree to use TaskQuest only for legitimate learning activities. You may not:\n- Cheat or exploit the gamified system (e.g., fake score manipulation).\n- Share your account with others who are not authorized users.\n- Attempt to hack, decompile, or reverse-engineer the application.\n- Use the app for any illegal or unethical purpose.', theme),
+          _policySection('3. Intellectual Property', 'All content within TaskQuest—including quizzes, puzzles, badges, graphics, and code—is owned by the developers and researchers of this study. You may not copy, distribute, or reproduce any part of the app without written permission.', theme),
+          _policySection('4. Account Termination', 'We reserve the right to suspend or permanently delete your account if you violate these terms. You may also delete your own account at any time by contacting us.', theme),
+          _policySection('5. Disclaimer of Warranties', 'TaskQuest is provided "as is" without any warranties of merchantability, fitness for a particular purpose, or uninterrupted operation. We do not guarantee specific academic improvements.', theme),
+          _policySection('6. Limitation of Liability', 'To the fullest extent permitted by Philippine law, TaskQuest and its developers shall not be liable for any indirect, incidental, or consequential damages arising from your use of the application, including device issues or academic performance.', theme),
+          _policySection('7. Changes to These Terms', 'We may update these Terms of Service from time to time. Continued use of the app after changes constitutes your acceptance of the updated terms.', theme),
+          _policySection('8. Governing Law', 'These Terms shall be governed by and construed in accordance with the laws of the Republic of the Philippines. Any disputes shall be resolved exclusively by the proper courts of the Philippines.', theme),
+          _policySection('9. Contact Us', 'For questions or concerns regarding these Terms of Service, contact us at: taskquest.support@gmail.com', theme),
+          const SizedBox(height: 40),
+        ],
+      )
+    );
+  }
+
+  Widget _policySection(String title, String content, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(content, style: theme.textTheme.bodyMedium?.copyWith(height: 1.6)),
         ],
       ),
     );

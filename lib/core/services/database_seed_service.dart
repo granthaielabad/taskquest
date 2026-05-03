@@ -145,36 +145,118 @@ class DatabaseSeedService {
     final questsRef = _db.collection('quests');
     final snapshot = await questsRef.get();
 
+    // If quests already exist, we clear them to ensure the new list is applied
     if (snapshot.docs.isNotEmpty) {
-      debugPrint('Quests already seeded.');
-      return;
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
     }
 
     final initialQuests = [
       QuestModel(
         id: 'q1',
-        title: 'Flashcard Review',
-        description: 'Complete one study session',
-        xpReward: 50,
+        title: 'Logic Gates',
+        description: 'Score 100% on CS basics',
+        xpReward: 80,
         difficulty: QuestDifficulty.easy,
-        category: 'ALGORITHMS',
+        category: 'CS BASICS',
         estimatedMinutes: 10,
       ),
       QuestModel(
         id: 'q2',
-        title: 'Debug the Void',
-        description: 'Solve a logic challenge',
-        xpReward: 120,
+        title: 'Code Sprint',
+        description: 'Complete a Code Blocks game',
+        xpReward: 150,
         difficulty: QuestDifficulty.medium,
         category: 'CODING',
         estimatedMinutes: 25,
       ),
       QuestModel(
         id: 'q3',
-        title: 'Logic Gates',
-        description: 'Score 100% on basics',
-        xpReward: 80,
+        title: 'Language Expert',
+        description: 'Get a perfect score in "Which Lang?"',
+        xpReward: 120,
+        difficulty: QuestDifficulty.medium,
+        category: 'QUIZ',
+      ),
+      QuestModel(
+        id: 'q4',
+        title: 'Flash Focus',
+        description: 'Review 20 flashcards in one go',
+        xpReward: 60,
         difficulty: QuestDifficulty.easy,
+        category: 'STUDY',
+      ),
+      QuestModel(
+        id: 'q5',
+        title: 'AI Genesis',
+        description: 'Generate an AI study deck',
+        xpReward: 70,
+        difficulty: QuestDifficulty.easy,
+        category: 'AI',
+      ),
+      QuestModel(
+        id: 'q6',
+        title: 'Bug Hunter',
+        description: 'Find the error in a Code Blocks challenge',
+        xpReward: 130,
+        difficulty: QuestDifficulty.medium,
+        category: 'CODING',
+      ),
+      QuestModel(
+        id: 'q7',
+        title: 'Syntax Mastery',
+        description: 'Finish 3 study sessions today',
+        xpReward: 90,
+        difficulty: QuestDifficulty.easy,
+        category: 'STUDY',
+      ),
+      QuestModel(
+        id: 'q8',
+        title: 'Global Scholar',
+        description: 'Check your rank on the leaderboard',
+        xpReward: 30,
+        difficulty: QuestDifficulty.easy,
+        category: 'SOCIAL',
+      ),
+      QuestModel(
+        id: 'q9',
+        title: 'Deep Explorer',
+        description: 'Browse 5 topics in the Explore tab',
+        xpReward: 40,
+        difficulty: QuestDifficulty.easy,
+        category: 'EXPLORE',
+      ),
+      QuestModel(
+        id: 'q10',
+        title: 'Polyglot Trial',
+        description: 'Play "Which Lang?" 3 times today',
+        xpReward: 110,
+        difficulty: QuestDifficulty.medium,
+        category: 'QUIZ',
+      ),
+      QuestModel(
+        id: 'q11',
+        title: 'Code Architect',
+        description: 'Complete a Hard Code challenge',
+        xpReward: 200,
+        difficulty: QuestDifficulty.hard,
+        category: 'CODING',
+      ),
+      QuestModel(
+        id: 'q12',
+        title: 'Architecture Ace',
+        description: 'Complete an SDLC sequence',
+        xpReward: 140,
+        difficulty: QuestDifficulty.medium,
+        category: 'ARCHITECTURE',
+      ),
+      QuestModel(
+        id: 'q13',
+        title: 'Binary Brain',
+        description: 'Solve an advanced algorithm trace',
+        xpReward: 180,
+        difficulty: QuestDifficulty.hard,
         category: 'CS BASICS',
         estimatedMinutes: 15,
       ),
@@ -205,11 +287,43 @@ class DatabaseSeedService {
         category: 'ALGORITHMS',
         estimatedMinutes: 30,
       ),
+      QuestModel(
+        id: 'q14',
+        title: 'Memory Master',
+        description: 'Review 50 flashcards today',
+        xpReward: 120,
+        difficulty: QuestDifficulty.medium,
+        category: 'STUDY',
+      ),
+      QuestModel(
+        id: 'q15',
+        title: 'Social Butterfly',
+        description: 'Engage with the community leaderboard',
+        xpReward: 50,
+        difficulty: QuestDifficulty.easy,
+        category: 'SOCIAL',
+      ),
+      QuestModel(
+        id: 'q16',
+        title: 'Neural Network',
+        description: 'Use the AI Scan feature',
+        xpReward: 100,
+        difficulty: QuestDifficulty.medium,
+        category: 'AI',
+      ),
+      QuestModel(
+        id: 'q17',
+        title: 'Logic Legend',
+        description: 'Complete 3 logic challenges',
+        xpReward: 160,
+        difficulty: QuestDifficulty.hard,
+        category: 'LOGIC',
+      ),
     ];
 
     for (var quest in initialQuests) {
       await questsRef.doc(quest.id).set(quest.toMap());
     }
-    debugPrint('Successfully seeded ${initialQuests.length} quests.');
+    debugPrint('Successfully seeded ${initialQuests.length} new quests.');
   }
 }

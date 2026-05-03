@@ -15,10 +15,12 @@ class NotificationService {
     if (kIsWeb) return;
 
     tz_data.initializeTimeZones();
-
+    
+    // Using @mipmap/launcher_icon to ensure the custom TaskQuest logo is used
+    // instead of the default Flutter/system icon.
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
+        AndroidInitializationSettings('@mipmap/launcher_icon');
+    
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
           requestAlertPermission: true,
@@ -93,14 +95,11 @@ class NotificationService {
     String? payload,
   }) async {
     if (kIsWeb) return;
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          'taskquest_channel',
-          'TaskQuest Notifications',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: true,
-        );
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'taskquest_channel', 'TaskQuest Notifications',
+      importance: Importance.max, priority: Priority.high, showWhen: true,
+      icon: '@mipmap/launcher_icon', // Explicitly set the app icon for notifications
+    );
     const NotificationDetails details = NotificationDetails(
       android: androidDetails,
       iOS: DarwinNotificationDetails(),
@@ -164,6 +163,7 @@ class NotificationService {
             importance: Importance.max,
             priority: Priority.high,
             visibility: NotificationVisibility.public,
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),
@@ -184,10 +184,9 @@ class NotificationService {
         scheduledTime,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'daily_reminder_channel',
-            'Daily Reminders',
-            importance: Importance.max,
-            priority: Priority.high,
+            'daily_reminder_channel', 'Daily Reminders',
+            importance: Importance.max, priority: Priority.high,
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),

@@ -11,6 +11,8 @@ import 'package:taskquest/features/games/screens/study_flashcard_screen.dart';
 import 'package:taskquest/features/games/screens/manual_flashcard_screen.dart';
 import 'package:taskquest/features/games/screens/all_decks_screen.dart';
 import 'package:taskquest/features/badges/providers/badge_provider.dart';
+import 'package:taskquest/features/home/providers/quest_provider.dart';
+import 'package:taskquest/features/home/providers/activity_provider.dart';
 
 class FlashcardScanScreen extends ConsumerStatefulWidget {
   const FlashcardScanScreen({super.key});
@@ -59,7 +61,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     final fileName = result.files.single.name;
 
     if (fileBytes == null) {
-      // Fallback for non-web if bytes are null (though withData should provide them)
       if (result.files.single.path != null) {
         final file = File(result.files.single.path!);
         final bytes = await file.readAsBytes();
@@ -98,12 +99,26 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
           userId: user.uid,
           title: fileName.split('.').first,
           type: 'AI',
-          category: 'AI Generated', // AI decks get this category by default
+          category: 'AI Generated',
           cards: flashcards,
           createdAt: DateTime.now(),
         );
         await ref.read(flashcardServiceProvider).createDeck(deck);
         await ref.read(badgeServiceProvider).checkFlashAI(user.uid);
+
+        // Record Activity for Quest Tracking
+        final activity = ActivityModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: 'Generated AI Deck',
+          subtitle: 'Generated ${flashcards.length} cards from $fileName',
+          xpReward: 20,
+          type: ActivityType.scan,
+          timestamp: DateTime.now(),
+        );
+        await ref.read(activityServiceProvider).recordActivity(user.uid, activity);
+
+        // Complete AI Quests
+        await ref.read(questServiceProvider).completeQuestsByType(user.uid, 'AI');
       }
 
       setState(() => _progress = 1.0);
@@ -226,7 +241,6 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   ),
                 );
               }
-              // Only show the first 3 in the preview
               final previewDecks = filtered.take(3).toList();
               return Column(
                 children: previewDecks
@@ -301,116 +315,119 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Container(
+    return SingleChildScrollView(
       key: const ValueKey('scanning'),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          const SizedBox(height: 60),
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.file_present_rounded,
-                    color: colorScheme.surface,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'AI IS WORKING',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 1.8,
-                    color: colorScheme.surface.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Scanning your\ndocument...',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Syne',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 28,
-                    height: 1.0,
-                    color: colorScheme.surface,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Reading content, identifying key\nconcepts, and generating flashcards for\nyou.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 10,
-                    height: 1.6,
-                    color: colorScheme.surface.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 48),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'PROCESSING',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 9,
-                        color: colorScheme.surface.withValues(alpha: 0.5),
-                      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 60),
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface,
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    Text(
-                      '${(_progress * 100).round()}%',
-                      style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: colorScheme.surface,
-                      ),
+                    child: Icon(
+                      Icons.file_present_rounded,
+                      color: colorScheme.surface,
+                      size: 28,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: _progress,
-                    minHeight: 6,
-                    backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation(colorScheme.surface),
                   ),
-                ),
-                const SizedBox(height: 40),
-                _buildStatusRow('Document uploaded', _progress >= 0.3),
-                const SizedBox(height: 12),
-                _buildStatusRow('Text extracted', _progress >= 0.7),
-                const SizedBox(height: 12),
-                _buildStatusRow(
-                  'Generating flashcards...',
-                  _progress >= 1.0,
-                  isLast: true,
-                ),
-              ],
+                  const SizedBox(height: 32),
+                  Text(
+                    'AI IS WORKING',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      letterSpacing: 1.8,
+                      color: colorScheme.surface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Scanning your\ndocument...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Syne',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 28,
+                      height: 1.0,
+                      color: colorScheme.surface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Reading content, identifying key\nconcepts, and generating flashcards for\nyou.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 10,
+                      height: 1.6,
+                      color: colorScheme.surface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'PROCESSING',
+                        style: TextStyle(
+                          fontFamily: 'DM Mono',
+                          fontSize: 9,
+                          color: colorScheme.surface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      Text(
+                        '${(_progress * 100).round()}%',
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          color: colorScheme.surface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: _progress,
+                      minHeight: 6,
+                      backgroundColor: colorScheme.surface.withValues(alpha: 0.1),
+                      valueColor: AlwaysStoppedAnimation(colorScheme.surface),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildStatusRow('Document uploaded', _progress >= 0.3),
+                  const SizedBox(height: 12),
+                  _buildStatusRow('Text extracted', _progress >= 0.7),
+                  const SizedBox(height: 12),
+                  _buildStatusRow(
+                    'Generating flashcards...',
+                    _progress >= 1.0,
+                    isLast: true,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          _buildFileFooter(),
-        ],
+            const SizedBox(height: 24),
+            _buildFileFooter(),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
@@ -437,14 +454,16 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
               : null,
         ),
         const SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'DM Mono',
-            fontSize: 11,
-            color: isDone
-                ? colorScheme.surface
-                : colorScheme.surface.withValues(alpha: 0.4),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 11,
+              color: isDone
+                  ? colorScheme.surface
+                  : colorScheme.surface.withValues(alpha: 0.4),
+            ),
           ),
         ),
       ],
@@ -711,13 +730,15 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 color: colorScheme.onSurface,
               ),
               const SizedBox(width: 12),
-              Text(
-                'Create Cards Manually',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: colorScheme.onSurface,
+              Flexible(
+                child: Text(
+                  'Create Cards Manually',
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -828,6 +849,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -960,7 +982,6 @@ class _DashedRectPainter extends CustomPainter {
     const cornerLength = 12.0;
 
     final path = Path();
-
     path.moveTo(0, cornerLength);
     path.lineTo(0, 0);
     path.lineTo(cornerLength, 0);

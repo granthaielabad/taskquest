@@ -62,5 +62,7 @@ final questServiceProvider = Provider<QuestService>((ref) {
 final dailyQuestsProvider = StreamProvider<List<QuestModel>>((ref) {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return Stream.value([]);
+  
+  // The service logic now automatically shuffles based on the Current Date.
   return ref.watch(questServiceProvider).getDailyQuests(user.uid);
 });

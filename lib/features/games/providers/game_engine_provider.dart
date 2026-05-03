@@ -6,6 +6,7 @@ import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/games/models/game_models.dart';
 import 'package:taskquest/features/games/services/game_content_service.dart';
+import 'package:taskquest/features/home/providers/quest_provider.dart';
 
 final gameContentServiceProvider = Provider((ref) => GameContentService());
 
@@ -135,7 +136,6 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
 
   void resumeGame() {
     if (state.status == GameSessionStatus.paused) {
-      // Determine if we were playing or showing feedback
       if (state.lastAnswerCorrect != null || state.lastAnswer != null) {
         state = state.copyWith(status: GameSessionStatus.showingFeedback);
         _startAutoAdvance();
@@ -193,7 +193,6 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
     final result = calculateResult();
     state = state.copyWith(status: GameSessionStatus.finished);
 
-    // Save results to user profile and record activity
     _saveResults(result);
   }
 
@@ -215,9 +214,24 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
         type: ActivityType.game,
         timestamp: DateTime.now(),
       );
-      await ref
-          .read(activityServiceProvider)
-          .recordActivity(user.uid, activity);
+      await ref.read(activityServiceProvider).recordActivity(user.uid, activity);
+
+      // 3. COMPLETE RELEVANT QUESTS AUTOMATICALLY
+      final questService = ref.read(questServiceProvider);
+      
+      final gameType = state.config?.type;
+      final difficulty = state.config?.options['Difficulty'];
+
+      if (gameType == GameType.codeBlocks) {
+        await questService.completeQuestsByType(user.uid, 'CODING', accuracy: result.accuracy, difficulty: difficulty);
+      } else if (gameType == GameType.quiz) {
+        await questService.completeQuestsByType(user.uid, 'QUIZ', accuracy: result.accuracy, difficulty: difficulty);
+      } else if (gameType == GameType.sdlc) {
+        await questService.completeQuestsByType(user.uid, 'ARCHITECTURE', accuracy: result.accuracy, difficulty: difficulty);
+      } else if (gameType == GameType.algorithm) {
+        await questService.completeQuestsByType(user.uid, 'LOGIC', accuracy: result.accuracy, difficulty: difficulty);
+        await questService.completeQuestsByType(user.uid, 'CS BASICS', accuracy: result.accuracy, difficulty: difficulty);
+      }
     } catch (e) {
       debugPrint('Error saving game results: $e');
     }
