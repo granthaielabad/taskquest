@@ -209,12 +209,16 @@ class _GameLobbyScreenState extends ConsumerState<GameLobbyScreen> {
                         children: [
                           const Icon(Icons.play_arrow_rounded, size: 20),
                           const SizedBox(width: 8),
-                          Text(
-                            widget.startButtonText.toUpperCase(),
-                            style: const TextStyle(
-                              fontFamily: 'Syne',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
+                          Flexible(
+                            child: Text(
+                              widget.startButtonText.toUpperCase(),
+                              style: const TextStyle(
+                                fontFamily: 'Syne',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1, // Ensure text does not wrap too aggressively
+                              overflow: TextOverflow.ellipsis, // Add ellipsis if it still overflows
                             ),
                           ),
                         ],

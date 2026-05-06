@@ -120,44 +120,56 @@ class UserService {
     String displayName,
   ) async {
     try {
-      final user = await getUserProfile(uid);
+      final userDoc = await _db.collection('users').doc(uid).get();
+      final user = userDoc.exists ? UserModel.fromMap(userDoc.data()!) : null;
       final now = DateTime.now();
-      final bool isNewNameGeneric =
-          displayName.isEmpty || displayName == 'Scholar';
+      
+      final bool authDisplayNameIsGeneric = displayName.isEmpty || displayName == 'Scholar';
 
       String generatedUsername = '';
-      if (!isNewNameGeneric) {
+      if (!authDisplayNameIsGeneric) {
         generatedUsername = displayName.toLowerCase().replaceAll(' ', '_');
       }
 
       if (user == null) {
+        // Profile doesn't exist, create a new one
         final newUser = UserModel(
           uid: uid,
           email: email,
-          displayName: !isNewNameGeneric ? displayName : 'Scholar',
+          displayName: !authDisplayNameIsGeneric ? displayName : 'Scholar',
           username: generatedUsername,
           lastLogin: now,
           streak: 1,
         );
         await createUserProfile(newUser);
       } else {
-        final Map<String, dynamic> updates = {'email': email};
-        final bool currentIsGeneric =
-            user.displayName.isEmpty || user.displayName == 'Scholar';
+        // Profile exists, update only necessary fields without overwriting custom data
+        final Map<String, dynamic> updates = {
+          'email': email,
+        };
+        
+        final bool firestoreDisplayNameIsGeneric = user.displayName.isEmpty || user.displayName == 'Scholar';
 
-        if (currentIsGeneric && !isNewNameGeneric) {
-          updates['displayName'] = displayName;
+        // Only update displayName from auth provider IF Firestore displayName is generic
+        // and the auth displayName is not generic.
+        // This ensures custom display names in Firestore are preserved.
+        if (firestoreDisplayNameIsGeneric && !authDisplayNameIsGeneric) {
+          updates['displayName'] = displayName; // Use displayName from auth provider
           if (user.username.isEmpty) {
-            updates['username'] = generatedUsername;
+            updates['username'] = generatedUsername; // Also update username if empty
           }
-        } else if (!isNewNameGeneric && displayName != user.displayName) {
-          updates['displayName'] = displayName;
+        } else if (user.username.isEmpty && !authDisplayNameIsGeneric) {
+          // If username is empty and authDisplayName is not generic, set username from authDisplayName
+          updates['username'] = generatedUsername;
         }
 
-        await _db
-            .collection('users')
-            .doc(uid)
-            .set(updates, SetOptions(merge: true));
+        // Only perform an update if there are actual changes to be merged
+        if (updates.isNotEmpty) {
+          await _db
+              .collection('users')
+              .doc(uid)
+              .set(updates, SetOptions(merge: true));
+        }
         await updateStreak(uid);
       }
     } catch (e) {

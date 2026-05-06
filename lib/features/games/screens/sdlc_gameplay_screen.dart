@@ -266,13 +266,17 @@ class _SdlcGameplayScreenState extends ConsumerState<SdlcGameplayScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        Text(
-                                          'Drop next phase here...',
-                                          style: TextStyle(
-                                            fontFamily: 'DM Mono',
-                                            fontSize: 12,
-                                            color: colorScheme.onSurfaceVariant
-                                                .withValues(alpha: 0.5),
+                                        Flexible(
+                                          child: Text(
+                                            'Drop next phase here...',
+                                            style: TextStyle(
+                                              fontFamily: 'DM Mono',
+                                              fontSize: 12,
+                                              color: colorScheme.onSurfaceVariant
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
@@ -412,13 +416,17 @@ class _SdlcGameplayScreenState extends ConsumerState<SdlcGameplayScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Syne',
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-              color: colorScheme.surface,
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Syne',
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: colorScheme.surface,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           const Spacer(),
@@ -472,13 +480,17 @@ class _SdlcGameplayScreenState extends ConsumerState<SdlcGameplayScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Syne',
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-              color: colorScheme.onSurface,
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Syne',
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: colorScheme.onSurface,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

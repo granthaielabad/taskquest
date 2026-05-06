@@ -76,15 +76,21 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildResultStat(
-                    'SCORE',
-                    '${widget.result.score}/${widget.result.totalQuestions}',
+                  Expanded(
+                    child: _buildResultStat(
+                      'SCORE',
+                      '${widget.result.score}/${widget.result.totalQuestions}',
+                    ),
                   ),
-                  _buildResultStat(
-                    'ACCURACY',
-                    '${(widget.result.accuracy * 100).toInt()}%',
+                  Expanded(
+                    child: _buildResultStat(
+                      'ACCURACY',
+                      '${(widget.result.accuracy * 100).toInt()}%',
+                    ),
                   ),
-                  _buildResultStat('XP', '+${widget.result.xpEarned}'),
+                  Expanded(
+                    child: _buildResultStat('XP', '+${widget.result.xpEarned}'),
+                  ),
                 ],
               ),
 
@@ -126,23 +132,29 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Syne',
-            fontWeight: FontWeight.w800,
-            fontSize: 24,
-            color: colorScheme.onSurface,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontWeight: FontWeight.w800,
+              fontSize: 24,
+              color: colorScheme.onSurface,
+            ),
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'DM Mono',
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurfaceVariant,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],

@@ -41,6 +41,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    // Reverted to .value as .valueOrNull is not defined in your Riverpod version.
+    // The null-safety operator (?. and ??) will handle potential nulls from .value.
     final user = ref.read(userProfileProvider).value;
 
     _displayNameController = TextEditingController(
