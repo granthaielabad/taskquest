@@ -181,12 +181,12 @@ class _QuizGameplayScreenState extends ConsumerState<QuizGameplayScreen> {
                       ),
                       const SizedBox(height: 32),
                       Text(
-                        question.instruction.toUpperCase(),
+                        question.instruction,
                         style: TextStyle(
-                          fontFamily: 'DM Mono',
-                          fontSize: 10,
-                          letterSpacing: 1.2,
-                          color: colorScheme.onSurfaceVariant,
+                          fontFamily: 'Syne',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 16),

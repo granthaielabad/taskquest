@@ -138,7 +138,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                           const SizedBox(height: 20),
                           const Text('Your data stays private', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 24, color: Colors.white)),
                           const SizedBox(height: 12),
-                          Text('TaskQuest never sells your personal information. You have full control over what we collect.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, height: 1.6, color: Colors.white.withOpacity(0.5))),
+                          Text('TaskQuest never sells your personal information. You have full control over what we collect.', style: TextStyle(fontFamily: 'DM Mono', fontSize: 12, height: 1.6, color: Colors.white.withValues(alpha: 0.5))),
                         ],
                       ),
                     ),
@@ -165,7 +165,7 @@ class _PrivacyAndDataScreenState extends State<PrivacyAndDataScreen> {
                     const SizedBox(height: 32),
                     Container(
                       width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(color: isDark ? Colors.red.withOpacity(0.05) : const Color(0xFFFFF5F5), border: Border.all(color: isDark ? Colors.red.withOpacity(0.1) : const Color(0xFFFFE0E0)), borderRadius: BorderRadius.circular(16)),
+                      decoration: BoxDecoration(color: isDark ? Colors.red.withValues(alpha: 0.05) : const Color(0xFFFFF5F5), border: Border.all(color: isDark ? Colors.red.withValues(alpha: 0.1) : const Color(0xFFFFE0E0)), borderRadius: BorderRadius.circular(16)),
                       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.delete_outline_rounded, color: Colors.red.shade400, size: 18), const SizedBox(width: 8), Text('Delete All My Data', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.red.shade400))]),
                     ),
                     const SizedBox(height: 40),
@@ -195,7 +195,7 @@ class _SettingsGroup extends StatelessWidget {
 class _ControlTile extends StatelessWidget {
   final IconData icon; final Color iconBg; final Color iconColor; final String title; final String subtitle; final bool value; final ValueChanged<bool> onChanged; final bool isLast; final bool isDark;
   const _ControlTile({required this.icon, required this.iconBg, required this.iconColor, required this.title, required this.subtitle, required this.value, required this.onChanged, this.isLast = false, this.isDark = false});
-  @override Widget build(BuildContext context) => Column(children: [Padding(padding: const EdgeInsets.all(16), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: iconBg.withOpacity(isDark ? 0.1 : 1.0), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: iconColor, size: 18)), const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: isDark ? Colors.white : AppTheme.black)), const SizedBox(height: 2), Text(subtitle, style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: isDark ? Colors.white38 : AppTheme.muted))])), Switch(value: value, onChanged: onChanged, activeThumbColor: Colors.white, activeTrackColor: iconColor)])), if (!isLast) Divider(color: isDark ? Colors.white10 : AppTheme.borderLight, height: 1, indent: 72)]);
+  @override Widget build(BuildContext context) => Column(children: [Padding(padding: const EdgeInsets.all(16), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: iconBg.withValues(alpha: isDark ? 0.1 : 1.0), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: iconColor, size: 18)), const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.w700, fontSize: 14, color: isDark ? Colors.white : AppTheme.black)), const SizedBox(height: 2), Text(subtitle, style: TextStyle(fontFamily: 'DM Mono', fontSize: 9, color: isDark ? Colors.white38 : AppTheme.muted))])), Switch(value: value, onChanged: onChanged, activeThumbColor: Colors.white, activeTrackColor: iconColor)])), if (!isLast) Divider(color: isDark ? Colors.white10 : AppTheme.borderLight, height: 1, indent: 72)]);
 }
 
 class _ManagementTile extends StatelessWidget {

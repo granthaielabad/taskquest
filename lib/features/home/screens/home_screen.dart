@@ -999,7 +999,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.1)
+                    ? colorScheme.surface.withValues(alpha: 0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null
@@ -1039,7 +1039,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withOpacity(0.1)
+                    ? colorScheme.surface.withValues(alpha: 0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),

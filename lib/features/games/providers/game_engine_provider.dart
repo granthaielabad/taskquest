@@ -85,19 +85,25 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
 
     try {
       final contentService = ref.read(gameContentServiceProvider);
+      // Fetch pool and shuffle it to ensure randomization
       final questions = await contentService.fetchContent(config);
       final initialTime = _calculateInitialTime(config);
 
       state = state.copyWith(
         status: GameSessionStatus.playing,
         questions: questions,
+        currentQuestionIndex: 0, // Reset index
+        score: 0,                // Reset score
         timeLeft: initialTime,
         totalTime: initialTime,
         startTime: DateTime.now(),
+        lastAnswerCorrect: null,
+        lastAnswer: null,
       );
 
       _startTimer();
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Error initializing game: $e\n$stack');
       state = state.copyWith(status: GameSessionStatus.finished);
     }
   }

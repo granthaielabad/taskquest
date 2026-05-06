@@ -382,16 +382,18 @@ class _SolveAlgorithmGameplayScreenState
                 ),
               ),
               const SizedBox(width: 16),
-              Text(
-                value,
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: textColor,
+              Expanded(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: textColor,
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
               if (isCorrect)
                 const Icon(
                   Icons.check_circle_rounded,

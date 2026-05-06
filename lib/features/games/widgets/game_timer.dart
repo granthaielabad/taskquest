@@ -43,7 +43,7 @@ class GameTimer extends StatelessWidget {
                     label,
                     style: TextStyle(
                       fontFamily: 'DM Mono',
-                      fontSize: 9,
+                      fontSize: 12,
                       letterSpacing: 1.2,
                       color: colorScheme.onSurfaceVariant,
                     ),

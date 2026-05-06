@@ -262,11 +262,18 @@ class _CodeBlocksGameplayScreenState
                                   24,
                                   32,
                                 ),
-                                child: Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: _buildCodePuzzles(
-                                    question,
-                                    isAnswered,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Text.rich(
+                                    TextSpan(
+                                      style: const TextStyle(
+                                        fontFamily: 'DM Mono',
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                        height: 1.8,
+                                      ),
+                                      children: _buildCodeSpans(question, isAnswered),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -380,82 +387,79 @@ class _CodeBlocksGameplayScreenState
     );
   }
 
-  List<Widget> _buildCodePuzzles(CodeBlockPuzzle question, bool isAnswered) {
-    List<Widget> widgets = [];
+  List<InlineSpan> _buildCodeSpans(CodeBlockPuzzle question, bool isAnswered) {
+    List<InlineSpan> spans = [];
     for (int i = 0; i < question.codeSegments.length; i++) {
       final segment = question.codeSegments[i];
       if (segment == 'slot') {
-        widgets.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: DragTarget<String>(
-              onAcceptWithDetails: (details) {
-                if (isAnswered) return;
-                setState(() {
-                  _placedBlocks[i] = details.data;
-                });
-                // If all slots filled, submit
-                int slotCount = question.codeSegments
-                    .where((s) => s == 'slot')
-                    .length;
-                if (_placedBlocks.length == slotCount) {
-                  ref
-                      .read(gameEngineProvider.notifier)
-                      .submitAnswer(_placedBlocks);
-                }
-              },
-              builder: (context, candidate, _) {
-                final value = _placedBlocks[i];
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: value != null
-                        ? Colors.white12
-                        : Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: value != null ? Colors.white30 : Colors.white12,
-                      style: BorderStyle.solid,
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: DragTarget<String>(
+                onAcceptWithDetails: (details) {
+                  if (isAnswered) return;
+                  setState(() {
+                    _placedBlocks[i] = details.data;
+                  });
+                  // If all slots filled, submit
+                  int slotCount = question.codeSegments
+                      .where((s) => s == 'slot')
+                      .length;
+                  if (_placedBlocks.length == slotCount) {
+                    ref
+                        .read(gameEngineProvider.notifier)
+                        .submitAnswer(_placedBlocks);
+                  }
+                },
+                builder: (context, candidate, _) {
+                  final value = _placedBlocks[i];
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 60,
-                    minHeight: 28,
-                  ),
-                  child: Center(
-                    child: Text(
-                      value ?? '???',
-                      style: TextStyle(
-                        color: value != null ? Colors.white : Colors.white24,
-                        fontFamily: 'DM Mono',
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
+                    decoration: BoxDecoration(
+                      color: value != null
+                          ? Colors.white12
+                          : Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: value != null ? Colors.white30 : Colors.white12,
+                        style: BorderStyle.solid,
                       ),
                     ),
-                  ),
-                );
-              },
+                    constraints: const BoxConstraints(
+                      minWidth: 60,
+                      minHeight: 28,
+                    ),
+                    child: Center(
+                      child: Text(
+                        value ?? '???',
+                        style: TextStyle(
+                          color: value != null ? Colors.white : Colors.white24,
+                          fontFamily: 'DM Mono',
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         );
       } else {
-        widgets.add(
-          Text(
-            segment,
-            style: const TextStyle(
-              fontFamily: 'DM Mono',
-              fontSize: 14,
-              color: Colors.white,
-              height: 1.8,
-            ),
+        spans.add(
+          TextSpan(
+            text: segment,
           ),
         );
       }
     }
-    return widgets;
+    return spans;
   }
 
   Widget _buildBlock(String label, {bool isDragging = false}) {

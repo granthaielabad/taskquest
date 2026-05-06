@@ -95,7 +95,7 @@ class QuestService {
       final random = Random(seed);
 
       List<QuestModel> allQuests = questsSnap.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         return QuestModel.fromMap({
           ...data,
           'id': doc.id,
