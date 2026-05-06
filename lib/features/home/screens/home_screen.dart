@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/games/models/game_models.dart';
@@ -8,6 +8,7 @@ import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
+import 'package:taskquest/features/home/screens/notifications_screen.dart';
 import 'package:taskquest/features/games/screens/games_screen.dart';
 import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
 import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
@@ -19,6 +20,7 @@ import 'package:taskquest/features/settings/screens/notifications_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
+import 'package:taskquest/core/providers/theme_provider.dart';
 
 import 'package:taskquest/features/shared/widgets/scale_on_tap.dart';
 
@@ -28,6 +30,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final questsAsync = ref.watch(dailyQuestsProvider);
+    final userProfileAsync = ref.watch(userProfileProvider);
     final theme = Theme.of(context);
 
     // ── Optimized Selectors ────────────────────────────────────
@@ -260,7 +263,28 @@ class HomeScreen extends ConsumerWidget {
                           title: q.title,
                           sub: q.description,
                           xp: q.xpReward,
-                          onTap: () {}, // Quests are now automated, not manual
+                          onTap: () {
+                            if (q.isCompleted) return;
+
+                            // Map categories to Tab Indices to keep BottomNav visible
+                            final cat = q.category.toUpperCase();
+                            final nav = ref.read(navigationIndexProvider.notifier);
+
+                            if (cat == 'GAMES' || cat == 'CODING' || cat == 'CS BASICS' || cat == 'QUIZ' || cat == 'LOGIC' || cat == 'ARCHITECTURE') {
+                              nav.setIndex(1); // Switch to Games Tab
+                            } else if (cat == 'STUDY' || cat == 'AI') {
+                              nav.setIndex(2); // Switch to Scan/AI Tab
+                            } else if (cat == 'SOCIAL') {
+                              // Switch to Explore Tab AND show Leaderboard overlay
+                              nav.setIndex(3);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                              );
+                            } else if (cat == 'EXPLORE') {
+                              nav.setIndex(3); // Switch to Explore Tab
+                            }
+                          },
                         );
                       }).toList(),
                     );
@@ -291,7 +315,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildGameModes(context),
+        _buildGameModes(context, ref),
 
         const SizedBox(height: 40),
 
@@ -683,7 +707,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGameModes(BuildContext context) {
+  Widget _buildGameModes(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1097,7 +1121,7 @@ class _GamePill extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 border: isFeatured
                     ? null
@@ -1137,7 +1161,7 @@ class _GamePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: isFeatured
-                    ? colorScheme.surface.withValues(alpha: 0.1)
+                    ? colorScheme.surface.withOpacity(0.1)
                     : theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(4),
               ),

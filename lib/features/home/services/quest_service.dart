@@ -191,6 +191,7 @@ class QuestService {
 
   Future<void> completeQuest(String userId, QuestModel quest) async {
     try {
+      // 1. Get user to calculate new level
       final userDoc = await _db.collection('users').doc(userId).get();
       if (!userDoc.exists) return;
 
@@ -205,6 +206,7 @@ class QuestService {
 
       final batch = _db.batch();
 
+      // 2. Mark quest as completed
       final userQuestRef = _db
           .collection('users')
           .doc(userId)
@@ -216,9 +218,11 @@ class QuestService {
         'xpEarned': quest.xpReward,
       });
 
+      // 3. Update user profile (XP + Level)
       final userRef = _db.collection('users').doc(userId);
       batch.update(userRef, {'xp': newXp, 'level': newLevel});
 
+      // 4. Check for "First Flight" Badge
       if (!currentUnlockedBadges.contains('first_flight')) {
         batch.update(userRef, {
           'unlockedBadges': FieldValue.arrayUnion(['first_flight']),

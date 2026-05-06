@@ -3,12 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
 import 'package:taskquest/features/explore/providers/leaderboard_provider.dart';
+import 'package:taskquest/features/home/providers/quest_provider.dart';
 
-class LeaderboardScreen extends ConsumerWidget {
+class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
+}
+
+class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(currentUserProvider);
+      if (user != null) {
+        ref.read(questServiceProvider).completeQuestsByType(user.uid, 'SOCIAL');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final leaderboardAsync = ref.watch(leaderboardProvider);
     final currentUser = ref.watch(authStateProvider).value;
     final theme = Theme.of(context);

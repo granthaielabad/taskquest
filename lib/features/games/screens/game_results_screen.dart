@@ -136,7 +136,6 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
                 height: 64,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate back to Games selection
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(

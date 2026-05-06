@@ -18,7 +18,7 @@ class NotificationService {
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-
+    
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
           requestAlertPermission: true,
@@ -80,9 +80,12 @@ class NotificationService {
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(alert: true, badge: true, sound: true);
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
     }
   }
 
@@ -93,14 +96,11 @@ class NotificationService {
     String? payload,
   }) async {
     if (kIsWeb) return;
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          'taskquest_channel',
-          'TaskQuest Notifications',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: true,
-        );
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'taskquest_channel', 'TaskQuest Notifications',
+      importance: Importance.max, priority: Priority.high, showWhen: true,
+      icon: '@mipmap/launcher_icon', // Explicitly set the app icon for notifications
+    );
     const NotificationDetails details = NotificationDetails(
       android: androidDetails,
       iOS: DarwinNotificationDetails(),
@@ -164,6 +164,7 @@ class NotificationService {
             importance: Importance.max,
             priority: Priority.high,
             visibility: NotificationVisibility.public,
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),
@@ -184,10 +185,9 @@ class NotificationService {
         scheduledTime,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'daily_reminder_channel',
-            'Daily Reminders',
-            importance: Importance.max,
-            priority: Priority.high,
+            'daily_reminder_channel', 'Daily Reminders',
+            importance: Importance.max, priority: Priority.high,
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),

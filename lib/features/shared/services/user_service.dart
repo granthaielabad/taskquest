@@ -39,6 +39,25 @@ class UserService {
     });
   }
 
+  /// Adds a persistent notification record to Firestore
+  Future<void> _savePersistentNotification(String uid, {
+    required String title,
+    required String body,
+    required String type,
+  }) async {
+    try {
+      await _db.collection('users').doc(uid).collection('notifications').add({
+        'title': title,
+        'body': body,
+        'type': type,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+    } catch (e) {
+      debugPrint('Error saving notification: $e');
+    }
+  }
+
   Future<void> addXp(String uid, int xpToAdd) async {
     final user = await getUserProfile(uid);
     if (user == null) return;
@@ -51,7 +70,7 @@ class UserService {
 
     await updateXp(uid, newTotalXp, newLevel);
 
-    // ── TRIGGER NOTIFICATIONS ───────────────────────────────────
+    // ── GET NOTIFICATION SETTINGS ───────────────────────────────
     final prefs = await SharedPreferences.getInstance();
     // We check for all versions of settings keys used
     final settings =
@@ -66,7 +85,7 @@ class UserService {
     for (var s in settings) {
       if (s == 'all:false') isAllOn = false;
       if (s == 'xp:true') isXpOn = true;
-      if (s == 'quest:true') isQuestOn = true;
+      if (s == 'quest:false') isQuestOn = false;
     }
 
     if (isAllOn) {
@@ -183,6 +202,7 @@ class UserService {
           'streak': FieldValue.increment(1),
           'lastLogin': Timestamp.fromDate(now),
         });
+        await _savePersistentNotification(uid, title: 'Streak Maintained! 🔥', body: 'You are on fire! Keep it up.', type: 'streak');
       } else {
         await _db.collection('users').doc(uid).update({
           'streak': 1,
