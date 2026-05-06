@@ -155,6 +155,7 @@ class DatabaseSeedService {
         xpReward: 80,
         difficulty: QuestDifficulty.easy,
         category: 'CS BASICS',
+        estimatedMinutes: 7,
       ),
       QuestModel(
         id: 'q2',
@@ -163,6 +164,7 @@ class DatabaseSeedService {
         xpReward: 150,
         difficulty: QuestDifficulty.medium,
         category: 'CODING',
+        estimatedMinutes: 5,
       ),
       QuestModel(
         id: 'q3',
@@ -171,6 +173,7 @@ class DatabaseSeedService {
         xpReward: 120,
         difficulty: QuestDifficulty.medium,
         category: 'QUIZ',
+        estimatedMinutes: 7,
       ),
       QuestModel(
         id: 'q4',
@@ -179,6 +182,7 @@ class DatabaseSeedService {
         xpReward: 60,
         difficulty: QuestDifficulty.easy,
         category: 'STUDY',
+        estimatedMinutes: 15,
       ),
       QuestModel(
         id: 'q5',
@@ -187,6 +191,7 @@ class DatabaseSeedService {
         xpReward: 70,
         difficulty: QuestDifficulty.easy,
         category: 'AI',
+        estimatedMinutes: 3,
       ),
       QuestModel(
         id: 'q6',
@@ -195,6 +200,7 @@ class DatabaseSeedService {
         xpReward: 130,
         difficulty: QuestDifficulty.medium,
         category: 'CODING',
+        estimatedMinutes: 5,
       ),
       QuestModel(
         id: 'q7',
@@ -203,6 +209,7 @@ class DatabaseSeedService {
         xpReward: 90,
         difficulty: QuestDifficulty.easy,
         category: 'STUDY',
+        estimatedMinutes: 30,
       ),
       QuestModel(
         id: 'q8',
@@ -211,6 +218,7 @@ class DatabaseSeedService {
         xpReward: 30,
         difficulty: QuestDifficulty.easy,
         category: 'SOCIAL',
+        estimatedMinutes: 1,
       ),
       QuestModel(
         id: 'q9',
@@ -219,6 +227,7 @@ class DatabaseSeedService {
         xpReward: 40,
         difficulty: QuestDifficulty.easy,
         category: 'EXPLORE',
+        estimatedMinutes: 12,
       ),
       QuestModel(
         id: 'q10',
@@ -227,6 +236,7 @@ class DatabaseSeedService {
         xpReward: 110,
         difficulty: QuestDifficulty.medium,
         category: 'QUIZ',
+        estimatedMinutes: 10,
       ),
       QuestModel(
         id: 'q11',
@@ -235,6 +245,7 @@ class DatabaseSeedService {
         xpReward: 200,
         difficulty: QuestDifficulty.hard,
         category: 'CODING',
+        estimatedMinutes: 15,
       ),
       QuestModel(
         id: 'q12',
@@ -243,6 +254,7 @@ class DatabaseSeedService {
         xpReward: 140,
         difficulty: QuestDifficulty.medium,
         category: 'ARCHITECTURE',
+        estimatedMinutes: 10,
       ),
       QuestModel(
         id: 'q13',
@@ -251,6 +263,7 @@ class DatabaseSeedService {
         xpReward: 180,
         difficulty: QuestDifficulty.hard,
         category: 'CS BASICS',
+        estimatedMinutes: 12,
       ),
       QuestModel(
         id: 'q14',
@@ -259,6 +272,7 @@ class DatabaseSeedService {
         xpReward: 120,
         difficulty: QuestDifficulty.medium,
         category: 'STUDY',
+        estimatedMinutes: 40,
       ),
       QuestModel(
         id: 'q15',
@@ -267,6 +281,7 @@ class DatabaseSeedService {
         xpReward: 50,
         difficulty: QuestDifficulty.easy,
         category: 'SOCIAL',
+        estimatedMinutes: 1,
       ),
       QuestModel(
         id: 'q16',
@@ -275,6 +290,7 @@ class DatabaseSeedService {
         xpReward: 100,
         difficulty: QuestDifficulty.medium,
         category: 'AI',
+        estimatedMinutes: 5,
       ),
       QuestModel(
         id: 'q17',
@@ -283,6 +299,7 @@ class DatabaseSeedService {
         xpReward: 160,
         difficulty: QuestDifficulty.hard,
         category: 'LOGIC',
+        estimatedMinutes: 20,
       ),
     ];
 
