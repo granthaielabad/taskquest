@@ -44,7 +44,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
         'streak': true,
         'quest': true,
         'xp': false,
-        'social': false,
+        // 'social': false, // Removed
         'announcements': true,
         'quiet': true,
       },
@@ -126,6 +126,7 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
   void _retriggerActiveNotifications(Map<String, bool> toggles) {
     if (toggles['daily'] == true) _triggerLogicForKey('daily');
     if (toggles['streak'] == true) _triggerLogicForKey('streak');
+    // if (toggles['announcements'] == true) _triggerLogicForKey('announcements'); // Removed
   }
 
   void _triggerLogicForKey(String key) {
@@ -149,6 +150,9 @@ class NotificationSettingsNotifier extends Notifier<NotificationSettings> {
           body: 'Open the app now to keep your streak alive.',
         );
         break;
+      // case 'announcements': // Removed
+      //   // No specific scheduling for announcements, as they are usually triggered by backend
+      //   break;
     }
   }
 }
@@ -447,55 +451,32 @@ class NotificationsScreen extends ConsumerWidget {
                           onChanged: (v) => ref
                               .read(notificationSettingsProvider.notifier)
                               .toggle('xp', v),
-                          isLast: true,
                         ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 32),
-                    _SectionLabel(label: 'SOCIAL', isEnabled: masterEnabled),
-                    const SizedBox(height: 12),
-                    _SettingsGroup(
-                      isEnabled: masterEnabled,
-                      children: [
-                        _NotificationTile(
-                          isEnabled: masterEnabled,
-                          icon: Icons.people_outline_rounded,
-                          iconBg: isDark
-                              ? colorScheme.onSurface.withValues(alpha: 0.05)
-                              : const Color(0xFFF5F5F5),
-                          iconColor: isDark
-                              ? colorScheme.onSurface.withValues(alpha: 0.4)
-                              : const Color(0xFF9E9E9E),
-                          title: 'Friend Activity',
-                          subtitle: 'When friends earn badges or level up',
-                          value: settings.toggles['social'] ?? false,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('social', v),
-                        ),
-                        Divider(
-                          color: colorScheme.outline,
-                          height: 1,
-                          indent: 72,
-                        ),
-                        _NotificationTile(
-                          isEnabled: masterEnabled,
-                          icon: Icons.branding_watermark_outlined,
-                          iconBg: isDark
-                              ? colorScheme.onSurface.withValues(alpha: 0.05)
-                              : const Color(0xFFF5F5F5),
-                          iconColor: isDark
-                              ? colorScheme.onSurface.withValues(alpha: 0.4)
-                              : const Color(0xFF9E9E9E),
-                          title: 'App Announcements',
-                          subtitle: 'New content and feature updates',
-                          value: settings.toggles['announcements'] ?? true,
-                          onChanged: (v) => ref
-                              .read(notificationSettingsProvider.notifier)
-                              .toggle('announcements', v),
-                          isLast: true,
-                        ),
+                        // Removed App Announcements tile
+                        // if (masterEnabled) ...[
+                        //   Divider(
+                        //     color: colorScheme.outline,
+                        //     height: 1,
+                        //     indent: 72,
+                        //   ),
+                        //   _NotificationTile(
+                        //     isEnabled: masterEnabled,
+                        //     icon: Icons.branding_watermark_outlined,
+                        //     iconBg: isDark
+                        //         ? colorScheme.onSurface.withValues(alpha: 0.05)
+                        //         : const Color(0xFFF5F5F5),
+                        //     iconColor: isDark
+                        //         ? colorScheme.onSurface.withValues(alpha: 0.4)
+                        //         : const Color(0xFF9E9E9E),
+                        //     title: 'App Announcements',
+                        //     subtitle: 'New content and feature updates',
+                        //     value: settings.toggles['announcements'] ?? true,
+                        //     onChanged: (v) => ref
+                        //         .read(notificationSettingsProvider.notifier)
+                        //         .toggle('announcements', v),
+                        //     isLast: true,
+                        //   ),
+                        // ],
                       ],
                     ),
                     const SizedBox(height: 40),

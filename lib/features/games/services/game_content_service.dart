@@ -53,7 +53,7 @@ class GameContentService {
     if (pool != 'All' && pool != 'Mixed') {
       final p = pool.toLowerCase();
       filtered = filtered.where((q) {
-        final text = (q.instruction + ' ' + q.explanation + ' ' + q.codeSnippet).toLowerCase();
+        final text = ('${q.instruction} ${q.explanation} ${q.codeSnippet}').toLowerCase();
         if (p == 'web') return text.contains('web') || text.contains('html') || text.contains('css') || text.contains('javascript');
         if (p == 'system') return text.contains('system') || text.contains('c++') || text.contains('rust') || text.contains('memory');
         if (p == 'legacy') return text.contains('legacy') || text.contains('cobol') || text.contains('fortran') || text.contains('ada');
@@ -78,7 +78,7 @@ class GameContentService {
     if (modelType != 'Mixed' && modelType != 'All') {
       final type = modelType.toLowerCase();
       filtered = filtered.where((s) {
-        final text = (s.instruction + ' ' + s.explanation).toLowerCase();
+        final text = ('${s.instruction} ${s.explanation}').toLowerCase();
         if (type == 'waterfall') {
            return text.contains('waterfall') || text.contains('pipeline') || text.contains('standard') || text.contains('ci/cd');
         } else if (type == 'agile') {
@@ -111,7 +111,7 @@ class GameContentService {
     if (category != 'All' && category != 'Mixed') {
       final cat = category.toLowerCase();
       filtered = filtered.where((a) {
-        final text = (a.instruction + ' ' + a.question + ' ' + a.explanation).toLowerCase();
+        final text = ('${a.instruction} ${a.question} ${a.explanation}').toLowerCase();
         if (cat == 'sorting' || cat == 'sort') {
           return text.contains('sort');
         } else if (cat == 'search') {
