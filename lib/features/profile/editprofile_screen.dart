@@ -264,9 +264,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final initials = user?.displayName.isNotEmpty == true
+    final initials = user?.displayName.trim().isNotEmpty == true
         ? user!.displayName
-              .split(' ')
+              .trim()
+              .split(RegExp(r'\s+'))
               .map((e) => e[0])
               .take(2)
               .join()

@@ -144,9 +144,11 @@ class UserService {
         await createUserProfile(newUser);
       } else {
         // Profile exists, update only necessary fields without overwriting custom data
-        final Map<String, dynamic> updates = {
-          'email': email,
-        };
+        final Map<String, dynamic> updates = {};
+        
+        if (user.email != email) {
+          updates['email'] = email;
+        }
         
         final bool firestoreDisplayNameIsGeneric = user.displayName.isEmpty || user.displayName == 'Scholar';
 

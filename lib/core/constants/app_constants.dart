@@ -1,7 +1,10 @@
 class AppConstants {
   // AI Configuration
   // Get your free key at: https://aistudio.google.com/app/apikey
-  static const String geminiApiKey = 'AIzaSyCwEq0GRAK4iJFMyaetzF8Bb5Br02M6gEY';
+  static const String geminiApiKey = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: 'PASTE_YOUR_API_KEY_HERE',
+  );
 
   // XP per task difficulty
   static const int xpEasy = 10;

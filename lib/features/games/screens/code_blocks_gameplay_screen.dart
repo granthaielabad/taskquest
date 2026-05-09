@@ -394,9 +394,10 @@ class _CodeBlocksGameplayScreenState
       if (segment == 'slot') {
         spans.add(
           WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
               child: DragTarget<String>(
                 onAcceptWithDetails: (details) {
                   if (isAnswered) return;
@@ -417,32 +418,31 @@ class _CodeBlocksGameplayScreenState
                   final value = _placedBlocks[i];
                   return Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 6,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: value != null
                           ? Colors.white12
                           : Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(
                         color: value != null ? Colors.white30 : Colors.white12,
-                        style: BorderStyle.solid,
+                        width: 1,
                       ),
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 60,
-                      minHeight: 28,
+                      minWidth: 40,
+                      minHeight: 20,
                     ),
-                    child: Center(
-                      child: Text(
-                        value ?? '???',
-                        style: TextStyle(
-                          color: value != null ? Colors.white : Colors.white24,
-                          fontFamily: 'DM Mono',
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    child: Text(
+                      value ?? '???',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: value != null ? Colors.white : Colors.white24,
+                        fontFamily: 'DM Mono',
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   );
