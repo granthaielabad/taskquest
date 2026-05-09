@@ -56,11 +56,12 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
     );
 
     if (result == null) return;
-
+    
     final fileBytes = result.files.single.bytes;
     final fileName = result.files.single.name;
-
+    
     if (fileBytes == null) {
+      // Fallback for non-web if bytes are null (though withData should provide them)
       if (result.files.single.path != null) {
         final file = File(result.files.single.path!);
         final bytes = await file.readAsBytes();
@@ -241,6 +242,7 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
                   ),
                 );
               }
+              // Only show the first 3 in the preview
               final previewDecks = filtered.take(3).toList();
               return Column(
                 children: previewDecks
@@ -433,8 +435,9 @@ class _FlashcardScanScreenState extends ConsumerState<FlashcardScanScreen> {
   }
 
   Widget _buildStatusRow(String label, bool isDone, {bool isLast = false}) {
-    final colorScheme = Theme.of(context).colorScheme;
-
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Row(
       children: [
         Container(
@@ -978,10 +981,12 @@ class _DashedRectPainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
+
     const dashSpace = 4.0;
     const cornerLength = 12.0;
 
     final path = Path();
+
     path.moveTo(0, cornerLength);
     path.lineTo(0, 0);
     path.lineTo(cornerLength, 0);

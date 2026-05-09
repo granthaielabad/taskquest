@@ -34,6 +34,7 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
+              // Success Icon
               Container(
                 width: 80,
                 height: 80,
@@ -72,7 +73,8 @@ class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
               ),
 
               const SizedBox(height: 48),
-              
+
+              // Stats Grid
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [

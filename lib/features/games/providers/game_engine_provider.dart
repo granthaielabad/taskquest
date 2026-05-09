@@ -142,6 +142,7 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
 
   void resumeGame() {
     if (state.status == GameSessionStatus.paused) {
+      // Determine if we were playing or showing feedback
       if (state.lastAnswerCorrect != null || state.lastAnswer != null) {
         state = state.copyWith(status: GameSessionStatus.showingFeedback);
         _startAutoAdvance();
@@ -199,6 +200,7 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
     final result = calculateResult();
     state = state.copyWith(status: GameSessionStatus.finished);
 
+    // Save results to user profile and record activity
     _saveResults(result);
   }
 
@@ -224,7 +226,7 @@ class GameEngineNotifier extends Notifier<GameSessionState> {
 
       // 3. COMPLETE RELEVANT QUESTS AUTOMATICALLY
       final questService = ref.read(questServiceProvider);
-      
+
       final gameType = state.config?.type;
       final difficulty = state.config?.options['Difficulty'];
 

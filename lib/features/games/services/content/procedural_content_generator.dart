@@ -76,7 +76,7 @@ class ProceduralContentGenerator {
           'explanation': 'Types: Casting string to integer.',
         },
         {
-          'segments': ['def greet(name):\n  print(', 'slot', '\"Hello, \" + name)'],
+          'segments': ['def greet(name):\n  print(', 'slot', "'Hello, ' + name)"],
           'blocks': ['f', 'r', 'u', 'b'],
           'correct': {1: 'f'},
           'explanation': 'Strings: Modern f-string formatting.',
@@ -293,7 +293,7 @@ class ProceduralContentGenerator {
           'explanation': 'Syntax: Reassignable variables.',
         },
         {
-          'segments': ['// String formatting\nconst msg = ', 'slot', 'Hello, \${user}\`;'],
+          'segments': ['// String formatting\nconst msg = ', 'slot', 'Hello, \${user}`;'],
           'blocks': ['`', '"', '\'', ':'],
           'correct': {1: '`'},
           'explanation': 'Strings: Template literals.',

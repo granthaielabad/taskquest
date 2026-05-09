@@ -224,6 +224,7 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 32),
 
+          // ── Centered Header ─────────────────────────────────────
           Center(
             child: Column(
               children: [
@@ -298,6 +299,7 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 40),
 
+          // ── Stats Row ──────────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -329,6 +331,7 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
+          // ── Level Progress ──────────────────────────────────────
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -379,6 +382,7 @@ class ProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 40),
 
+          // ── Settings Groups ─────────────────────────────────────
           _buildGroupHeader('ACCOUNT'),
           _buildSettingsGroup([
             _SettingsTile(
@@ -456,8 +460,8 @@ class ProfileScreen extends ConsumerWidget {
   void _showPrivacyPolicy(BuildContext context) {
     final theme = Theme.of(context);
     _showInfoModal(
-      context, 
-      'Privacy Policy', 
+      context,
+      'Privacy Policy',
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -486,8 +490,8 @@ class ProfileScreen extends ConsumerWidget {
   void _showTermsOfService(BuildContext context) {
     final theme = Theme.of(context);
     _showInfoModal(
-      context, 
-      'Terms of Service', 
+      context,
+      'Terms of Service',
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

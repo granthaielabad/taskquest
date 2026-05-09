@@ -86,7 +86,7 @@ class UserService {
     for (var s in settings) {
       if (s == 'all:false') isAllOn = false;
       if (s == 'xp:true') isXpOn = true;
-      if (s == 'quest:false') isQuestOn = false; 
+      if (s == 'quest:false') isQuestOn = false;
     }
 
     // ── ALWAYS SAVE TO HOME NOTIFICATION SCREEN (PERSISTENT) ───
@@ -120,6 +120,16 @@ class UserService {
     String displayName,
   ) async {
     try {
+      // Force a reload of the current user to get the latest profile data (like displayName)
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        await currentUser.reload();
+        // Use the reloaded display name if the one passed in is empty
+        if (displayName.isEmpty && currentUser.displayName != null) {
+          displayName = currentUser.displayName!;
+        }
+      }
+
       final userDoc = await _db.collection('users').doc(uid).get();
       final user = userDoc.exists ? UserModel.fromMap(userDoc.data()!) : null;
       final now = DateTime.now();

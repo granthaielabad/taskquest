@@ -531,7 +531,6 @@ class _SettingsGroup extends StatelessWidget {
     );
   }
 }
-
 class _NotificationTile extends StatelessWidget {
   final IconData icon;
   final Color iconBg;
@@ -540,7 +539,6 @@ class _NotificationTile extends StatelessWidget {
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
-  final bool isLast;
   final bool isEnabled;
 
   const _NotificationTile({
@@ -551,7 +549,6 @@ class _NotificationTile extends StatelessWidget {
     required this.subtitle,
     required this.value,
     required this.onChanged,
-    this.isLast = false,
     this.isEnabled = true,
   });
 

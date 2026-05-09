@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:taskquest/features/home/providers/quest_provider.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/features/games/models/game_models.dart';
 import 'package:taskquest/core/utils/xp_utils.dart';
 import 'package:taskquest/features/shared/widgets/level_up_dialog.dart';
 import 'package:taskquest/features/home/providers/activity_provider.dart';
 import 'package:taskquest/features/explore/screens/leaderboard_screen.dart';
 import 'package:taskquest/features/home/screens/notifications_screen.dart';
+import 'package:taskquest/features/games/screens/games_screen.dart';
+import 'package:taskquest/features/games/screens/code_blocks_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/quiz_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/game_lobby_screen.dart';
+import 'package:taskquest/features/games/screens/sdlc_gameplay_screen.dart';
+import 'package:taskquest/features/games/screens/solve_algorithm_gameplay_screen.dart';
 import 'package:taskquest/features/badges/screens/badges_screen.dart';
 import 'package:taskquest/features/home/screens/all_activity_screen.dart';
 import 'package:taskquest/core/providers/tutorial_provider.dart';
 import 'package:taskquest/core/providers/theme_provider.dart';
+import 'package:taskquest/features/home/providers/quest_optimizer_provider.dart';
 
 import 'package:taskquest/features/shared/widgets/scale_on_tap.dart';
 
@@ -117,6 +125,8 @@ class HomeScreen extends ConsumerWidget {
     } else if (hour >= 17) {
       greeting = 'GOOD EVENING,';
     }
+
+    final optimizedIds = ref.watch(questOptimizerProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +239,12 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              border: Border.all(color: colorScheme.outline),
+              border: Border.all(
+                color: optimizedIds.isNotEmpty 
+                    ? colorScheme.primary.withValues(alpha: 0.5) 
+                    : colorScheme.outline,
+                width: optimizedIds.isNotEmpty ? 2 : 1,
+              ),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
@@ -246,31 +261,31 @@ class HomeScreen extends ConsumerWidget {
                     }
                     return Column(
                       children: quests.map((q) {
+                        final isOptimized = optimizedIds.contains(q.id);
                         return _QuestItem(
                           done: q.isCompleted,
                           title: q.title,
                           sub: q.description,
                           xp: q.xpReward,
+                          isOptimized: isOptimized,
                           onTap: () {
                             if (q.isCompleted) return;
-                            
-                            // Map categories to Tab Indices to keep BottomNav visible
+
                             final cat = q.category.toUpperCase();
                             final nav = ref.read(navigationIndexProvider.notifier);
 
                             if (cat == 'GAMES' || cat == 'CODING' || cat == 'CS BASICS' || cat == 'QUIZ' || cat == 'LOGIC' || cat == 'ARCHITECTURE') {
-                              nav.setIndex(1); // Switch to Games Tab
+                              nav.setIndex(1);
                             } else if (cat == 'STUDY' || cat == 'AI') {
-                              nav.setIndex(2); // Switch to Scan/AI Tab
+                              nav.setIndex(2);
                             } else if (cat == 'SOCIAL') {
-                              // Switch to Explore Tab AND show Leaderboard overlay
-                              nav.setIndex(3); 
+                              nav.setIndex(3);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
                               );
                             } else if (cat == 'EXPLORE') {
-                              nav.setIndex(3); // Switch to Explore Tab
+                              nav.setIndex(3);
                             }
                           },
                         );
@@ -281,10 +296,30 @@ class HomeScreen extends ConsumerWidget {
                       const Center(child: CircularProgressIndicator()),
                   error: (e, s) => Text('Error loading quests: $e'),
                 ),
+                if (optimizedIds.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => ref.read(questOptimizerProvider.notifier).clearOptimization(),
+                    child: Text(
+                      'CLEAR PLAN',
+                      style: TextStyle(
+                        fontFamily: 'DM Mono',
+                        fontSize: 9,
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ),
+
+        const SizedBox(height: 32),
+
+        // ── Session Planner (KNAPSACK ALGORITHM) ────────────────
+        _buildSessionPlanner(context, ref, questsAsync),
 
         const SizedBox(height: 40),
 
@@ -312,6 +347,80 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         _buildActivityList(context, ref),
       ],
+    );
+  }
+
+  Widget _buildSessionPlanner(BuildContext context, WidgetRef ref, AsyncValue<List<QuestModel>> questsAsync) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'SMART SESSION PLANNER',
+            style: TextStyle(
+              fontFamily: 'DM Mono',
+              fontSize: 10,
+              letterSpacing: 1.8,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outline),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Limited time? Let our algorithm pick the best tasks for maximum XP.',
+                  style: TextStyle(fontFamily: 'DM Mono', fontSize: 10),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [15, 30, 45].map((mins) {
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: OutlinedButton(
+                          onPressed: () {
+                            questsAsync.whenData((quests) {
+                              ref.read(questOptimizerProvider.notifier)
+                                 .optimizeQuests(quests, mins);
+                              HapticFeedback.lightImpact();
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            '${mins}m',
+                            style: const TextStyle(
+                              fontFamily: 'Syne',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -709,7 +818,10 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.style,
             isFeatured: true,
             onTap: () {
-              ref.read(navigationIndexProvider.notifier).setIndex(1);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const GamesScreen()),
+              );
             },
           ),
           const SizedBox(width: 10),
@@ -719,7 +831,31 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Interactive',
             icon: Icons.code,
             onTap: () {
-              ref.read(navigationIndexProvider.notifier).setIndex(1);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const GameLobbyScreen(
+                    title: 'Code Blocks',
+                    description:
+                        'Fill in the blanks — drag the correct code blocks into the missing slots to complete working programs. Race against the clock!',
+                    icon: Icons.code_rounded,
+                    stats: [
+                      {'value': '6', 'label': 'PUZZLES'},
+                      {'value': '190', 'label': 'BEST XP'},
+                      {'value': '+150', 'label': 'XP REWARD'},
+                      {'value': '6m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: {
+                      'Language': ['Python', 'JavaScript', 'Java', 'C++'],
+                      'Difficulty': ['Beginner', 'Intermediate', 'Advanced'],
+                      'Topic': ['All Topics', 'Loops', 'Functions', 'OOP'],
+                    },
+                    startButtonText: 'Start Coding',
+                    gameScreen: CodeBlocksGameplayScreen(),
+                    gameType: GameType.codeBlocks,
+                  ),
+                ),
+              );
             },
           ),
           const SizedBox(width: 10),
@@ -729,7 +865,40 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Quiz',
             icon: Icons.question_mark_rounded,
             onTap: () {
-              ref.read(navigationIndexProvider.notifier).setIndex(1);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const GameLobbyScreen(
+                    title: 'Which Lang?',
+                    description:
+                        'Identify programming languages from clues — syntax snippets, descriptions, or fun facts. How many can you get right?',
+                    icon: Icons.quiz_rounded,
+                    stats: [
+                      {'value': '10', 'label': 'QUESTIONS'},
+                      {'value': '8/10', 'label': 'BEST SCORE'},
+                      {'value': '+100', 'label': 'XP REWARD'},
+                      {'value': '4m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: {
+                      'Clue Type': [
+                        'Mix of All',
+                        'Syntax Only',
+                        'Description',
+                        'Fun Facts',
+                      ],
+                      'Language Pool': [
+                        'All (20 langs)',
+                        'Popular 10',
+                        'Beginner Set',
+                      ],
+                      'Time per Question': ['45s', '30s', '15s'],
+                    },
+                    startButtonText: 'Start Quiz',
+                    gameScreen: QuizGameplayScreen(),
+                    gameType: GameType.quiz,
+                  ),
+                ),
+              );
             },
           ),
           const SizedBox(width: 10),
@@ -739,7 +908,29 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Logic',
             icon: Icons.reorder_rounded,
             onTap: () {
-              ref.read(navigationIndexProvider.notifier).setIndex(1);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GameLobbyScreen(
+                    title: 'SDLC Sequence',
+                    description:
+                        'Master the Software Development Life Cycle by arranging phases in the correct logical order for different methodologies.',
+                    icon: Icons.reorder_rounded,
+                    stats: const [
+                      {'value': '5', 'label': 'SEQUENCES'},
+                      {'value': '4/5', 'label': 'ACCURACY'},
+                      {'value': '+120', 'label': 'XP REWARD'},
+                      {'value': '5m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: const {
+                      'Complexity': ['Standard', 'Advanced', 'Industry'],
+                    },
+                    startButtonText: 'Start Sorting',
+                    gameScreen: SdlcGameplayScreen(),
+                    gameType: GameType.sdlc,
+                  ),
+                ),
+              );
             },
           ),
           const SizedBox(width: 10),
@@ -749,7 +940,35 @@ class HomeScreen extends ConsumerWidget {
             tag: 'Advanced',
             icon: Icons.functions_rounded,
             onTap: () {
-              ref.read(navigationIndexProvider.notifier).setIndex(1);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GameLobbyScreen(
+                    title: 'Algorithm Trace',
+                    description:
+                        'Analyze pseudocode and determine the output or time complexity. Perfect for technical interview prep!',
+                    icon: Icons.functions_rounded,
+                    stats: const [
+                      {'value': '8', 'label': 'PROBLEMS'},
+                      {'value': '12ms', 'label': 'AVG SPEED'},
+                      {'value': '+200', 'label': 'XP REWARD'},
+                      {'value': '8m', 'label': 'EST. TIME'},
+                    ],
+                    configOptions: const {
+                      'Difficulty': ['Beginner', 'Advanced'],
+                      'Topic': [
+                        'All',
+                        'Data Structures',
+                        'Sort/Search',
+                        'Recursion',
+                      ],
+                    },
+                    startButtonText: 'Start Solving',
+                    gameScreen: SolveAlgorithmGameplayScreen(),
+                    gameType: GameType.algorithm,
+                  ),
+                ),
+              );
             },
           ),
         ],
@@ -876,12 +1095,15 @@ class _QuestItem extends StatelessWidget {
   final String title;
   final String sub;
   final int xp;
+  final bool isOptimized;
   final VoidCallback onTap;
+  
   const _QuestItem({
     required this.done,
     required this.title,
     required this.sub,
     required this.xp,
+    this.isOptimized = false,
     required this.onTap,
   });
 
@@ -892,8 +1114,18 @@ class _QuestItem extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        decoration: BoxDecoration(
+          color: isOptimized 
+              ? colorScheme.primary.withValues(alpha: 0.08) 
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: isOptimized 
+              ? Border.all(color: colorScheme.primary.withValues(alpha: 0.3)) 
+              : null,
+        ),
         child: Row(
           children: [
             Container(
@@ -908,7 +1140,9 @@ class _QuestItem extends StatelessWidget {
               ),
               child: done
                   ? Icon(Icons.check, color: colorScheme.surface, size: 14)
-                  : null,
+                  : (isOptimized 
+                      ? Icon(Icons.bolt_rounded, color: colorScheme.primary, size: 14)
+                      : null),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -923,7 +1157,7 @@ class _QuestItem extends StatelessWidget {
                       fontSize: 13,
                       color: done
                           ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface,
+                          : (isOptimized ? colorScheme.primary : colorScheme.onSurface),
                       decoration: done ? TextDecoration.lineThrough : null,
                     ),
                   ),
@@ -938,17 +1172,32 @@ class _QuestItem extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
-              '+$xp XP',
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 10,
-                letterSpacing: 0.6,
-                color: done
-                    ? colorScheme.onSurfaceVariant
-                    : colorScheme.onSurface,
-                fontWeight: done ? FontWeight.w400 : FontWeight.w500,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '+$xp XP',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 10,
+                    letterSpacing: 0.6,
+                    color: done
+                        ? colorScheme.onSurfaceVariant
+                        : colorScheme.onSurface,
+                    fontWeight: done ? FontWeight.w400 : FontWeight.w500,
+                  ),
+                ),
+                if (isOptimized)
+                  Text(
+                    'RECOMMENDED',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 7,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
@@ -1165,3 +1414,4 @@ class _ActivityItem extends StatelessWidget {
     );
   }
 }
+
