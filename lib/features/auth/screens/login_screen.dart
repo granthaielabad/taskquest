@@ -7,6 +7,7 @@ import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/screens/register_screen.dart';
 import 'package:taskquest/features/auth/screens/forgot_password_screen.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
+import 'package:taskquest/core/utils/validation_utils.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -25,6 +26,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePassword = true;
   String? _errorMessage;
 
+  bool _emailError = false;
+  bool _passwordError = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,22 +46,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    setState(() {
+      _emailError = false;
+      _passwordError = false;
+      _errorMessage = null;
+    });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
       setState(() => _errorMessage = 'Please fill in all fields');
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    if (!ValidationUtils.isValidEmail(email)) {
+      setState(() {
+        _emailError = true;
+        _errorMessage = 'Please enter a valid email address';
+      });
+      return;
+    }
+
+    if (!ValidationUtils.isValidPassword(password)) {
+      setState(() {
+        _passwordError = true;
+        _errorMessage = 'Password must be at least 8 characters long';
+      });
+      return;
+    }
+
+    setState(() => _isLoading = true);
 
     try {
-      await ref
-          .read(authServiceProvider)
-          .signInWithEmail(
-            _emailController.text.trim(),
-            _passwordController.text,
+      await ref.read(authServiceProvider).signInWithEmail(
+            email,
+            password,
           );
       if (mounted) {
         final prefs = await SharedPreferences.getInstance();
@@ -66,10 +90,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential' || e.code == 'wrong-password') {
-        setState(
-          () => _errorMessage =
-              "Invalid credentials. If you've signed in with Google before, try that!",
-        );
+        setState(() {
+          _emailError = true;
+          _passwordError = true;
+          _errorMessage =
+              "Invalid credentials. If you've signed in with Google before, try that!";
+        });
       } else if (e.code == 'account-exists-with-different-credential') {
         setState(
           () => _errorMessage =
@@ -121,7 +147,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              // Header Logo (Fixed: No border, larger size)
               Row(
                 children: [
                   SvgPicture.asset(
@@ -148,7 +173,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 60),
 
-              // Heading
               Text(
                 'Welcome\nback.',
                 style: TextStyle(
@@ -184,7 +208,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-              // Form
               const FieldLabel('EMAIL'),
               const SizedBox(height: 6),
               TQInputField(
@@ -192,6 +215,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
+                hasError: _emailError,
                 suffixIcon: Icon(
                   Icons.mail_outline_rounded,
                   size: 16,
@@ -207,6 +231,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 focusNode: _passwordFocus,
                 hintText: 'password123',
                 obscureText: _obscurePassword,
+                hasError: _passwordError,
                 suffixIcon: GestureDetector(
                   onTap: () =>
                       setState(() => _obscurePassword = !_obscurePassword),
@@ -220,7 +245,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
 
-              // Forgot Password
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -244,7 +268,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               const SizedBox(height: 24),
 
-              // Login Button
               TQButton(
                 label: 'Log In',
                 isLoading: _isLoading,
@@ -252,18 +275,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
 
               const SizedBox(height: 32),
-
-              // Divider
               const OrDivider(label: 'OR CONTINUE WITH'),
-
               const SizedBox(height: 32),
 
-              // Google Login
               GoogleButton(onTap: _handleGoogleSignIn, isLoading: _isLoading),
 
               const SizedBox(height: 48),
 
-              // Sign Up Link
               Center(
                 child: GestureDetector(
                   onTap: () => Navigator.push(

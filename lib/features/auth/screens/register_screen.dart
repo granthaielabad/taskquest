@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskquest/features/auth/providers/auth_provider.dart';
 import 'package:taskquest/features/auth/screens/login_screen.dart';
 import 'package:taskquest/features/auth/widgets/auth_widgets.dart';
+import 'package:taskquest/core/utils/validation_utils.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -27,6 +28,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _agreeToTerms = false;
   String? _errorMessage;
 
+  bool _nameError = false;
+  bool _emailError = false;
+  bool _passwordError = false;
+
   @override
   void initState() {
     super.initState();
@@ -47,30 +52,58 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    setState(() {
+      _nameError = false;
+      _emailError = false;
+      _passwordError = false;
+      _errorMessage = null;
+    });
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Please fill in all fields');
+      return;
+    }
+
+    if (!ValidationUtils.isValidName(name)) {
+      setState(() {
+        _nameError = true;
+        _errorMessage = 'Name must only contain letters and spaces';
+      });
+      return;
+    }
+
+    if (!ValidationUtils.isValidEmail(email)) {
+      setState(() {
+        _emailError = true;
+        _errorMessage = 'Please enter a valid email address';
+      });
+      return;
+    }
+
+    if (!ValidationUtils.isValidPassword(password)) {
+      setState(() {
+        _passwordError = true;
+        _errorMessage = 'Password must be at least 8 characters long';
+      });
+      return;
+    }
+
     if (!_agreeToTerms) {
       setState(() => _errorMessage = 'Please agree to the Terms & Privacy');
       return;
     }
 
-    if (_nameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty) {
-      setState(() => _errorMessage = 'Please fill in all fields');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      await ref
-          .read(authServiceProvider)
-          .signUpWithEmail(
-            _emailController.text.trim(),
-            _passwordController.text,
-            _nameController.text.trim(),
+      await ref.read(authServiceProvider).signUpWithEmail(
+            email,
+            password,
+            name,
           );
       if (mounted) {
         final prefs = await SharedPreferences.getInstance();
@@ -79,10 +112,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        setState(
-          () => _errorMessage =
-              "Email already exists. You can log in or use Google to link this account.",
-        );
+        setState(() {
+          _emailError = true;
+          _errorMessage =
+              "This email is already in use. If you previously signed in with Google, please use the 'Continue with Google' button below.";
+        });
       } else {
         setState(() => _errorMessage = e.message ?? "Registration failed");
       }
@@ -129,7 +163,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              // Header Logo (Fixed: No border, larger size)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -167,7 +200,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: 48),
 
-              // Heading
               Text(
                 'Create\nAccount.',
                 style: TextStyle(
@@ -203,13 +235,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
 
-              // Form
               const FieldLabel('FULL NAME'),
               const SizedBox(height: 6),
               TQInputField(
                 controller: _nameController,
                 focusNode: _nameFocus,
                 hintText: 'John Doe',
+                hasError: _nameError,
                 suffixIcon: Icon(
                   Icons.person_outline_rounded,
                   size: 16,
@@ -225,6 +257,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 focusNode: _emailFocus,
                 hintText: 'example@gmail.com',
                 keyboardType: TextInputType.emailAddress,
+                hasError: _emailError,
                 suffixIcon: Icon(
                   Icons.mail_outline_rounded,
                   size: 16,
@@ -240,6 +273,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 focusNode: _passwordFocus,
                 hintText: 'min. 8 characters',
                 obscureText: _obscurePassword,
+                hasError: _passwordError,
                 suffixIcon: GestureDetector(
                   onTap: () =>
                       setState(() => _obscurePassword = !_obscurePassword),
@@ -255,7 +289,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
               const SizedBox(height: 24),
 
-              // Terms & Privacy
               Row(
                 children: [
                   SizedBox(
@@ -307,7 +340,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
               const SizedBox(height: 40),
 
-              // Register Button
               TQButton(
                 label: 'Sign Up',
                 isLoading: _isLoading,
@@ -315,18 +347,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
 
               const SizedBox(height: 32),
-
-              // Divider
               const OrDivider(label: 'OR CONTINUE WITH'),
-
               const SizedBox(height: 32),
 
-              // Google Login
               GoogleButton(onTap: _handleGoogleSignIn, isLoading: _isLoading),
 
               const SizedBox(height: 48),
 
-              // Login Link
               Center(
                 child: GestureDetector(
                   onTap: () => Navigator.push(

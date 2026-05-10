@@ -1,9 +1,11 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:taskquest/features/auth/providers/user_provider.dart';
+import 'package:taskquest/core/utils/validation_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -41,8 +43,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Reverted to .value as .valueOrNull is not defined in your Riverpod version.
-    // The null-safety operator (?. and ??) will handle potential nulls from .value.
     final user = ref.read(userProfileProvider).value;
 
     _displayNameController = TextEditingController(
@@ -90,7 +90,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // Firestore limit check (1MB)
       if (bytes.length > 800000) {
-        // Using 800kb as a safe margin for base64 overhead
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -114,24 +113,56 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final user = ref.read(userProfileProvider).value;
     if (user == null) return;
 
+    final displayName = _displayNameController.text.trim();
+    final username = _usernameController.text.trim();
+    final bio = _bioController.text.trim();
+    final school = _schoolController.text.trim();
+    final course = _courseController.text.trim();
+    final yearLevel = _yearLevelController.text.trim();
+
+    // Validations
+    if (displayName.isEmpty || username.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Name and Username cannot be empty')),
+      );
+      return;
+    }
+
+    if (!ValidationUtils.isValidName(displayName)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Display Name must only contain letters')),
+      );
+      return;
+    }
+
+    if (!ValidationUtils.isValidUsername(username)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Username must be 3-30 characters (alphanumeric and underscores only)',
+          ),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       String photoUrlToSave = _currentPhotoUrl ?? '';
 
-      // If we have new bytes, convert to Base64 since Storage is unavailable
       if (_previewImageBytes != null) {
         final base64String = base64Encode(_previewImageBytes!);
         photoUrlToSave = 'data:image/jpeg;base64,$base64String';
       }
 
       final Map<String, dynamic> updates = {
-        'displayName': _displayNameController.text.trim(),
-        'username': _usernameController.text.trim(),
-        'bio': _bioController.text.trim(),
-        'school': _schoolController.text.trim(),
-        'course': _courseController.text.trim(),
-        'yearLevel': _yearLevelController.text.trim(),
+        'displayName': displayName,
+        'username': username,
+        'bio': bio,
+        'school': school,
+        'course': course,
+        'yearLevel': yearLevel,
         'photoUrl': photoUrlToSave,
         'photoBackground': _selectedBackground,
       };
@@ -554,12 +585,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               label: 'DISPLAY NAME',
                               controller: _displayNameController,
                               hint: 'Your Full Name',
+                              maxLength: ValidationUtils.maxDisplayNameLength,
                             ),
                             Divider(color: colorScheme.outline, height: 1),
                             _EditField(
                               label: 'USERNAME',
                               controller: _usernameController,
                               hint: 'charlie_quest',
+                              maxLength: ValidationUtils.maxUsernameLength,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_]')),
+                              ],
                             ),
                             Divider(color: colorScheme.outline, height: 1),
                             Padding(
@@ -600,6 +636,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               controller: _bioController,
                               hint: 'Add a short bio...',
                               maxLines: 3,
+                              maxLength: ValidationUtils.maxBioLength,
                             ),
                           ],
                         ),
@@ -619,18 +656,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               label: 'SCHOOL / INSTITUTION',
                               controller: _schoolController,
                               hint: 'e.g. PLM Manila',
+                              maxLength: ValidationUtils.maxSchoolLength,
                             ),
                             Divider(color: colorScheme.outline, height: 1),
                             _EditField(
                               label: 'COURSE / PROGRAM',
                               controller: _courseController,
                               hint: 'e.g. BS Computer Science',
+                              maxLength: ValidationUtils.maxCourseLength,
                             ),
                             Divider(color: colorScheme.outline, height: 1),
                             _EditField(
                               label: 'YEAR LEVEL',
                               controller: _yearLevelController,
                               hint: 'e.g. 3rd Year',
+                              maxLength: ValidationUtils.maxYearLevelLength,
                             ),
                           ],
                         ),
@@ -769,12 +809,16 @@ class _EditField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final int maxLines;
+  final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
 
   const _EditField({
     required this.label,
     required this.controller,
     required this.hint,
     this.maxLines = 1,
+    this.maxLength,
+    this.inputFormatters,
   });
 
   @override
@@ -798,6 +842,8 @@ class _EditField extends StatelessWidget {
           TextField(
             controller: controller,
             maxLines: maxLines,
+            maxLength: maxLength,
+            inputFormatters: inputFormatters,
             style: TextStyle(
               fontFamily: 'Syne',
               fontWeight: FontWeight.w700,
@@ -806,6 +852,7 @@ class _EditField extends StatelessWidget {
             ),
             decoration: InputDecoration(
               isDense: true,
+              counterText: '', // Hide default counter
               contentPadding: EdgeInsets.zero,
               hintText: hint,
               hintStyle: TextStyle(color: theme.colorScheme.outline),
